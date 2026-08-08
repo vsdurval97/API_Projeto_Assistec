@@ -2,7 +2,7 @@
 
 <p align="left">
   <img src="https://img.shields.io/badge/.NET-10-512BD4?style=flat-square&logo=dotnet" alt=".NET 10" />
-  <img src="https://img.shields.io/badge/C%23-12-239120?style=flat-square&logo=csharp" alt="C# 12" />
+  <img src="https://img.shields.io/badge/C%23-14-239120?style=flat-square&logo=csharp" alt="C# 14" />
   <img src="https://img.shields.io/badge/EF%20Core-10-blueviolet?style=flat-square" alt="EF Core" />
   <img src="https://img.shields.io/badge/SQLite-3-003B57?style=flat-square&logo=sqlite" alt="SQLite" />
   <img src="https://img.shields.io/badge/Tests-33%2F33%20passing-success?style=flat-square" alt="Tests" />
