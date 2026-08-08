@@ -19,7 +19,9 @@ public enum StatusOrdemServico
 public class OrdemServico
 {
     public int Id { get; set; }
-    public DateTime DataAbertura { get; private set; } = DateTime.Now;
+
+    public DateTime DataAbertura { get; private set; } = DateTime.UtcNow;
+
     public TipoEquipamento TipoEquipamento { get; set; }
     public required string Marca { get; set; }
     public required string Modelo { get; set; }
@@ -35,24 +37,22 @@ public class OrdemServico
     public int ClienteId { get; set; }
     public Cliente? Cliente { get; set; }
 
+      public DateTime UltimaModificacaoUtc { get; set; } = DateTime.UtcNow;
 
     public void AtualizarStatus(StatusOrdemServico novoStatus)
     {
         switch (novoStatus)
         {
-            case StatusOrdemServico.Recebido:
-                DataAbertura = DateTime.Now;
-                break;
 
             case StatusOrdemServico.Pronto:
-                DataConclusao = DateTime.Now;
+                DataConclusao = DateTime.UtcNow;
                 break;
 
             case StatusOrdemServico.Entregue:
                 if (DataConclusao is null)
-                    DataConclusao = DateTime.Now;
+                    DataConclusao = DateTime.UtcNow;
 
-                DataEntrega = DateTime.Now;
+                DataEntrega = DateTime.UtcNow;
                 break;
         }
 

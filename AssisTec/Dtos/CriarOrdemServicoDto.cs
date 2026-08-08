@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using AssistenciaTecnica.Api.Models;
 
 namespace AssistenciaTecnica.Api.Dtos;
 
 public record CriarOrdemServicoDto(
+    [property: JsonRequired]
     [Required, EnumDataType(typeof(TipoEquipamento))]
     TipoEquipamento TipoEquipamento,
 
@@ -22,9 +24,8 @@ public record CriarOrdemServicoDto(
     [Range(0, double.MaxValue, ErrorMessage = "O valor das peças não pode ser negativo.")]
     decimal ValorPecas,
 
-    [Required, StringLength(100, MinimumLength = 1)]
-    string ClienteName,
+    [Range(1, int.MaxValue, ErrorMessage = "ClienteId inválido.")]
+    int? ClienteId = null,
 
-    [Required, Range(1, int.MaxValue, ErrorMessage = "ClienteId inválido.")]
-    int ClienteId
+    string? ClienteNome = null
 );
