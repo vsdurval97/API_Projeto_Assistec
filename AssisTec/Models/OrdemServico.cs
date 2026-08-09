@@ -37,7 +37,7 @@ public class OrdemServico
     public int ClienteId { get; set; }
     public Cliente? Cliente { get; set; }
 
-      public DateTime UltimaModificacaoUtc { get; set; } = DateTime.UtcNow;
+    public DateTime UltimaModificacaoUtc { get; set; } = DateTime.UtcNow;
 
     public void AtualizarStatus(StatusOrdemServico novoStatus)
     {

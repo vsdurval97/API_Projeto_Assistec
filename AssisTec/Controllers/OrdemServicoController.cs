@@ -38,7 +38,7 @@ public class OrdemServicoController : ControllerBase
         {
             if (CharUnicodeInfo.GetUnicodeCategory(caractere) != UnicodeCategory.NonSpacingMark)
             {
-            semAcentos.Append(caractere);
+                semAcentos.Append(caractere);
             }
         }
 
@@ -100,17 +100,17 @@ public class OrdemServicoController : ControllerBase
             }
 
             if (clientesEncontrados.Count > 1)
+            {
+                return BadRequest(new
                 {
-                    return BadRequest(new
-                        {
-                            mensagem = $"Foram encontrados {clientesEncontrados.Count} clientes com o nome '{dto.ClienteNome}'. " +
-                            "Informe o ClienteId específico na requisição para prosseguir.",
-                            clientesEncontrados
-                    });
-                }
+                    mensagem = $"Foram encontrados {clientesEncontrados.Count} clientes com o nome '{dto.ClienteNome}'. " +
+                        "Informe o ClienteId específico na requisição para prosseguir.",
+                    clientesEncontrados
+                });
+            }
 
             clienteIdResolvido = clientesEncontrados[0].Id;
-        }  
+        }
 
 
         var ordemServico = new OrdemServico
@@ -177,61 +177,61 @@ public class OrdemServicoController : ControllerBase
     }
 
     // PUT: api/ordemservico/{id}/status
-[HttpPut("{id:int}/status")]
-[ProducesResponseType(StatusCodes.Status200OK)]
-[ProducesResponseType(StatusCodes.Status404NotFound)]
-[ProducesResponseType(StatusCodes.Status400BadRequest)]
-[ProducesResponseType(StatusCodes.Status409Conflict)]
-public async Task<ActionResult<OrdemServicoResponseDto>> AtualizarStatus(int id, [FromBody] AtualizarStatusDto dto)
-{
-    var ordem = await _context.OrdensServico
-        .Include(o => o.Cliente)
-        .FirstOrDefaultAsync(o => o.Id == id);
-
-    if (ordem is null)
+    [HttpPut("{id:int}/status")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<ActionResult<OrdemServicoResponseDto>> AtualizarStatus(int id, [FromBody] AtualizarStatusDto dto)
     {
-        return NotFound(new { mensagem = $"Ordem de Serviço com Id {id} não encontrada." });
-    }
+        var ordem = await _context.OrdensServico
+            .Include(o => o.Cliente)
+            .FirstOrDefaultAsync(o => o.Id == id);
 
-    if (ordem.Status == dto.Status)
-    {
-        return BadRequest(new { mensagem = $"A Ordem de Serviço já está com o status '{dto.Status}'." });
-    }
-
-    // Guarda contra KeyNotFoundException: se o Status persistido não estiver
-    // mapeado (dado corrompido, edição manual no banco, ou enum novo sem
-    // atualizar o dicionário), retorna 500 tratado em vez de exceção crua.
-    if (!TransicoesPermitidas.TryGetValue(ordem.Status, out var transicoesValidas))
-    {
-        _logger.LogError(
-            "Status '{Status}' da OS {Id} não está mapeado em TransicoesPermitidas.", ordem.Status, id);
-        return StatusCode(StatusCodes.Status500InternalServerError,
-            new { mensagem = "Estado da Ordem de Serviço inconsistente. Contate o suporte técnico." });
-    }
-
-    if (!transicoesValidas.Contains(dto.Status))
-    {
-        return BadRequest(new
+        if (ordem is null)
         {
-            mensagem = $"Transição de status inválida: não é possível ir de '{ordem.Status}' para '{dto.Status}'.",
-            statusPermitidos = transicoesValidas
-        });
-    }
+            return NotFound(new { mensagem = $"Ordem de Serviço com Id {id} não encontrada." });
+        }
 
-    ordem.AtualizarStatus(dto.Status);
+        if (ordem.Status == dto.Status)
+        {
+            return BadRequest(new { mensagem = $"A Ordem de Serviço já está com o status '{dto.Status}'." });
+        }
 
-    try
-    {
-        await _context.SaveChangesAsync();
-    }
-    catch (DbUpdateConcurrencyException ex)
-    {
-        // Agora este catch é ALCANÇÁVEL de verdade: dispara quando duas
-        // requisições concorrentes tentam alterar a mesma OS.
-        _logger.LogError(ex, "Conflito de concorrência ao atualizar status da OS {Id}.", id);
-        return Conflict(new { mensagem = "A Ordem de Serviço foi modificada por outra requisição. Recarregue os dados e tente novamente." });
-    }
+        // Guarda contra KeyNotFoundException: se o Status persistido não estiver
+        // mapeado (dado corrompido, edição manual no banco, ou enum novo sem
+        // atualizar o dicionário), retorna 500 tratado em vez de exceção crua.
+        if (!TransicoesPermitidas.TryGetValue(ordem.Status, out var transicoesValidas))
+        {
+            _logger.LogError(
+                "Status '{Status}' da OS {Id} não está mapeado em TransicoesPermitidas.", ordem.Status, id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { mensagem = "Estado da Ordem de Serviço inconsistente. Contate o suporte técnico." });
+        }
 
-    return Ok(OrdemServicoResponseDto.FromEntity(ordem));
-}
+        if (!transicoesValidas.Contains(dto.Status))
+        {
+            return BadRequest(new
+            {
+                mensagem = $"Transição de status inválida: não é possível ir de '{ordem.Status}' para '{dto.Status}'.",
+                statusPermitidos = transicoesValidas
+            });
+        }
+
+        ordem.AtualizarStatus(dto.Status);
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            // Agora este catch é ALCANÇÁVEL de verdade: dispara quando duas
+            // requisições concorrentes tentam alterar a mesma OS.
+            _logger.LogError(ex, "Conflito de concorrência ao atualizar status da OS {Id}.", id);
+            return Conflict(new { mensagem = "A Ordem de Serviço foi modificada por outra requisição. Recarregue os dados e tente novamente." });
+        }
+
+        return Ok(OrdemServicoResponseDto.FromEntity(ordem));
+    }
 }

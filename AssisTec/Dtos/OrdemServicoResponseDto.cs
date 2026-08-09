@@ -18,7 +18,7 @@ public record OrdemServicoResponseDto(
     string? ClienteNome
 )
 {
-      public decimal ValorTotal => ValorMaoDeObra + ValorPecas;
+    public decimal ValorTotal => ValorMaoDeObra + ValorPecas;
 
     public static OrdemServicoResponseDto FromEntity(OrdemServico o) => new(
         o.Id,
