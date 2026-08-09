@@ -1,7 +1,6 @@
-using System.Globalization;
-using System.Text;
 using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
+using AssistenciaTecnica.Api.Helpers;
 using AssistenciaTecnica.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,40 +15,18 @@ public class OrdemServicoController : ControllerBase
     private readonly AppDbContext _context;
     private readonly ILogger<OrdemServicoController> _logger;
 
-    // Mapa de transições de status permitidas — evita regressão inconsistente
-    // (ex: voltar de "Entregue" para "Recebido" sem passar pelo fluxo normal).
-    private static readonly Dictionary<StatusOrdemServico, StatusOrdemServico[]> TransicoesPermitidas = new()
-    {
-        [StatusOrdemServico.Recebido] = [StatusOrdemServico.EmAnalise],
-        [StatusOrdemServico.EmAnalise] = [StatusOrdemServico.Pronto, StatusOrdemServico.Recebido],
-        [StatusOrdemServico.Pronto] = [StatusOrdemServico.Entregue, StatusOrdemServico.EmAnalise],
-        [StatusOrdemServico.Entregue] = [] // status final, nenhuma transição permitida
-    };
-
-    // Remove acentos e normaliza para minúsculas, permitindo comparação de
-    // nomes robusta a diferenças de maiúsculas/minúsculas e acentuação
-    // (ex: "JOSE DA COSTA" e "José da Costa" devem ser tratados como iguais).
-    private static string NormalizarNome(string texto)
-    {
-        var textoDecomposto = texto.Normalize(NormalizationForm.FormD);
-        var semAcentos = new StringBuilder();
-
-        foreach (var caractere in textoDecomposto)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(caractere) != UnicodeCategory.NonSpacingMark)
-            {
-                semAcentos.Append(caractere);
-            }
-        }
-
-        return semAcentos.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
-    }
-
     public OrdemServicoController(AppDbContext context, ILogger<OrdemServicoController> logger)
     {
         _context = context;
         _logger = logger;
     }
+
+    // Separado de ClienteResponseDto propositalmente: esse DTO é o contrato
+    // público de resposta da API, e usá-lo também como estrutura interna de
+    // busca faria uma mudança futura no formato de saída (ex: um campo só
+    // relevante para exibição) se propagar silenciosamente para esta lógica
+    // de negócio, sem nenhuma relação real entre as duas coisas.
+    private sealed record ClienteEncontrado(int Id, string Nome, string Telefone);
 
     // POST: api/ordemservico
     [HttpPost]
@@ -58,7 +35,9 @@ public class OrdemServicoController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrdemServicoResponseDto>> CriarOrdemServico([FromBody] CriarOrdemServicoDto dto)
     {
-        // a) Nem ClienteId nem ClienteNome foram informados
+        // ClienteId e ClienteNome são mutuamente supletivos, não obrigatórios
+        // ao mesmo tempo — reflete o fluxo real do técnico, que às vezes só
+        // sabe o nome do cliente na hora de abrir a OS.
         if (dto.ClienteId is null && string.IsNullOrWhiteSpace(dto.ClienteNome))
         {
             return BadRequest(new { mensagem = "É necessário informar o ID ou o Nome do cliente." });
@@ -68,7 +47,8 @@ public class OrdemServicoController : ControllerBase
 
         if (dto.ClienteId is not null)
         {
-            // ClienteId tem prioridade quando informado explicitamente
+            // ClienteId tem prioridade sobre ClienteNome quando os dois vêm
+            // preenchidos: é a informação inequívoca, um nome pode ser ambíguo.
             var clienteExiste = await _context.Clientes.AnyAsync(c => c.Id == dto.ClienteId.Value);
             if (!clienteExiste)
             {
@@ -79,19 +59,20 @@ public class OrdemServicoController : ControllerBase
         }
         else
         {
-            // b) e c) Busca por ClienteNome — comparação tolerante a maiúsculas/
-            // minúsculas E a acentuação. O LOWER() nativo do SQLite (sem extensão
-            // ICU) não normaliza diacríticos, então a comparação é feita em
-            // memória. Aceitável para o volume de dados de uma oficina local.
-            var nomeBuscadoNormalizado = NormalizarNome(dto.ClienteNome!.Trim());
+            // Carrega a tabela inteira em memória porque a normalização de
+            // acento (ver NormalizadorTexto) não é traduzível para SQL do
+            // SQLite sem extensão ICU. Aceitável na escala de uma oficina
+            // local; se a base crescer, isso vira candidato a otimização
+            // (coluna NomeNormalizado indexada).
+            var nomeBuscadoNormalizado = NormalizadorTexto.RemoverAcentosEMinusculas(dto.ClienteNome!.Trim());
 
             var todosOsClientes = await _context.Clientes
                 .AsNoTracking()
-                .Select(c => new ClienteResponseDto(c.Id, c.Nome, c.Telefone))
+                .Select(c => new ClienteEncontrado(c.Id, c.Nome, c.Telefone))
                 .ToListAsync();
 
             var clientesEncontrados = todosOsClientes
-                .Where(c => NormalizarNome(c.Nome) == nomeBuscadoNormalizado)
+                .Where(c => NormalizadorTexto.RemoverAcentosEMinusculas(c.Nome) == nomeBuscadoNormalizado)
                 .ToList();
 
             if (clientesEncontrados.Count == 0)
@@ -101,17 +82,24 @@ public class OrdemServicoController : ControllerBase
 
             if (clientesEncontrados.Count > 1)
             {
+                // Nome ambíguo não é erro do sistema, é decisão que só o
+                // consumidor da API pode tomar — por isso devolve a lista de
+                // candidatos em vez de escolher um arbitrariamente (ex: o
+                // primeiro cadastrado), o que esconderia a ambiguidade.
+                var candidatos = clientesEncontrados
+                    .Select(c => new ClienteResponseDto(c.Id, c.Nome, c.Telefone))
+                    .ToList();
+
                 return BadRequest(new
                 {
                     mensagem = $"Foram encontrados {clientesEncontrados.Count} clientes com o nome '{dto.ClienteNome}'. " +
-                        "Informe o ClienteId específico na requisição para prosseguir.",
-                    clientesEncontrados
+                                "Informe o ClienteId específico na requisição para prosseguir.",
+                    clientesEncontrados = candidatos
                 });
             }
 
             clienteIdResolvido = clientesEncontrados[0].Id;
         }
-
 
         var ordemServico = new OrdemServico
         {
@@ -131,12 +119,15 @@ public class OrdemServicoController : ControllerBase
         }
         catch (DbUpdateException ex)
         {
+            // Mensagem genérica para o cliente da API, stack trace só no log —
+            // evita vazar detalhe de schema/infra em uma resposta HTTP.
             _logger.LogError(ex, "Erro ao salvar Ordem de Serviço no banco.");
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { mensagem = "Erro ao salvar a Ordem de Serviço. Tente novamente." });
         }
 
-        // Recarrega com o Cliente incluído, para popular ClienteNome no DTO de resposta
+        // Necessário porque a entidade recém-inserida não traz o relacionamento
+        // carregado em memória — sem isso, ClienteNome sairia nulo na resposta.
         await _context.Entry(ordemServico).Reference(o => o.Cliente).LoadAsync();
 
         var response = OrdemServicoResponseDto.FromEntity(ordemServico);
@@ -147,6 +138,8 @@ public class OrdemServicoController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<OrdemServicoResponseDto>>> ListarTodas()
     {
+        // AsNoTracking: dado só será lido e devolvido, não há necessidade de
+        // o EF Core pagar o custo de rastrear mudanças que nunca vão ocorrer.
         var ordens = await _context.OrdensServico
             .Include(o => o.Cliente)
             .AsNoTracking()
@@ -198,13 +191,13 @@ public class OrdemServicoController : ControllerBase
             return BadRequest(new { mensagem = $"A Ordem de Serviço já está com o status '{dto.Status}'." });
         }
 
-        // Guarda contra KeyNotFoundException: se o Status persistido não estiver
-        // mapeado (dado corrompido, edição manual no banco, ou enum novo sem
-        // atualizar o dicionário), retorna 500 tratado em vez de exceção crua.
-        if (!TransicoesPermitidas.TryGetValue(ordem.Status, out var transicoesValidas))
+        // A regra de "quais transições existem" mora na entidade (ver
+        // OrdemServico.TryObterTransicoesPermitidas) — o controller só decide
+        // o status HTTP para cada resultado, sem precisar conhecer o fluxo.
+        if (!OrdemServico.TryObterTransicoesPermitidas(ordem.Status, out var transicoesValidas))
         {
             _logger.LogError(
-                "Status '{Status}' da OS {Id} não está mapeado em TransicoesPermitidas.", ordem.Status, id);
+                "Status '{Status}' da OS {Id} não está mapeado nas transições permitidas.", ordem.Status, id);
             return StatusCode(StatusCodes.Status500InternalServerError,
                 new { mensagem = "Estado da Ordem de Serviço inconsistente. Contate o suporte técnico." });
         }
@@ -226,8 +219,9 @@ public class OrdemServicoController : ControllerBase
         }
         catch (DbUpdateConcurrencyException ex)
         {
-            // Agora este catch é ALCANÇÁVEL de verdade: dispara quando duas
-            // requisições concorrentes tentam alterar a mesma OS.
+            // Alcançável de verdade porque OrdemServico.UltimaModificacaoUtc é
+            // um concurrency token real — dispara quando duas requisições
+            // concorrentes tentam alterar a mesma OS entre o SELECT e o UPDATE.
             _logger.LogError(ex, "Conflito de concorrência ao atualizar status da OS {Id}.", id);
             return Conflict(new { mensagem = "A Ordem de Serviço foi modificada por outra requisição. Recarregue os dados e tente novamente." });
         }

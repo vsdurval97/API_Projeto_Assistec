@@ -67,3 +67,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+// Necessário para WebApplicationFactory<Program> nos testes de integração —
+// top-level statements geram uma classe Program implícita e internal por
+// padrão, invisível para o projeto de testes sem essa declaração explícita.
+public partial class Program { }

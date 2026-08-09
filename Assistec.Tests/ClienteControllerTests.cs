@@ -13,36 +13,16 @@ using Xunit.Abstractions;
 
 namespace AssisTec.Tests;
 
-public class ClienteControllerTests
+public class ClienteControllerTests : TesteBase
 {
-    private readonly ITestOutputHelper _output;
-
-    public ClienteControllerTests(ITestOutputHelper output)
+    public ClienteControllerTests(ITestOutputHelper output) : base(output)
     {
-        _output = output;
-    }
-
-    private static AppDbContext CriarContextoEmMemoria()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-            .Options;
-
-        return new AppDbContext(options);
     }
 
     private static ClienteController CriarController(AppDbContext context)
     {
         var loggerFalso = Substitute.For<ILogger<ClienteController>>();
         return new ClienteController(context, loggerFalso);
-    }
-
-    private void Log(string cenario, object esperado, object? obtido)
-    {
-        _output.WriteLine($"CENÁRIO : {cenario}");
-        _output.WriteLine($"ESPERADO: {esperado}");
-        _output.WriteLine($"OBTIDO  : {obtido}");
-        _output.WriteLine(new string('-', 60));
     }
 
     [Fact(DisplayName = "POST /cliente — Dados válidos deve retornar 201 Created com o DTO correto")]
