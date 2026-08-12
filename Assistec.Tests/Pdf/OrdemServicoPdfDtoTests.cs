@@ -1,4 +1,4 @@
-/*using AssistenciaTecnica.Api.Dtos;
+using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Models;
 using FluentAssertions;
 using Xunit;
@@ -71,4 +71,4 @@ public class OrdemServicoPdfDtoTests
         dto.DataConclusaoFormatada.Should().Be("—");
         dto.DataEntregaFormatada.Should().Be("—");
     }
-}*/
+}
