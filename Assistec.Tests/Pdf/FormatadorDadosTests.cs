@@ -1,4 +1,4 @@
-/*using AssistenciaTecnica.Api.Helpers;
+using AssistenciaTecnica.Api.Helpers;
 using FluentAssertions;
 using Xunit;
 
@@ -65,4 +65,4 @@ public class FormatadorDadosTests
     [Fact(DisplayName = "FormatarDataOpcional — Data preenchida deve formatar normalmente")]
     public void FormatarDataOpcional_DataPreenchida_DeveFormatarNormalmente()
         => FormatadorDados.FormatarDataOpcional(new DateTime(2026, 8, 9)).Should().Be("09/08/2026");
-}*/
+}
