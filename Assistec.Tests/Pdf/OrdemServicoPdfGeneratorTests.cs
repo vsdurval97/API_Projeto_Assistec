@@ -1,4 +1,4 @@
-/*using AssistenciaTecnica.Api.Dtos;
+using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Services;
 using FluentAssertions;
 using QuestPDF.Infrastructure;
@@ -77,4 +77,4 @@ public class OrdemServicoPdfGeneratorTests
         primeiraGeracao.Should().NotBeEmpty();
         segundaGeracao.Should().NotBeEmpty();
     }
-}*/
+}
