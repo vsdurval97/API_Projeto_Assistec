@@ -5,6 +5,7 @@ using AssistenciaTecnica.Api.Controllers;
 using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Models;
+using AssistenciaTecnica.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,8 @@ public class OrdemServicoControllerTests : TesteBase
     private static OrdemServicoController CriarController(AppDbContext context)
     {
         var loggerFalso = Substitute.For<ILogger<OrdemServicoController>>();
-        return new OrdemServicoController(context, loggerFalso);
+        var pdfGeneratorFalso = Substitute.For<IOrdemServicoPdfGenerator>();
+        return new OrdemServicoController(context, loggerFalso, pdfGeneratorFalso);
     }
 
     // Simula a validação automática de ModelState que o [ApiController] faz

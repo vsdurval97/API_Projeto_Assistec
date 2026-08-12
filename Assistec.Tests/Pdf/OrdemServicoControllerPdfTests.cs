@@ -1,4 +1,4 @@
-/*using AssistenciaTecnica.Api.Controllers;
+using AssistenciaTecnica.Api.Controllers;
 using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Models;
@@ -84,4 +84,4 @@ public class OrdemServicoControllerPdfTests
         arquivo.FileContents.Should().Equal(bytesFalsos);
         gerador.Received(1).Gerar(Arg.Any<OrdemServicoPdfDto>());
     }
-}*/
+}

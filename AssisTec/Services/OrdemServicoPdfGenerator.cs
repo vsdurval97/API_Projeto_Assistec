@@ -14,22 +14,22 @@ public sealed class OrdemServicoPdfGenerator : IOrdemServicoPdfGenerator
         => Document.Create(container => ComposeDocumento(container, dados)).GeneratePdf();
 
     private static void ComposeDocumento(IDocumentContainer container, OrdemServicoPdfDto dados)
-{
-    container.Page(page =>
     {
-        page.Size(PageSizes.A4);
-        page.Margin(40);
-        page.DefaultTextStyle(estilo => estilo.FontSize(11));
+        container.Page(page =>
+        {
+            page.Size(PageSizes.A4);
+            page.Margin(40);
+            page.DefaultTextStyle(estilo => estilo.FontSize(11));
 
-        // Header()/Content()/Footer() retornam IContainer e não aceitam
-        // lambda diretamente nesta versão do QuestPDF — .Element(...) é o
-        // ponto de extensão correto para plugar um método de composição
-        // customizado dentro de cada área da página.
-        page.Header().Element(c => ComposeCabecalho(c, dados));
-        page.Content().Element(c => ComposeConteudo(c, dados));
-        page.Footer().Element(ComposeRodape);
-    });
-}
+            // Header()/Content()/Footer() retornam IContainer e não aceitam
+            // lambda diretamente nesta versão do QuestPDF — .Element(...) é o
+            // ponto de extensão correto para plugar um método de composição
+            // customizado dentro de cada área da página.
+            page.Header().Element(c => ComposeCabecalho(c, dados));
+            page.Content().Element(c => ComposeConteudo(c, dados));
+            page.Footer().Element(ComposeRodape);
+        });
+    }
 
     private static void ComposeCabecalho(IContainer container, OrdemServicoPdfDto dados)
     {

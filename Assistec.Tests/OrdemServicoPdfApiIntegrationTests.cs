@@ -1,19 +1,27 @@
-/*using System.Net;
+using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AssistenciaTecnica.Api.Dtos;
 using FluentAssertions;
 using Xunit;
 
 namespace AssisTec.Tests.Pdf;
 
-// Ponta a ponta via HTTP real: controller + EF Core real (SQLite) +
-// QuestPDF real, a mesma combinação de camadas que roda em produção.
-// Reaproveita a CustomWebApplicationFactory já usada pelos demais testes
-// de integração do projeto.
 public class OrdemServicoPdfApiIntegrationTests(CustomWebApplicationFactory factory)
     : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client = factory.CreateClient();
+
+    // HttpClient/ReadFromJsonAsync não herda a configuração de JSON do
+    // Program.cs (AddJsonOptions vale só para o pipeline ASP.NET Core do
+    // lado servidor) — sem isso, "tipoEquipamento": "Notebook" (texto)
+    // falha ao desserializar contra o enum sem o converter certo.
+    private static readonly JsonSerializerOptions OpcoesJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
 
     private async Task<int> CriarOrdemServicoCompletaAsync()
     {
@@ -34,7 +42,7 @@ public class OrdemServicoPdfApiIntegrationTests(CustomWebApplicationFactory fact
             valorPecas = 80m,
             clienteId = cliente!.Id
         });
-        var ordem = await osResponse.Content.ReadFromJsonAsync<OrdemServicoResponseDto>();
+        var ordem = await osResponse.Content.ReadFromJsonAsync<OrdemServicoResponseDto>(OpcoesJson); // <- ajuste aqui
         return ordem!.Id;
     }
 
@@ -83,4 +91,4 @@ public class OrdemServicoPdfApiIntegrationTests(CustomWebApplicationFactory fact
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
-}*/
+}

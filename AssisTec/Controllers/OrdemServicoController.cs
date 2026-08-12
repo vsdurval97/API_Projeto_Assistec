@@ -2,6 +2,7 @@ using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Helpers;
 using AssistenciaTecnica.Api.Models;
+using AssistenciaTecnica.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,11 +15,16 @@ public class OrdemServicoController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly ILogger<OrdemServicoController> _logger;
+    private readonly IOrdemServicoPdfGenerator _pdfGenerator;
 
-    public OrdemServicoController(AppDbContext context, ILogger<OrdemServicoController> logger)
+    public OrdemServicoController(
+      AppDbContext context,
+      ILogger<OrdemServicoController> logger,
+      IOrdemServicoPdfGenerator pdfGenerator)
     {
         _context = context;
         _logger = logger;
+        _pdfGenerator = pdfGenerator;
     }
 
     // Separado de ClienteResponseDto propositalmente: esse DTO é o contrato
@@ -227,5 +233,53 @@ public class OrdemServicoController : ControllerBase
         }
 
         return Ok(OrdemServicoResponseDto.FromEntity(ordem));
+    }
+
+    // GET: api/ordemservico/{id}/pdf
+    [HttpGet("{id:int}/pdf")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GerarPdf(int id)
+    {
+        // Validado explicitamente aqui, e não via {id:int} sozinho, porque a
+        // constraint de rota barra valores não numéricos (vira 404 de
+        // roteamento), mas não barra zero ou negativo — um Id sintaticamente
+        // válido como int, porém semanticamente impossível como chave real.
+        if (id <= 0)
+        {
+            return BadRequest(new { mensagem = "O Id da Ordem de Serviço deve ser um número positivo." });
+        }
+
+        var ordem = await _context.OrdensServico
+            .Include(o => o.Cliente)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(o => o.Id == id);
+
+        if (ordem is null)
+        {
+            return NotFound(new { mensagem = $"Ordem de Serviço com Id {id} não encontrada." });
+        }
+
+        // A conversão OrdemServico -> OrdemServicoPdfDto pode lançar
+        // InvalidOperationException (valores negativos corrompidos no banco)
+        // ou ArgumentNullException (Cliente nulo, que Include já deveria
+        // impedir, mas não é garantia absoluta contra dado inconsistente) —
+        // tratado aqui como 500, porque nenhum dos dois é erro do requisitante.
+        OrdemServicoPdfDto dadosPdf;
+        try
+        {
+            dadosPdf = OrdemServicoPdfDto.FromEntity(ordem);
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentNullException)
+        {
+            _logger.LogError(ex, "Dados inconsistentes ao montar o PDF da OS {Id}.", id);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new { mensagem = "Não foi possível gerar o PDF: dados da Ordem de Serviço inconsistentes." });
+        }
+
+        var pdfBytes = _pdfGenerator.Gerar(dadosPdf);
+
+        return File(pdfBytes, "application/pdf", $"OS-{ordem.Id:D6}.pdf");
     }
 }

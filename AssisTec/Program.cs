@@ -1,4 +1,5 @@
 using AssistenciaTecnica.Api.Data;
+using AssistenciaTecnica.Api.Services;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
@@ -26,6 +27,11 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
+// Registrado como Scoped (não Singleton) por consistência com AppDbContext
+// — mesmo o gerador não tendo estado próprio hoje, isso evita qualquer
+// suposição futura errada sobre tempo de vida se o serviço ganhar
+// dependência de algo scoped (como o próprio DbContext) mais adiante.
+builder.Services.AddScoped<IOrdemServicoPdfGenerator, OrdemServicoPdfGenerator>();
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -39,6 +45,13 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+// Obrigatório desde que o QuestPDF adotou o modelo de licenciamento
+// (2023.4+): sem isso configurado antes da primeira geração de PDF, a
+// chamada real via HTTP lança exceção em runtime. Os testes já
+// configuram isso isoladamente (processo de teste é separado do
+// processo da API), então esta linha só cobre o app rodando de verdade.
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
 // Ativa WAL (permite leituras concorrentes durante escrita) e define um
 // busy_timeout, para que requisições concorrentes aguardem a liberação do
