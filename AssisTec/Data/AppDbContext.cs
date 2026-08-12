@@ -20,6 +20,10 @@ public class AppDbContext : DbContext
             entity.HasKey(c => c.Id);
             entity.Property(c => c.Nome).IsRequired().HasMaxLength(150);
             entity.Property(c => c.Telefone).IsRequired().HasMaxLength(20);
+            // Sem IsRequired(): CPF (11 dígitos) e CNPJ (14 dígitos) têm tamanhos
+            // diferentes, então o limite fica generoso o bastante para qualquer
+            // formato de entrada (com ou sem máscara) sem truncar dado real.
+            entity.Property(c => c.Documento).HasMaxLength(20);
         });
 
         // Reafirma DateTimeKind.Utc ao LER do banco. O SQLite armazena TEXT
