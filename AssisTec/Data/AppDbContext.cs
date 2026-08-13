@@ -16,15 +16,41 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Cliente>(entity =>
-        {
-            entity.HasKey(c => c.Id);
-            entity.Property(c => c.Nome).IsRequired().HasMaxLength(150);
-            entity.Property(c => c.Telefone).IsRequired().HasMaxLength(20);
-            // Sem IsRequired(): CPF (11 dígitos) e CNPJ (14 dígitos) têm tamanhos
-            // diferentes, então o limite fica generoso o bastante para qualquer
-            // formato de entrada (com ou sem máscara) sem truncar dado real.
-            entity.Property(c => c.Documento).HasMaxLength(20);
-        });
+{
+    entity.HasKey(c => c.Id);
+    entity.Property(c => c.Nome).IsRequired().HasMaxLength(150);
+    entity.Property(c => c.Telefone).IsRequired().HasMaxLength(20);
+    entity.Property(c => c.Documento).HasMaxLength(20);
+    entity.Property(c => c.Email).HasMaxLength(150);
+    entity.Property(c => c.InscricaoEstadual).HasMaxLength(20);
+
+    // Convertidos para string, mesmo padrão já usado em TipoEquipamento e
+    // StatusOrdemServico — grava o nome legível no banco, não o índice
+    // numérico do enum. Evita que uma futura reordenação acidental dos
+    // valores do enum corrompa dado silenciosamente já persistido.
+    entity.Property(c => c.TipoPessoa).HasConversion<string>().HasMaxLength(20);
+    entity.Property(c => c.IndicadorInscricaoEstadual).HasConversion<string>().HasMaxLength(30);
+
+    // OwnsOne mapeia Endereco nas MESMAS colunas da tabela Clientes (não
+    // cria tabela separada) — reflete que é parte do cliente, não uma
+    // entidade com ciclo de vida próprio. Navigation.IsRequired(false)
+    // é o que permite Cliente.Endereco ficar null.
+    entity.OwnsOne(c => c.Endereco, endereco =>
+    {
+        endereco.Property(e => e.Cep).HasMaxLength(8).HasColumnName("EnderecoCep");
+        endereco.Property(e => e.Logradouro).HasMaxLength(200).HasColumnName("EnderecoLogradouro");
+        endereco.Property(e => e.Numero).HasMaxLength(20).HasColumnName("EnderecoNumero");
+        endereco.Property(e => e.Complemento).HasMaxLength(100).HasColumnName("EnderecoComplemento");
+        endereco.Property(e => e.Bairro).HasMaxLength(100).HasColumnName("EnderecoBairro");
+        endereco.Property(e => e.Municipio).HasMaxLength(100).HasColumnName("EnderecoMunicipio");
+        endereco.Property(e => e.Uf).HasMaxLength(2).HasColumnName("EnderecoUf");
+        endereco.Property(e => e.CodigoMunicipioIbge).HasMaxLength(7).HasColumnName("EnderecoCodigoMunicipioIbge");
+        endereco.Property(e => e.CodigoPais).HasMaxLength(4).HasColumnName("EnderecoCodigoPais");
+        endereco.Property(e => e.Pais).HasMaxLength(50).HasColumnName("EnderecoPais");
+    });
+
+    entity.Navigation(c => c.Endereco).IsRequired(false);
+});
 
         // Reafirma DateTimeKind.Utc ao LER do banco. O SQLite armazena TEXT
         // sem informação de fuso — sem isso, o Kind volta como "Unspecified"
