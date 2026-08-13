@@ -1,8 +1,8 @@
-// AssisTec.Tests/ClienteControllerTests.cs
 using AssistenciaTecnica.Api.Controllers;
 using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Models;
+using AssistenciaTecnica.Api.Services; 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +22,11 @@ public class ClienteControllerTests : TesteBase
     private static ClienteController CriarController(AppDbContext context)
     {
         var loggerFalso = Substitute.For<ILogger<ClienteController>>();
-        return new ClienteController(context, loggerFalso);
+        // NSubstitute retorna Task<EnderecoViaCepDto?> completo com null
+        // por padrão para métodos async não configurados — suficiente
+        // para os testes existentes, que não envolvem Endereco.
+        var cepLocalizadorFalso = Substitute.For<ICepLocalizadorService>();
+        return new ClienteController(context, loggerFalso, cepLocalizadorFalso);
     }
 
     [Fact(DisplayName = "POST /cliente — Dados válidos deve retornar 201 Created com o DTO correto")]
