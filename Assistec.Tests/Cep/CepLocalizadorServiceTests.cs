@@ -1,6 +1,8 @@
-/*using System.Net;
+using System.Net;
 using AssistenciaTecnica.Api.Services;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
+using NSubstitute;
 using Xunit;
 
 namespace AssisTec.Tests.Cep;
@@ -13,9 +15,9 @@ public class CepLocalizadorServiceTests
         {
             BaseAddress = new Uri("https://viacep.com.br/ws/")
         };
-        return new CepLocalizadorService(httpClient);
+        var loggerFalso = Substitute.For<ILogger<CepLocalizadorService>>();
+        return new CepLocalizadorService(httpClient, loggerFalso);
     }
-
     [Fact(DisplayName = "BuscarPorCepAsync — CEP válido com endereço completo deve retornar todos os campos")]
     public async Task BuscarPorCepAsync_CepValidoComEnderecoCompleto_DeveRetornarTodosOsCampos()
     {
@@ -159,4 +161,4 @@ public class CepLocalizadorServiceTests
 
         await act.Should().NotThrowAsync();
     }
-}*/
+}
