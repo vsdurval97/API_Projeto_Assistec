@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using AssistenciaTecnica.Api.Dtos;
 using Xunit;
 using Xunit.Abstractions;
@@ -15,6 +17,11 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
     private readonly HttpClient _client;
     private readonly ITestOutputHelper _output;
 
+    private static readonly JsonSerializerOptions OpcoesJson = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        Converters = { new JsonStringEnumConverter() }
+    };
     public ClienteApiIntegrationTests(CustomWebApplicationFactory factory, ITestOutputHelper output)
     {
         _client = factory.CreateClient();
@@ -43,7 +50,7 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
         Log("POST com dados válidos", esperado: HttpStatusCode.Created, obtido: response.StatusCode);
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
-        var cliente = await response.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var cliente = await response.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
         Log("Nome retornado no corpo da resposta", esperado: payload.nome, obtido: cliente?.Nome);
         Assert.Equal(payload.nome, cliente!.Nome);
         Assert.True(cliente.Id > 0);
@@ -104,7 +111,7 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
         Log("GET lista de clientes", esperado: HttpStatusCode.OK, obtido: response.StatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var clientes = await response.Content.ReadFromJsonAsync<List<ClienteResponseDto>>();
+        var clientes = await response.Content.ReadFromJsonAsync<List<ClienteResponseDto>>(OpcoesJson);
         Log($"Cliente '{nomeUnico}' presente na lista", esperado: true, obtido: clientes!.Any(c => c.Nome == nomeUnico));
         Assert.Contains(clientes!, c => c.Nome == nomeUnico);
     }
@@ -118,14 +125,14 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
     {
         var criarResponse = await _client.PostAsJsonAsync("/api/Cliente",
             new { nome = $"Cliente Busca {Guid.NewGuid():N}", telefone = "79977776666" });
-        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         var response = await _client.GetAsync($"/api/Cliente/{clienteCriado!.Id}");
 
         Log($"GET /api/Cliente/{clienteCriado.Id}", esperado: HttpStatusCode.OK, obtido: response.StatusCode);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        var clienteEncontrado = await response.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var clienteEncontrado = await response.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
         Assert.Equal(clienteCriado.Nome, clienteEncontrado!.Nome);
     }
 
@@ -147,7 +154,7 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
     {
         var criarResponse = await _client.PostAsJsonAsync("/api/Cliente",
             new { nome = $"Cliente Original {Guid.NewGuid():N}", telefone = "79966665555" });
-        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         var nomeAtualizado = $"Cliente Atualizado {Guid.NewGuid():N}";
         var putResponse = await _client.PutAsJsonAsync($"/api/Cliente/{clienteCriado!.Id}",
@@ -159,7 +166,7 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
         // Confirma persistência real via uma nova requisição GET independente,
         // não só confiando no corpo devolvido pelo próprio PUT.
         var getResponse = await _client.GetAsync($"/api/Cliente/{clienteCriado.Id}");
-        var clienteConfirmado = await getResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var clienteConfirmado = await getResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         Log("Nome persistido após consulta independente", esperado: nomeAtualizado, obtido: clienteConfirmado?.Nome);
         Assert.Equal(nomeAtualizado, clienteConfirmado!.Nome);
@@ -180,7 +187,7 @@ public class ClienteApiIntegrationTests : IClassFixture<CustomWebApplicationFact
     {
         var criarResponse = await _client.PostAsJsonAsync("/api/Cliente",
             new { nome = $"Cliente Para Editar {Guid.NewGuid():N}", telefone = "79944443333" });
-        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var clienteCriado = await criarResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         var response = await _client.PutAsJsonAsync($"/api/Cliente/{clienteCriado!.Id}",
             new { nome = "", telefone = "79944443333" });
