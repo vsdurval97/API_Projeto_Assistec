@@ -16,10 +16,11 @@ Técnicos autônomos de manutenção de PCs e impressoras costumam controlar sua
 
 Este projeto é uma API REST local, rodando sobre SQLite, para resolver esse problema:
 
-Cadastro de clientes e vínculo com cada Ordem de Serviço aberta;
+Cadastro de clientes (com dados fiscais e endereço opcionais, ver seção própria abaixo) e vínculo com cada Ordem de Serviço aberta;
 Rastreio do ciclo de vida do conserto (recebido → em análise → pronto → entregue), com data registrada automaticamente em cada mudança de status;
 Cálculo do valor total do serviço (mão de obra + peças);
-Abertura de OS por nome do cliente, sem precisar saber o ID de antemão — inclusive tratando o caso de dois clientes com o mesmo nome.
+Abertura de OS por nome do cliente, sem precisar saber o ID de antemão — inclusive tratando o caso de dois clientes com o mesmo nome;
+Geração da Ordem de Serviço em PDF, pronta para impressão no momento do atendimento.
 Arquitetura e decisões técnicas
 REST API com .NET 10
 
@@ -46,6 +47,26 @@ Regra de negócio vive na entidade, não no controller
 OrdemServico concentra tanto o comportamento (AtualizarStatus) quanto a regra de quais transições de status são válidas (TryObterTransicoesPermitidas). As duas coisas viviam originalmente separadas — a regra dentro do controller, o comportamento na entidade — o que criava risco de dessincronização: alguém editar uma sem lembrar da outra. Hoje o controller só orquestra (decide o status HTTP para cada resultado); a entidade é a única fonte de verdade sobre o próprio ciclo de vida.
 
 Na mesma linha, a normalização de texto usada para buscar cliente por nome (NormalizadorTexto.RemoverAcentosEMinusculas) foi extraída para Helpers/, por ser uma função pura sem dependência de HTTP — reutilizável e testável isoladamente, sem precisar instanciar um controller inteiro para testar uma comparação de string.
+
+Geração de PDF (QuestPDF)
+
+A Ordem de Serviço pode ser exportada em PDF (GET /api/OrdemServico/{id}/pdf), pronta para impressão no balcão. A camada é dividida em três responsabilidades que falham por motivos diferentes, e por isso são testadas separadamente:
+
+OrdemServicoPdfDto — view model dedicado, só com strings já formatadas (moeda, data, documento, telefone). O motor de PDF não conhece regra de formatação nem CultureInfo, só desenha o que recebe.
+OrdemServicoPdfGenerator — o layout em si, estruturado em métodos privados por seção (cabeçalho, cliente, equipamento, defeito, datas, valores), usando containers que crescem com o conteúdo em vez de altura fixa — evita LayoutException quando o defeito relatado é um texto longo.
+IOrdemServicoPdfGenerator como interface — permite substituir a geração real por um mock nos testes do controller, para que a decisão de status HTTP (200/404/400) seja testada sem depender do QuestPDF renderizar de verdade.
+Dados fiscais e endereço do Cliente
+
+Cliente tem campos opcionais alinhados ao leiaute de destinatário exigido pela SEFAZ para NF-e/NFC-e (TipoPessoa, IndicadorInscricaoEstadual, InscricaoEstadual, Documento, Email, Endereco). Nenhum é obrigatório — a decisão foi deixar a estrutura pronta para uma eventual camada de emissão fiscal, sem forçar o cadastro rápido de balcão a virar um formulário longo hoje.
+
+O endereço é preenchido automaticamente a partir do CEP (via ViaCEP), campo a campo, não tudo-ou-nada:
+
+Municipio, Uf e CodigoMunicipioIbge vêm sempre da consulta, quando ela funciona — são garantidos pela faixa do CEP.
+Logradouro e Bairro só são sobrescritos se a API de fato devolver algo — cidades com CEP único para todo o município (caso real, não hipotético: Estância/SE) retornam esses campos vazios, e o que o atendente já tiver digitado manualmente é preservado.
+Numero e Complemento nunca vêm de nenhuma API de CEP, em nenhuma cidade — são sempre digitação manual.
+Falha na consulta (CEP inexistente, API fora do ar, timeout) nunca bloqueia o cadastro — o cliente é salvo com os dados que o atendente informou, sem o complemento automático.
+
+CodigoMunicipioIbge não é aceito como entrada do cliente da API — é sempre resolvido pelo servidor, nunca informado diretamente, para evitar divergência entre o código e o endereço real.
 
 Regras de negócio
 Resolução de cliente por nome
@@ -95,7 +116,7 @@ Nenhuma das duas decisões deve ser copiada para um contexto onde a API seja ace
 
 Testes
 
-49 testes automatizados, organizados em duas camadas com propósitos diferentes:
+121 testes automatizados, organizados em duas camadas com propósitos diferentes:
 
 Testes de unidade (xUnit + NSubstitute + Microsoft.EntityFrameworkCore.InMemory) — chamam o controller diretamente, isolando cada teste em um banco em memória próprio. Cobrem lógica de negócio de forma rápida, mas pulam o pipeline HTTP real (não passam pelo ModelState do [ApiController] nem pela serialização JSON de verdade).
 
@@ -108,6 +129,12 @@ Datas do ciclo de vida	DataConclusao e DataEntrega carimbadas corretamente, dent
 Resolução de cliente por nome	nome único, nome ambíguo, nome inexistente, prioridade quando ClienteId e ClienteNome vêm juntos
 CRUD de Cliente	criação, busca e atualização, com persistência confirmada por consulta independente
 NormalizadorTexto (isolado)	acentuação, caixa alta/baixa, strings vazias, nomes diferentes não colidindo
+FormatadorDados (isolado)	máscara de CPF/CNPJ, telefone fixo/celular, moeda e data em pt-BR, sempre sem lançar exceção em dado ausente
+OrdemServicoPdfDto	cálculo do total, propagação dos dados do cliente, cliente nulo e valores negativos bloqueando a geração
+OrdemServicoPdfGenerator (QuestPDF real)	PDF não vazio com assinatura binária correta, texto de defeito longo sem LayoutException
+Geração de PDF no controller	400/404/200 decididos sem depender do QuestPDF renderizar de verdade (gerador mockado)
+CepLocalizadorService (isolado)	CEP completo, CEP genérico (Estância/SE), CEP inexistente, formato inválido, erro de rede — nunca lança exceção
+Resolução de endereço por CEP	merge campo a campo: dado da API tem prioridade quando existe, dado digitado manualmente é preservado quando a API retorna vazio
 
 Testes de integração (WebApplicationFactory + SQLite real, não InMemory) — sobem a API inteira via TestServer e testam via HTTP de fato, contra o mesmo provider de banco que roda em produção. Existem especificamente para fechar o que os testes de unidade não alcançam:
 
@@ -116,12 +143,16 @@ ModelState real do [ApiController]	validação de [Required], [Range], [JsonRequ
 Serialização de datas	JSON de resposta sai com sufixo Z (UTC) após round-trip real pelo SQLite
 Concorrência otimista real	dois DbContext disputando a mesma linha geram DbUpdateConcurrencyException de verdade, contra o provider SQLite
 CRUD de Cliente via HTTP	os quatro endpoints testados de ponta a ponta, incluindo os casos de validação
+Geração de PDF via HTTP	200 com Content-Type: application/pdf e corpo não vazio, 404 para OS inexistente, 400 para id inválido
+Resolução de CEP via HTTP	endereço completo, CEP genérico preservando dado manual, cliente criado normalmente sem endereço informado
+
+A resolução de CEP nos testes de integração usa um FakeCepLocalizadorService registrado na CustomWebApplicationFactory, no lugar do ICepLocalizadorService real — a suíte nunca depende do ViaCEP estar no ar, e o resultado não muda se o dado de um CEP real for atualizado no futuro.
 
 Cada teste segue Arrange/Act/Assert e loga o valor esperado e o valor obtido em cada asserção (via ITestOutputHelper), para facilitar diagnóstico quando algo falha.
 
 bash
 dotnet test
-Resumo do teste: total: 49; falhou: 0; bem-sucedido: 49; ignorado: 0
+Resumo do teste: total: 121; falhou: 0; bem-sucedido: 121; ignorado: 0
 Como executar
 
 Pré-requisito: .NET 10 SDK.
@@ -154,13 +185,18 @@ O passo 4 cria o arquivo assistencia.db dentro da pasta Assistec/, já com o sch
 Com a API rodando em ambiente de desenvolvimento, a documentação interativa fica disponível em:
 
 http://localhost:<porta-exibida-no-terminal>/swagger
+
 Roadmap
 Frontend próprio para consumir a API — o Swagger cobre o desenvolvimento e testes manuais, mas não é uma interface para uso no dia a dia da oficina
-Emissão de recibo em PDF para o cliente ao concluir a Ordem de Serviço
-Emissão da Ordem de Serviço em PDF, para impressão no momento do recebimento do equipamento
+Emissão de recibo em PDF para o cliente ao concluir a Ordem de Serviço (a OS em si já é gerada em PDF)
+Validação de dígito verificador de CPF/CNPJ — hoje FormatadorDados só aplica máscara, não confirma se o documento é matematicamente válido
+Validação de que o CodigoMunicipioIbge retornado pelo CEP é coerente com a Uf informada manualmente pelo usuário, para o caso de o CEP não ser encontrado
 Token de concorrência otimista também em Cliente (hoje só existe em OrdemServico)
 Endpoint de filtro de Ordens de Serviço por status e por cliente
 Paginação nas listagens
+
+Os campos fiscais e o preenchimento automático de endereço (seção "Dados fiscais e endereço do Cliente", acima) já existem na estrutura do projeto, mas nenhuma feature de emissão fiscal (XML, comunicação com SEFAZ, DANFE) está planejada neste roadmap — a infraestrutura foi deixada pronta para não exigir retrabalho, caso essa direção seja decidida no futuro.
+
 Licença
 
 Projeto pessoal, disponível para estudo e referência técnica.
