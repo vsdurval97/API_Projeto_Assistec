@@ -30,7 +30,7 @@ public class OrdemServicoPdfApiIntegrationTests(CustomWebApplicationFactory fact
             nome = $"Cliente PDF {Guid.NewGuid():N}",
             telefone = "79999998888"
         });
-        var cliente = await clienteResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var cliente = await clienteResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         var osResponse = await _client.PostAsJsonAsync("/api/OrdemServico", new
         {
