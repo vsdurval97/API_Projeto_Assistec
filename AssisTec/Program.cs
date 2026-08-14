@@ -44,6 +44,20 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Serviço de localização de CEPs
+// Typed client: o próprio HttpClientFactory gerencia o ciclo de vida do
+// HttpClient (evita esgotamento de sockets), e o DI resolve ILogger
+// automaticamente para o construtor de CepLocalizadorService.
+builder.Services.AddHttpClient<ICepLocalizadorService, CepLocalizadorService>(client =>
+{
+    client.BaseAddress = new Uri("https://viacep.com.br/ws/");
+
+    // Timeout curto deliberado: o cadastro de cliente não pode ficar
+    // refém de uma API externa lenta — se não responder rápido, o
+    // atendimento no balcão segue sem o preenchimento automático.
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
 var app = builder.Build();
 
 // Obrigatório desde que o QuestPDF adotou o modelo de licenciamento

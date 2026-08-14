@@ -60,7 +60,7 @@ public class ConcorrenciaOtimistaTests : IClassFixture<CustomWebApplicationFacto
 
         var clienteResponse = await clientA.PostAsJsonAsync("/api/Cliente",
             new { nome = $"Cliente Concorrência {Guid.NewGuid():N}", telefone = "79900000000" });
-        var cliente = await clienteResponse.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var cliente = await clienteResponse.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
 
         var osResponse = await clientA.PostAsJsonAsync("/api/OrdemServico", new
         {

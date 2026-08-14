@@ -51,7 +51,7 @@ public class OrdemServicoApiIntegrationTests : IClassFixture<CustomWebApplicatio
     {
         var nome = $"{nomeBase ?? "Cliente Teste"} {Guid.NewGuid():N}";
         var response = await _client.PostAsJsonAsync("/api/Cliente", new { nome, telefone = "79900000000" });
-        var cliente = await response.Content.ReadFromJsonAsync<ClienteResponseDto>();
+        var cliente = await response.Content.ReadFromJsonAsync<ClienteResponseDto>(OpcoesJson);
         return cliente!.Id;
     }
 
