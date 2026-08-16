@@ -171,6 +171,84 @@ body {
     background: transparent;
 }
 
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.metric-card {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.metric-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.metric-value {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.metric-value-success {
+    color: var(--text-success);
+}
+
+.modules-title {
+    font-size: 15px;
+    color: var(--text-primary);
+    margin-top: 32px;
+    margin-bottom: 12px;
+}
+
+.modules-grid {
+    display: flex;
+    gap: 16px;
+}
+
+.module-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    background: var(--surface-1);
+    min-width: 220px;
+}
+
+.module-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--bg-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.module-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.modules-nota {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-top: 12px;
+}
+
 /* Blazor error UI (já existia) */
 #blazor-error-ui {
     background: lightyellow;
