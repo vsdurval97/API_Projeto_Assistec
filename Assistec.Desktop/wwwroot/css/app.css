@@ -162,6 +162,15 @@ body {
     display: none;
 }
 
+.sidebar-item-desabilitado {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.sidebar-item-desabilitado:hover {
+    background: transparent;
+}
+
 /* Blazor error UI (já existia) */
 #blazor-error-ui {
     background: lightyellow;

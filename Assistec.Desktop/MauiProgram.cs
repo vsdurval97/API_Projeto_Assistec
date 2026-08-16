@@ -21,7 +21,7 @@ public static class MauiProgram
 
         builder.Services.AddScoped(sp => new HttpClient
         {
-            BaseAddress = new Uri("http://localhost:5170/swagger"),
+            BaseAddress = new Uri("http://localhost:5170/"),
             Timeout = TimeSpan.FromSeconds(10)
         });
 
@@ -36,7 +36,7 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        
+
 
         return builder.Build();
     }

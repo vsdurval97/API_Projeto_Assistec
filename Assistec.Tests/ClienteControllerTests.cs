@@ -2,7 +2,7 @@ using AssistenciaTecnica.Api.Controllers;
 using AssistenciaTecnica.Api.Data;
 using AssistenciaTecnica.Api.Dtos;
 using AssistenciaTecnica.Api.Models;
-using AssistenciaTecnica.Api.Services; 
+using AssistenciaTecnica.Api.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

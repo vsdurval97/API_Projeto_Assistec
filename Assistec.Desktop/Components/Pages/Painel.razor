@@ -28,18 +28,22 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        try
+        for (var tentativa = 0; tentativa < 10; tentativa++)
         {
-            var clientes = await Http.GetFromJsonAsync<List<ClienteResponseDto>>("api/Cliente", Json);
-            totalClientes = clientes?.Count ?? 0;
+            try
+            {
+                var clientes = await Http.GetFromJsonAsync<List<ClienteResponseDto>>("api/Cliente", Json);
+                totalClientes = clientes?.Count ?? 0;
+                erro = null;
+                carregando = false;
+                return;
+            }
+            catch (Exception ex)
+            {
+                erro = ex.Message;
+                await Task.Delay(700);
+            }
         }
-        catch (Exception ex)
-        {
-            erro = ex.Message;
-        }
-        finally
-        {
-            carregando = false;
-        }
+        carregando = false;
     }
 }
