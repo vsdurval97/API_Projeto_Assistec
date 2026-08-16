@@ -1,0 +1,32 @@
+<aside class="sidebar @(recolhida ? "sidebar-recolhida" : "")">
+    <button class="sidebar-toggle" @onclick="AlternarRecolhida" title="@(recolhida ? "Expandir" : "Recolher")">
+        @(recolhida ? "»" : "«")
+    </button>
+
+    <div class="sidebar-spacer"></div>
+
+    <nav class="sidebar-nav">
+        <a href="/emitente" class="sidebar-item">
+            <span class="sidebar-icon">🏢</span>
+            <span class="sidebar-label">Emitente</span>
+        </a>
+        <a href="/configuracoes" class="sidebar-item">
+            <span class="sidebar-icon">⚙️</span>
+            <span class="sidebar-label">Configurações</span>
+        </a>
+        <a href="/certificado" class="sidebar-item">
+            <span class="sidebar-icon">🔒</span>
+            <span class="sidebar-label">Certificado</span>
+        </a>
+        <div class="sidebar-item sidebar-item-muted">
+            <span class="sidebar-icon">⋯</span>
+            <span class="sidebar-label">Mais em breve</span>
+        </div>
+    </nav>
+</aside>
+
+@code {
+    private bool recolhida = false;
+
+    private void AlternarRecolhida() => recolhida = !recolhida;
+}

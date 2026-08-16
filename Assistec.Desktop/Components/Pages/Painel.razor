@@ -1,0 +1,45 @@
+@page "/"
+@inject HttpClient Http
+@inject System.Text.Json.JsonSerializerOptions Json
+@using AssistenciaTecnica.Api.Dtos
+
+<h1>Painel</h1>
+<p class="subtitulo">Resumo das ordens de serviço.</p>
+
+@if (carregando)
+{
+    <p>Conectando na API...</p>
+}
+else if (erro is not null)
+{
+    <p style="color: red;">Não foi possível conectar na API: @erro</p>
+    <p><em>Confirme se a API está rodando em http://localhost:5170 (dotnet run dentro de AssisTec/).</em></p>
+}
+else
+{
+    <p>Conectado com sucesso. Total de clientes cadastrados: <strong>@totalClientes</strong></p>
+    <p><em>Métricas de verdade e os cards de módulo entram na Parte 5.</em></p>
+}
+
+@code {
+    private bool carregando = true;
+    private string? erro;
+    private int totalClientes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var clientes = await Http.GetFromJsonAsync<List<ClienteResponseDto>>("api/Cliente", Json);
+            totalClientes = clientes?.Count ?? 0;
+        }
+        catch (Exception ex)
+        {
+            erro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+}
