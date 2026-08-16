@@ -1,0 +1,65 @@
+@page "/clientes"
+@inject HttpClient Http
+@inject System.Text.Json.JsonSerializerOptions Json
+@using AssistenciaTecnica.Api.Dtos
+
+<a href="/" class="link-voltar">← Voltar ao Painel</a>
+<h1>Clientes</h1>
+<p class="subtitulo">Cadastro de clientes.</p>
+
+@if (carregando)
+{
+    <p>Carregando...</p>
+}
+else if (erro is not null)
+{
+    <p style="color: red;">Não foi possível carregar os clientes: @erro</p>
+}
+else if (clientes.Count == 0)
+{
+    <p><em>Nenhum cliente cadastrado ainda.</em></p>
+}
+else
+{
+    <table class="tabela">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Documento</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in clientes)
+            {
+                <tr>
+                    <td>@cliente.Nome</td>
+                    <td>@cliente.Telefone</td>
+                    <td>@(cliente.Documento ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool carregando = true;
+    private string? erro;
+    private List<ClienteResponseDto> clientes = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            clientes = await Http.GetFromJsonAsync<List<ClienteResponseDto>>("api/Cliente", Json) ?? [];
+        }
+        catch (Exception ex)
+        {
+            erro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+}

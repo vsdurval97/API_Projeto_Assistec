@@ -249,6 +249,61 @@ body {
     margin-top: 12px;
 }
 
+.tabela {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+.tabela th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.tabela td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-primary);
+}
+
+.tabela tbody tr:hover {
+    background: var(--surface-2);
+}
+
+a.module-card {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.module-card:hover {
+    background: var(--surface-2);
+}
+
+.module-card-desabilitado {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.module-card-desabilitado .module-label {
+    color: var(--text-muted);
+}
+
+.link-voltar {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 12px;
+}
+
+.link-voltar:hover {
+    color: var(--text-accent);
+}
+
 /* Blazor error UI (já existia) */
 #blazor-error-ui {
     background: lightyellow;
