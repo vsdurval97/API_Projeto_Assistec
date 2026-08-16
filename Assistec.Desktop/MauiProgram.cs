@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Assistec.Desktop;
 
@@ -17,12 +19,24 @@ public static class MauiProgram
 
         builder.Services.AddMauiBlazorWebView();
 
+        builder.Services.AddScoped(sp => new HttpClient
+        {
+            BaseAddress = new Uri("http://localhost:5170/swagger"),
+            Timeout = TimeSpan.FromSeconds(10)
+        });
+
+        builder.Services.AddSingleton(new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        });
+
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
         builder.Logging.AddDebug();
 #endif
 
-        // Registro do HttpClient pra API local vem na Parte 2.
+        
 
         return builder.Build();
     }
