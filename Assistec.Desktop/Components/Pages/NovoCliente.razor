@@ -3,61 +3,258 @@
 @inject System.Text.Json.JsonSerializerOptions Json
 @inject NavigationManager Nav
 @using AssistenciaTecnica.Api.Dtos
+@using AssistenciaTecnica.Api.Models
 @using System.ComponentModel.DataAnnotations
 
 <a href="/clientes" class="link-voltar">← Voltar aos Clientes</a>
 <h1>Novo Cliente</h1>
-<p class="subtitulo">Cadastro rápido — só nome e telefone são obrigatórios.</p>
 
-<EditForm Model="modelo" OnValidSubmit="Salvar" class="formulario">
-    <DataAnnotationsValidator />
-
-    <div class="campo">
-        <label for="nome">Nome</label>
-        <InputText id="nome" @bind-Value="modelo.Nome" />
-        <ValidationMessage For="() => modelo.Nome" />
-    </div>
-
-    <div class="campo">
-        <label for="telefone">Telefone</label>
-        <InputText id="telefone" @bind-Value="modelo.Telefone" />
-        <ValidationMessage For="() => modelo.Telefone" />
-    </div>
-
-    @if (erro is not null)
-    {
-        <p style="color: red;">@erro</p>
-    }
-
-    <div class="acoes-formulario">
-        <button type="submit" class="botao-primario" disabled="@salvando">
-            @(salvando ? "Salvando..." : "Salvar")
+@if (modo is null)
+{
+    <p class="subtitulo">Como você quer cadastrar esse cliente?</p>
+    <div class="escolha-modo-grid">
+        <button type="button" class="escolha-modo-card" @onclick='() => modo = "rapido"'>
+            <strong>Cadastro rápido</strong>
+            <span>Nome, telefone e endereço opcional. Ideal pra balcão.</span>
+        </button>
+        <button type="button" class="escolha-modo-card" @onclick='() => modo = "completo"'>
+            <strong>Cadastro completo</strong>
+            <span>Inclui documento, dados fiscais e endereço completo.</span>
         </button>
     </div>
-</EditForm>
+}
+else if (modo == "rapido")
+{
+    <button type="button" class="link-voltar link-voltar-botao" @onclick='() => modo = null'>← Trocar tipo de cadastro</button>
+
+    <EditForm Model="modeloRapido" OnValidSubmit="SalvarRapido" class="formulario">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="nome-r">Nome</label>
+            <InputText id="nome-r" @bind-Value="modeloRapido.Nome" />
+            <ValidationMessage For="() => modeloRapido.Nome" />
+        </div>
+
+        <div class="campo">
+            <label for="telefone-r">Telefone</label>
+            <InputText id="telefone-r" @bind-Value="modeloRapido.Telefone" />
+            <ValidationMessage For="() => modeloRapido.Telefone" />
+        </div>
+
+        <label class="campo-checkbox">
+            <input type="checkbox" @bind="incluirEndereco" />
+            Incluir endereço (opcional)
+        </label>
+
+        @if (incluirEndereco)
+        {
+            <div class="campo">
+                <label for="cep-r">CEP</label>
+                <InputText id="cep-r" @bind-Value="modeloRapido.Cep" placeholder="00000-000" />
+            </div>
+            <div class="campo">
+                <label for="logradouro-r">Logradouro</label>
+                <InputText id="logradouro-r" @bind-Value="modeloRapido.Logradouro" />
+            </div>
+            <div class="campo">
+                <label for="numero-r">Número</label>
+                <InputText id="numero-r" @bind-Value="modeloRapido.Numero" />
+            </div>
+            <div class="campo">
+                <label for="complemento-r">Complemento</label>
+                <InputText id="complemento-r" @bind-Value="modeloRapido.Complemento" />
+            </div>
+            <div class="campo">
+                <label for="bairro-r">Bairro</label>
+                <InputText id="bairro-r" @bind-Value="modeloRapido.Bairro" />
+            </div>
+            <div class="campo">
+                <label for="municipio-r">Município</label>
+                <InputText id="municipio-r" @bind-Value="modeloRapido.Municipio" />
+            </div>
+            <div class="campo">
+                <label for="uf-r">UF</label>
+                <InputText id="uf-r" @bind-Value="modeloRapido.Uf" maxlength="2" />
+            </div>
+        }
+
+        @if (erro is not null)
+        {
+            <p style="color: red;">@erro</p>
+        }
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao-primario" disabled="@salvando">
+                @(salvando ? "Salvando..." : "Salvar")
+            </button>
+        </div>
+    </EditForm>
+}
+else if (modo == "completo")
+{
+    <button type="button" class="link-voltar link-voltar-botao" @onclick='() => modo = null'>← Trocar tipo de cadastro</button>
+
+    <EditForm Model="modeloCompleto" OnValidSubmit="SalvarCompleto" class="formulario">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="nome-c">Nome</label>
+            <InputText id="nome-c" @bind-Value="modeloCompleto.Nome" />
+            <ValidationMessage For="() => modeloCompleto.Nome" />
+        </div>
+
+        <div class="campo">
+            <label for="telefone-c">Telefone</label>
+            <InputText id="telefone-c" @bind-Value="modeloCompleto.Telefone" />
+            <ValidationMessage For="() => modeloCompleto.Telefone" />
+        </div>
+
+        <div class="campo">
+            <label for="documento-c">Documento (CPF/CNPJ)</label>
+            <InputText id="documento-c" @bind-Value="modeloCompleto.Documento" />
+            <ValidationMessage For="() => modeloCompleto.Documento" />
+        </div>
+
+        <div class="campo">
+            <label for="tipo-c">Tipo de pessoa</label>
+            <InputSelect id="tipo-c" @bind-Value="modeloCompleto.TipoPessoa">
+                <option value="">Selecione...</option>
+                <option value="@TipoPessoa.Fisica">Física</option>
+                <option value="@TipoPessoa.Juridica">Jurídica</option>
+            </InputSelect>
+            <ValidationMessage For="() => modeloCompleto.TipoPessoa" />
+        </div>
+
+        <div class="campo">
+            <label for="ie-indicador-c">Inscrição estadual</label>
+            <InputSelect id="ie-indicador-c" @bind-Value="modeloCompleto.IndicadorInscricaoEstadual">
+                <option value="">Selecione...</option>
+                <option value="@IndicadorInscricaoEstadual.ContribuinteIcms">Contribuinte ICMS</option>
+                <option value="@IndicadorInscricaoEstadual.ContribuinteIsento">Contribuinte isento</option>
+                <option value="@IndicadorInscricaoEstadual.NaoContribuinte">Não contribuinte</option>
+            </InputSelect>
+            <ValidationMessage For="() => modeloCompleto.IndicadorInscricaoEstadual" />
+        </div>
+
+        @if (modeloCompleto.IndicadorInscricaoEstadual == IndicadorInscricaoEstadual.ContribuinteIcms)
+        {
+            <div class="campo">
+                <label for="ie-numero-c">Número da inscrição estadual</label>
+                <InputText id="ie-numero-c" @bind-Value="modeloCompleto.InscricaoEstadual" />
+            </div>
+        }
+
+        <div class="campo">
+            <label for="email-c">E-mail</label>
+            <InputText id="email-c" @bind-Value="modeloCompleto.Email" />
+            <ValidationMessage For="() => modeloCompleto.Email" />
+        </div>
+
+        <div class="campo">
+            <label for="cep-c">CEP</label>
+            <InputText id="cep-c" @bind-Value="modeloCompleto.Cep" placeholder="00000-000" />
+            <ValidationMessage For="() => modeloCompleto.Cep" />
+        </div>
+        <div class="campo">
+            <label for="logradouro-c">Logradouro</label>
+            <InputText id="logradouro-c" @bind-Value="modeloCompleto.Logradouro" />
+            <ValidationMessage For="() => modeloCompleto.Logradouro" />
+        </div>
+        <div class="campo">
+            <label for="numero-c">Número</label>
+            <InputText id="numero-c" @bind-Value="modeloCompleto.Numero" />
+            <ValidationMessage For="() => modeloCompleto.Numero" />
+        </div>
+        <div class="campo">
+            <label for="complemento-c">Complemento (opcional)</label>
+            <InputText id="complemento-c" @bind-Value="modeloCompleto.Complemento" />
+        </div>
+        <div class="campo">
+            <label for="bairro-c">Bairro</label>
+            <InputText id="bairro-c" @bind-Value="modeloCompleto.Bairro" />
+            <ValidationMessage For="() => modeloCompleto.Bairro" />
+        </div>
+        <div class="campo">
+            <label for="municipio-c">Município</label>
+            <InputText id="municipio-c" @bind-Value="modeloCompleto.Municipio" />
+            <ValidationMessage For="() => modeloCompleto.Municipio" />
+        </div>
+        <div class="campo">
+            <label for="uf-c">UF</label>
+            <InputText id="uf-c" @bind-Value="modeloCompleto.Uf" maxlength="2" />
+            <ValidationMessage For="() => modeloCompleto.Uf" />
+        </div>
+
+        @if (erro is not null)
+        {
+            <p style="color: red;">@erro</p>
+        }
+
+        <div class="acoes-formulario">
+            <button type="submit" class="botao-primario" disabled="@salvando">
+                @(salvando ? "Salvando..." : "Salvar")
+            </button>
+        </div>
+    </EditForm>
+}
 
 @code {
-    private ModeloFormulario modelo = new();
+    private string? modo;
+    private bool incluirEndereco;
     private bool salvando;
     private string? erro;
 
-    protected override void OnInitialized()
+    private ModeloRapido modeloRapido = new();
+    private ModeloCompleto modeloCompleto = new();
+
+    private async Task SalvarRapido()
     {
-        // O EditForm exige um Model desde o início. As validações reais
-        // (Required, StringLength) só se aplicam no submit — usar o
-        // mesmo record CriarClienteDto exigiria valores default pros
-        // campos obrigatórios, então um modelo simples aqui é mais claro.
+        if (incluirEndereco && string.IsNullOrWhiteSpace(modeloRapido.Cep))
+        {
+            erro = "CEP é obrigatório se você optou por incluir o endereço.";
+            return;
+        }
+
+        var enderecoDto = incluirEndereco
+            ? new EnderecoDto(
+                modeloRapido.Cep!, modeloRapido.Logradouro, modeloRapido.Numero,
+                modeloRapido.Complemento, modeloRapido.Bairro, modeloRapido.Municipio, modeloRapido.Uf)
+            : null;
+
+        var dto = new CriarClienteDto(modeloRapido.Nome!, modeloRapido.Telefone!, Endereco: enderecoDto);
+        await Enviar(dto);
     }
 
-    private async Task Salvar()
+    private async Task SalvarCompleto()
+    {
+        if (modeloCompleto.IndicadorInscricaoEstadual == IndicadorInscricaoEstadual.ContribuinteIcms
+            && string.IsNullOrWhiteSpace(modeloCompleto.InscricaoEstadual))
+        {
+            erro = "Número da inscrição estadual é obrigatório para contribuinte de ICMS.";
+            return;
+        }
+
+        var enderecoDto = new EnderecoDto(
+            modeloCompleto.Cep!, modeloCompleto.Logradouro, modeloCompleto.Numero,
+            modeloCompleto.Complemento, modeloCompleto.Bairro, modeloCompleto.Municipio, modeloCompleto.Uf);
+
+        var dto = new CriarClienteDto(
+            modeloCompleto.Nome!, modeloCompleto.Telefone!,
+            modeloCompleto.Documento, modeloCompleto.TipoPessoa!.Value,
+            modeloCompleto.IndicadorInscricaoEstadual ?? AssistenciaTecnica.Api.Models.IndicadorInscricaoEstadual.NaoContribuinte,
+            modeloCompleto.InscricaoEstadual, modeloCompleto.Email, enderecoDto);
+
+        await Enviar(dto);
+    }
+
+    private async Task Enviar(CriarClienteDto dto)
     {
         salvando = true;
         erro = null;
         try
         {
-            var dto = new CriarClienteDto(modelo.Nome!, modelo.Telefone!);
             var resposta = await Http.PostAsJsonAsync("api/Cliente", dto, Json);
-
             if (resposta.IsSuccessStatusCode)
             {
                 Nav.NavigateTo("/clientes");
@@ -77,7 +274,7 @@
         }
     }
 
-    private class ModeloFormulario
+    private class ModeloRapido
     {
         [Required(ErrorMessage = "O nome do cliente é obrigatório.")]
         [StringLength(150, MinimumLength = 2, ErrorMessage = "O nome deve ter entre 2 e 150 caracteres.")]
@@ -86,5 +283,59 @@
         [Required(ErrorMessage = "O telefone do cliente é obrigatório.")]
         [StringLength(20, MinimumLength = 8, ErrorMessage = "O telefone deve ter entre 8 e 20 caracteres.")]
         public string? Telefone { get; set; }
+
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Numero { get; set; }
+        public string? Complemento { get; set; }
+        public string? Bairro { get; set; }
+        public string? Municipio { get; set; }
+        public string? Uf { get; set; }
+    }
+
+    private class ModeloCompleto
+    {
+        [Required(ErrorMessage = "O nome do cliente é obrigatório.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "O nome deve ter entre 2 e 150 caracteres.")]
+        public string? Nome { get; set; }
+
+        [Required(ErrorMessage = "O telefone do cliente é obrigatório.")]
+        [StringLength(20, MinimumLength = 8, ErrorMessage = "O telefone deve ter entre 8 e 20 caracteres.")]
+        public string? Telefone { get; set; }
+
+        [Required(ErrorMessage = "O documento é obrigatório no cadastro completo.")]
+        public string? Documento { get; set; }
+
+        [Required(ErrorMessage = "Selecione o tipo de pessoa.")]
+        public TipoPessoa? TipoPessoa { get; set; }
+
+        public IndicadorInscricaoEstadual? IndicadorInscricaoEstadual { get; set; }
+
+        public string? InscricaoEstadual { get; set; }
+
+        [Required(ErrorMessage = "O e-mail é obrigatório no cadastro completo.")]
+        [EmailAddress(ErrorMessage = "E-mail em formato inválido.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "O CEP é obrigatório no cadastro completo.")]
+        public string? Cep { get; set; }
+
+        [Required(ErrorMessage = "O logradouro é obrigatório no cadastro completo.")]
+        public string? Logradouro { get; set; }
+
+        [Required(ErrorMessage = "O número é obrigatório no cadastro completo.")]
+        public string? Numero { get; set; }
+
+        public string? Complemento { get; set; }
+
+        [Required(ErrorMessage = "O bairro é obrigatório no cadastro completo.")]
+        public string? Bairro { get; set; }
+
+        [Required(ErrorMessage = "O município é obrigatório no cadastro completo.")]
+        public string? Municipio { get; set; }
+
+        [Required(ErrorMessage = "A UF é obrigatória no cadastro completo.")]
+        [StringLength(2, MinimumLength = 2, ErrorMessage = "UF deve ter 2 letras.")]
+        public string? Uf { get; set; }
     }
 }

@@ -38,7 +38,7 @@ else
             @foreach (var cliente in clientes)
             {
                 <tr>
-                    <td>@cliente.Nome</td>
+                    <td><a href="/clientes/@cliente.Id" class="link-nome">@cliente.Nome</a></td>
                     <td>@cliente.Telefone</td>
                     <td>@(cliente.Documento ?? "—")</td>
                 </tr>

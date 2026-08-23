@@ -1,0 +1,285 @@
+@page "/clientes/{Id:int}"
+@inject HttpClient Http
+@inject System.Text.Json.JsonSerializerOptions Json
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@using AssistenciaTecnica.Api.Dtos
+@using AssistenciaTecnica.Api.Models
+@using System.ComponentModel.DataAnnotations
+
+<h1>Editar Cliente</h1>
+
+@if (carregando)
+{
+    <p>Carregando...</p>
+}
+else if (naoEncontrado)
+{
+    <p style="color: red;">Cliente não encontrado.</p>
+    <a href="/clientes" class="link-voltar">← Voltar aos Clientes</a>
+}
+else
+{
+    <p class="subtitulo">Complete os campos que quiser — nenhum campo além de Nome e Telefone é obrigatório aqui.</p>
+
+    <EditForm Model="modelo" OnValidSubmit="Salvar" class="formulario">
+        <DataAnnotationsValidator />
+
+        <div class="campo">
+            <label for="nome">Nome</label>
+            <InputText id="nome" @bind-Value="modelo.Nome" />
+            <ValidationMessage For="() => modelo.Nome" />
+        </div>
+
+        <div class="campo">
+            <label for="telefone">Telefone</label>
+            <InputText id="telefone" @bind-Value="modelo.Telefone" />
+            <ValidationMessage For="() => modelo.Telefone" />
+        </div>
+
+        <div class="campo">
+            <label for="documento">Documento (CPF/CNPJ)</label>
+            <InputText id="documento" @bind-Value="modelo.Documento" />
+        </div>
+
+        <div class="campo">
+            <label for="tipo">Tipo de pessoa</label>
+            <InputSelect id="tipo" @bind-Value="modelo.TipoPessoa">
+                <option value="@TipoPessoa.Fisica">Física</option>
+                <option value="@TipoPessoa.Juridica">Jurídica</option>
+            </InputSelect>
+        </div>
+
+        <div class="campo">
+            <label for="ie-indicador">Inscrição estadual</label>
+            <InputSelect id="ie-indicador" @bind-Value="modelo.IndicadorInscricaoEstadual">
+                <option value="@IndicadorInscricaoEstadual.ContribuinteIcms">Contribuinte ICMS</option>
+                <option value="@IndicadorInscricaoEstadual.ContribuinteIsento">Contribuinte isento</option>
+                <option value="@IndicadorInscricaoEstadual.NaoContribuinte">Não contribuinte</option>
+            </InputSelect>
+        </div>
+
+        @if (modelo.IndicadorInscricaoEstadual == IndicadorInscricaoEstadual.ContribuinteIcms)
+        {
+            <div class="campo">
+                <label for="ie-numero">Número da inscrição estadual</label>
+                <InputText id="ie-numero" @bind-Value="modelo.InscricaoEstadual" />
+            </div>
+        }
+
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <InputText id="email" @bind-Value="modelo.Email" />
+            <ValidationMessage For="() => modelo.Email" />
+        </div>
+
+        <div class="campo">
+            <label for="cep">CEP</label>
+            <InputText id="cep" @bind-Value="modelo.Cep" placeholder="00000-000" />
+        </div>
+        <div class="campo">
+            <label for="logradouro">Logradouro</label>
+            <InputText id="logradouro" @bind-Value="modelo.Logradouro" />
+        </div>
+        <div class="campo">
+            <label for="numero">Número</label>
+            <InputText id="numero" @bind-Value="modelo.Numero" />
+        </div>
+        <div class="campo">
+            <label for="complemento">Complemento</label>
+            <InputText id="complemento" @bind-Value="modelo.Complemento" />
+        </div>
+        <div class="campo">
+            <label for="bairro">Bairro</label>
+            <InputText id="bairro" @bind-Value="modelo.Bairro" />
+        </div>
+        <div class="campo">
+            <label for="municipio">Município</label>
+            <InputText id="municipio" @bind-Value="modelo.Municipio" />
+        </div>
+        <div class="campo">
+            <label for="uf">UF</label>
+            <InputText id="uf" @bind-Value="modelo.Uf" maxlength="2" />
+        </div>
+
+        @if (erro is not null)
+        {
+            <p style="color: red;">@erro</p>
+        }
+
+        <div class="acoes-formulario acoes-formulario-multiplas">
+            <button type="submit" class="botao-primario" disabled="@salvando">
+                @(salvando ? "Salvando..." : "Salvar")
+            </button>
+            <button type="button" class="botao-secundario" @onclick="DesfazerAlteracoes" disabled="@(!HouveAlteracoes)">
+                Desfazer alterações
+            </button>
+            <button type="button" class="botao-secundario" @onclick="Sair">
+                Sair
+            </button>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private bool carregando = true;
+    private bool naoEncontrado;
+    private bool salvando;
+    private string? erro;
+
+    private ClienteResponseDto? clienteOriginal;
+    private ModeloFormulario modelo = new();
+    private string estadoOriginalSerializado = "";
+
+    private bool HouveAlteracoes => Serializar(modelo) != estadoOriginalSerializado;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var resposta = await Http.GetAsync($"api/Cliente/{Id}");
+            if (resposta.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                naoEncontrado = true;
+                return;
+            }
+
+            clienteOriginal = await resposta.Content.ReadFromJsonAsync<ClienteResponseDto>(Json);
+            if (clienteOriginal is not null)
+            {
+                CarregarModeloDoOriginal(clienteOriginal);
+                estadoOriginalSerializado = Serializar(modelo);
+            }
+        }
+        catch (Exception ex)
+        {
+            erro = ex.Message;
+        }
+        finally
+        {
+            carregando = false;
+        }
+    }
+
+    private void CarregarModeloDoOriginal(ClienteResponseDto c)
+    {
+        modelo.Nome = c.Nome;
+        modelo.Telefone = c.Telefone;
+        modelo.Documento = c.Documento;
+        modelo.TipoPessoa = c.TipoPessoa;
+        modelo.IndicadorInscricaoEstadual = c.IndicadorInscricaoEstadual;
+        modelo.InscricaoEstadual = c.InscricaoEstadual;
+        modelo.Email = c.Email;
+        modelo.Cep = c.Endereco?.Cep;
+        modelo.Logradouro = c.Endereco?.Logradouro;
+        modelo.Numero = c.Endereco?.Numero;
+        modelo.Complemento = c.Endereco?.Complemento;
+        modelo.Bairro = c.Endereco?.Bairro;
+        modelo.Municipio = c.Endereco?.Municipio;
+        modelo.Uf = c.Endereco?.Uf;
+    }
+
+    private static string Serializar(ModeloFormulario m) => System.Text.Json.JsonSerializer.Serialize(m);
+
+    private void DesfazerAlteracoes()
+    {
+        if (clienteOriginal is null) return;
+        CarregarModeloDoOriginal(clienteOriginal);
+        erro = null;
+    }
+
+    private async Task Salvar()
+    {
+        // CEP obrigatório só se algum outro campo de endereço foi
+        // preenchido — mesma regra do cadastro rápido. Evita exigir
+        // endereço completo de quem só quer, por exemplo, adicionar
+        // um e-mail ao cadastro.
+        var enderecoTocado = !string.IsNullOrWhiteSpace(modelo.Logradouro)
+            || !string.IsNullOrWhiteSpace(modelo.Numero)
+            || !string.IsNullOrWhiteSpace(modelo.Bairro)
+            || !string.IsNullOrWhiteSpace(modelo.Municipio)
+            || !string.IsNullOrWhiteSpace(modelo.Uf);
+
+        if (enderecoTocado && string.IsNullOrWhiteSpace(modelo.Cep))
+        {
+            erro = "CEP é obrigatório se algum outro campo de endereço foi preenchido.";
+            return;
+        }
+
+        var confirmou = await JS.InvokeAsync<bool>("confirm", "Deseja salvar as alterações feitas neste cliente?");
+        if (!confirmou) return;
+
+        salvando = true;
+        erro = null;
+        try
+        {
+            var enderecoDto = string.IsNullOrWhiteSpace(modelo.Cep)
+                ? null
+                : new EnderecoDto(
+                    modelo.Cep!, modelo.Logradouro, modelo.Numero,
+                    modelo.Complemento, modelo.Bairro, modelo.Municipio, modelo.Uf);
+
+            var dto = new AtualizarClienteDto(
+                modelo.Nome!, modelo.Telefone!, modelo.Documento,
+                modelo.TipoPessoa, modelo.IndicadorInscricaoEstadual,
+                modelo.InscricaoEstadual, modelo.Email, enderecoDto);
+
+            var resposta = await Http.PutAsJsonAsync($"api/Cliente/{Id}", dto, Json);
+
+            if (resposta.IsSuccessStatusCode)
+            {
+                Nav.NavigateTo("/clientes");
+            }
+            else
+            {
+                erro = $"A API recusou a atualização (status {(int)resposta.StatusCode}).";
+            }
+        }
+        catch (Exception ex)
+        {
+            erro = ex.Message;
+        }
+        finally
+        {
+            salvando = false;
+        }
+    }
+
+    private async Task Sair()
+    {
+        var confirmou = await JS.InvokeAsync<bool>("confirm", "Deseja sair? As alterações não salvas serão perdidas.");
+        if (confirmou)
+        {
+            Nav.NavigateTo("/clientes");
+        }
+    }
+
+    private class ModeloFormulario
+    {
+        [Required(ErrorMessage = "O nome do cliente é obrigatório.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "O nome deve ter entre 2 e 150 caracteres.")]
+        public string? Nome { get; set; }
+
+        [Required(ErrorMessage = "O telefone do cliente é obrigatório.")]
+        [StringLength(20, MinimumLength = 8, ErrorMessage = "O telefone deve ter entre 8 e 20 caracteres.")]
+        public string? Telefone { get; set; }
+
+        public string? Documento { get; set; }
+        public TipoPessoa TipoPessoa { get; set; } = TipoPessoa.Fisica;
+        public IndicadorInscricaoEstadual IndicadorInscricaoEstadual { get; set; } = IndicadorInscricaoEstadual.NaoContribuinte;
+        public string? InscricaoEstadual { get; set; }
+
+        [EmailAddress(ErrorMessage = "E-mail em formato inválido.")]
+        public string? Email { get; set; }
+
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Numero { get; set; }
+        public string? Complemento { get; set; }
+        public string? Bairro { get; set; }
+        public string? Municipio { get; set; }
+        public string? Uf { get; set; }
+    }
+}
