@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Assistec.Desktop.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- Estilos XAML globais, se precisarmos. O visual em si vive no CSS do Blazor (Parte 3). -->
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

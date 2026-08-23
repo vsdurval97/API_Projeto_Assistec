@@ -1,0 +1,100 @@
+@page "/"
+@inject HttpClient Http
+@inject System.Text.Json.JsonSerializerOptions Json
+@using AssistenciaTecnica.Api.Dtos
+@using AssistenciaTecnica.Api.Models
+
+<h1>Painel</h1>
+<p class="subtitulo">Resumo das ordens de serviço.</p>
+
+@if (carregando)
+{
+    <p>Conectando na API...</p>
+}
+else if (erro is not null)
+{
+    <p style="color: red;">Não foi possível conectar na API: @erro</p>
+    <p><em>Confirme se a API está rodando em http://localhost:5170.</em></p>
+}
+else
+{
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <span class="metric-label">Total de OS</span>
+            <span class="metric-value">@totalOs</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">OS em análise</span>
+            <span class="metric-value">@osEmAnalise</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">OS prontas</span>
+            <span class="metric-value metric-value-success">@osProntas</span>
+        </div>
+        <div class="metric-card">
+            <span class="metric-label">Faturamento mensal</span>
+            <span class="metric-value">@faturamentoMensal.ToString("C", CulturaBr)</span>
+        </div>
+    </div>
+
+    <h2 class="modules-title">Módulos</h2>
+    <div class="modules-grid">
+        <div class="module-card module-card-desabilitado" title="Ainda não disponível">
+            <div class="module-icon">🛠️</div>
+            <span class="module-label">Ordem de Serviço</span>
+        </div>
+        <a href="/clientes" class="module-card">
+            <div class="module-icon">👤</div>
+            <span class="module-label">Clientes</span>
+        </a>
+    </div>
+    <p class="modules-nota"><em>Os cards de módulo ainda não navegam — telas de Clientes e Ordem de Serviço entram nas Partes 6 e 7.</em></p>
+}
+
+@code {
+    private static readonly System.Globalization.CultureInfo CulturaBr = new("pt-BR");
+
+    private bool carregando = true;
+    private string? erro;
+
+    private int totalOs;
+    private int osEmAnalise;
+    private int osProntas;
+    private decimal faturamentoMensal;
+
+    protected override async Task OnInitializedAsync()
+    {
+        for (var tentativa = 0; tentativa < 10; tentativa++)
+        {
+            try
+            {
+                var ordens = await Http.GetFromJsonAsync<List<OrdemServicoResponseDto>>("api/OrdemServico", Json);
+                CalcularMetricas(ordens ?? []);
+                erro = null;
+                carregando = false;
+                return;
+            }
+            catch (Exception ex)
+            {
+                erro = ex.Message;
+                await Task.Delay(700);
+            }
+        }
+        carregando = false;
+    }
+
+    private void CalcularMetricas(List<OrdemServicoResponseDto> ordens)
+    {
+        totalOs = ordens.Count;
+        osEmAnalise = ordens.Count(o => o.Status == StatusOrdemServico.EmAnalise);
+        osProntas = ordens.Count(o => o.Status == StatusOrdemServico.Pronto);
+
+        var agora = DateTime.UtcNow;
+        faturamentoMensal = ordens
+            .Where(o => o.Status == StatusOrdemServico.Entregue
+                && o.DataEntrega.HasValue
+                && o.DataEntrega.Value.Year == agora.Year
+                && o.DataEntrega.Value.Month == agora.Month)
+            .Sum(o => o.ValorTotal);
+    }
+}

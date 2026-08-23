@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Assistec.Desktop/Assistec.Desktop.csproj" />
   <Project Path="Assistec.Tests/Assistec.Tests.csproj" />
   <Project Path="Assistec/Assistec.csproj" />
 </Solution>
