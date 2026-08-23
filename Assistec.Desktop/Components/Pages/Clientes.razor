@@ -4,8 +4,13 @@
 @using AssistenciaTecnica.Api.Dtos
 
 <a href="/" class="link-voltar">← Voltar ao Painel</a>
-<h1>Clientes</h1>
-<p class="subtitulo">Cadastro de clientes.</p>
+<div class="cabecalho-lista">
+    <div>
+        <h1>Clientes</h1>
+        <p class="subtitulo">Cadastro de clientes.</p>
+    </div>
+    <a href="/clientes/novo" class="botao-primario">+ Novo Cliente</a>
+</div>
 
 @if (carregando)
 {

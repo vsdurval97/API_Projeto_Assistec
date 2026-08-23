@@ -304,6 +304,70 @@ a.module-card:hover {
     color: var(--text-accent);
 }
 
+.cabecalho-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.botao-primario {
+    display: inline-block;
+    background: var(--text-accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.botao-primario:hover {
+    opacity: 0.9;
+}
+
+.botao-primario:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.formulario {
+    max-width: 400px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.campo input {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.campo .validation-message {
+    color: #d92d20;
+    font-size: 12px;
+}
+
+.acoes-formulario {
+    margin-top: 8px;
+}
+
 /* Blazor error UI (já existia) */
 #blazor-error-ui {
     background: lightyellow;
