@@ -1,3 +1,6 @@
+/* ============================================================
+   TOKENS E RESET — globais, usados em todo o app
+   ============================================================ */
 :root {
     --surface-1: #ffffff;
     --surface-2: #f5f6f8;
@@ -26,14 +29,19 @@ body {
     color: var(--text-primary);
     background: var(--surface-1);
 }
+/* ============================== FIM: TOKENS E RESET ============================== */
 
+
+/* ============================================================
+   MainLayout + NavMenu (Parte 3: layout base / Parte 4: sidebar)
+   Estrutura da casca do app: topbar + sidebar + área de conteúdo.
+   ============================================================ */
 .app-shell {
     display: flex;
     flex-direction: column;
     height: 100vh;
 }
 
-/* Topbar */
 .topbar {
     height: var(--topbar-height);
     flex-shrink: 0;
@@ -71,7 +79,6 @@ body {
     font-weight: 600;
 }
 
-/* Corpo: sidebar + conteúdo */
 .app-body {
     flex: 1;
     display: flex;
@@ -85,13 +92,6 @@ body {
     background: var(--surface-1);
 }
 
-.subtitulo {
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: -8px;
-}
-
-/* Sidebar */
 .sidebar {
     width: var(--sidebar-width-expandida);
     flex-shrink: 0;
@@ -152,6 +152,16 @@ body {
     cursor: default;
 }
 
+/* Parte 4: Emitente/Configurações/Certificado desabilitados */
+.sidebar-item-desabilitado {
+    color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.sidebar-item-desabilitado:hover {
+    background: transparent;
+}
+
 .sidebar-icon {
     width: 20px;
     flex-shrink: 0;
@@ -161,14 +171,17 @@ body {
 .sidebar-recolhida .sidebar-label {
     display: none;
 }
+/* ============================== FIM: MainLayout + NavMenu ============================== */
 
-.sidebar-item-desabilitado {
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
 
-.sidebar-item-desabilitado:hover {
-    background: transparent;
+/* ============================================================
+   Painel (Parte 5) — /
+   Métricas de OS + cards de módulo.
+   ============================================================ */
+.subtitulo {
+    color: var(--text-secondary);
+    font-size: 13px;
+    margin-top: -8px;
 }
 
 .metrics-grid {
@@ -243,10 +256,147 @@ body {
     color: var(--text-primary);
 }
 
-.modules-nota {
+/* Card "Clientes" navega (é um <a>); "Ordem de Serviço" ainda não (Parte 7) */
+a.module-card {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a.module-card:hover {
+    background: var(--surface-2);
+}
+
+.module-card-desabilitado {
     color: var(--text-muted);
+    cursor: not-allowed;
+}
+
+.module-card-desabilitado .module-label {
+    color: var(--text-muted);
+}
+/* ============================== FIM: Painel ============================== */
+
+
+/* ============================================================
+   COMPARTILHADO ENTRE PÁGINAS
+   Usado por Clientes, NovoCliente, EditarCliente (e futuramente
+   pelas telas de Ordem de Serviço, Parte 7).
+   ============================================================ */
+.link-voltar {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    margin-bottom: 12px;
+}
+
+.link-voltar:hover {
+    color: var(--text-accent);
+}
+
+.botao-primario {
+    display: inline-block;
+    background: var(--text-accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.botao-primario:hover {
+    opacity: 0.9;
+}
+
+.botao-primario:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.botao-secundario {
+    background: var(--surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.botao-secundario:hover {
+    background: var(--border);
+}
+
+.botao-secundario:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Estrutura de formulário — usada por NovoCliente e EditarCliente */
+.formulario {
+    max-width: 400px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.campo label {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.campo input,
+.campo select {
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.campo .validation-message {
+    color: #d92d20;
     font-size: 12px;
-    margin-top: 12px;
+}
+
+.campo-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.acoes-formulario {
+    margin-top: 8px;
+}
+
+.acoes-formulario-multiplas {
+    display: flex;
+    gap: 8px;
+}
+/* ============================== FIM: COMPARTILHADO ============================== */
+
+
+/* ============================================================
+   Clientes (Parte 6, Passo 1) — /clientes
+   Listagem em tabela.
+   ============================================================ */
+.cabecalho-lista {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
 }
 
 .tabela {
@@ -274,100 +424,6 @@ body {
     background: var(--surface-2);
 }
 
-a.module-card {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-a.module-card:hover {
-    background: var(--surface-2);
-}
-
-.module-card-desabilitado {
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
-
-.module-card-desabilitado .module-label {
-    color: var(--text-muted);
-}
-
-.link-voltar {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    margin-bottom: 12px;
-}
-
-.link-voltar:hover {
-    color: var(--text-accent);
-}
-
-.cabecalho-lista {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
-}
-
-.botao-primario {
-    display: inline-block;
-    background: var(--text-accent);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-}
-
-.botao-primario:hover {
-    opacity: 0.9;
-}
-
-.botao-primario:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.formulario {
-    max-width: 400px;
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.campo {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.campo label {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.campo input {
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.campo .validation-message {
-    color: #d92d20;
-    font-size: 12px;
-}
-
-.acoes-formulario {
-    margin-top: 8px;
-}
-
 .link-nome {
     color: var(--text-primary);
     text-decoration: none;
@@ -378,32 +434,13 @@ a.module-card:hover {
     color: var(--text-accent);
     text-decoration: underline;
 }
+/* ============================== FIM: Clientes (listagem) ============================== */
 
-.acoes-formulario-multiplas {
-    display: flex;
-    gap: 8px;
-}
 
-.botao-secundario {
-    background: var(--surface-2);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.botao-secundario:hover {
-    background: var(--border);
-}
-
-.botao-secundario:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
+/* ============================================================
+   NovoCliente (Parte 6, Passos 2 e 4) — /clientes/novo
+   Tela de escolha "rápido vs completo".
+   ============================================================ */
 .escolha-modo-grid {
     display: flex;
     gap: 16px;
@@ -445,16 +482,22 @@ a.module-card:hover {
     cursor: pointer;
     font-family: inherit;
 }
+/* ============================== FIM: NovoCliente ============================== */
 
-.campo-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-primary);
-}
 
-/* Blazor error UI (já existia) */
+/* ============================================================
+   EditarCliente (Parte 6, Passo 3) — /clientes/{id}
+   Hoje não tem CSS exclusivo dela — usa só os blocos
+   COMPARTILHADO (.formulario, .campo, .acoes-formulario-multiplas,
+   .botao-primario, .botao-secundario) definidos acima.
+   Esta seção existe só como marcador, caso ganhe estilo próprio depois.
+   ============================================================ */
+/* ============================== FIM: EditarCliente ============================== */
+
+
+/* ============================================================
+   Blazor error UI (Parte 1 — infraestrutura do template)
+   ============================================================ */
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
@@ -473,3 +516,4 @@ a.module-card:hover {
     right: 0.75rem;
     top: 0.5rem;
 }
+/* ============================== FIM: Blazor error UI ============================== */

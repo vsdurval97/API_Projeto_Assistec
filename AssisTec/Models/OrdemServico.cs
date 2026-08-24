@@ -32,7 +32,7 @@ public class OrdemServico
     public StatusOrdemServico Status { get; private set; } = StatusOrdemServico.Recebido;
     public decimal ValorMaoDeObra { get; set; }
     public decimal ValorPecas { get; set; }
-
+    public ICollection<Pagamento> Pagamentos { get; set; } = new List<Pagamento>();
     public decimal ValorTotal => ValorMaoDeObra + ValorPecas;
     public DateTime? DataConclusao { get; private set; }
     public DateTime? DataEntrega { get; private set; }
@@ -98,5 +98,26 @@ public class OrdemServico
         }
 
         Status = novoStatus;
+    }
+
+    public bool TentarRegistrarPagamentos(IReadOnlyCollection<Pagamento> pagamentos, out string? erro)
+    {
+        if (pagamentos.Count == 0)
+        {
+            erro = "É necessário informar ao menos uma forma de pagamento para marcar a Ordem de Serviço como Entregue.";
+            return false;
+        }
+
+        var somaPagamentos = pagamentos.Sum(p => p.Valor);
+
+        if (somaPagamentos != ValorTotal)
+        {
+            erro = $"A soma dos pagamentos ({somaPagamentos:C}) não confere com o valor total da Ordem de Serviço ({ValorTotal:C}).";
+            return false;
+        }
+
+        Pagamentos = pagamentos.ToList();
+        erro = null;
+        return true;
     }
 }

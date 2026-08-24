@@ -7,5 +7,6 @@ namespace AssistenciaTecnica.Api.Dtos;
 public record AtualizarStatusDto(
     [property: JsonRequired]
     [Required, EnumDataType(typeof(StatusOrdemServico))]
-    StatusOrdemServico Status
+    StatusOrdemServico Status,
+    List<PagamentoDto>? Pagamentos = null
 );

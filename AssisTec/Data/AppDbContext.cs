@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
 
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<OrdemServico> OrdensServico => Set<OrdemServico>();
+    public DbSet<Pagamento> Pagamentos => Set<Pagamento>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,7 +91,25 @@ public class AppDbContext : DbContext
                   .WithMany(c => c.OrdensServico)
                   .HasForeignKey(o => o.ClienteId)
                   .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(o => o.Pagamentos)
+      .WithOne(p => p.OrdemServico)
+      .HasForeignKey(p => p.OrdemServicoId)
+      .OnDelete(DeleteBehavior.Cascade);
         });
+
+        modelBuilder.Entity<Pagamento>(entity =>
+{
+    entity.HasKey(p => p.Id);
+    entity.Property(p => p.Valor).HasColumnType("decimal(10,2)");
+    entity.Property(p => p.Descricao).HasMaxLength(200);
+
+    // Mesmo padrão dos demais enums do projeto: grava o nome legível, não
+    // o índice numérico. O código SEFAZ (tPag) não é o mesmo que este
+    // índice; é obtido em tempo de execução via (int)Forma quando a
+    // camada de emissão fiscal existir (ver comentário no enum).
+    entity.Property(p => p.Forma).HasConversion<string>().HasMaxLength(40);
+});
 
         base.OnModelCreating(modelBuilder);
     }

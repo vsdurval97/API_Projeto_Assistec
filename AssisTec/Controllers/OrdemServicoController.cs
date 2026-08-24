@@ -147,11 +147,12 @@ public class OrdemServicoController : ControllerBase
         // AsNoTracking: dado só será lido e devolvido, não há necessidade de
         // o EF Core pagar o custo de rastrear mudanças que nunca vão ocorrer.
         var ordens = await _context.OrdensServico
-            .Include(o => o.Cliente)
-            .AsNoTracking()
-            .OrderByDescending(o => o.DataAbertura)
-            .Select(o => OrdemServicoResponseDto.FromEntity(o))
-            .ToListAsync();
+    .Include(o => o.Cliente)
+    .Include(o => o.Pagamentos)
+    .AsNoTracking()
+    .OrderByDescending(o => o.DataAbertura)
+    .Select(o => OrdemServicoResponseDto.FromEntity(o))
+    .ToListAsync();
 
         return Ok(ordens);
     }
@@ -163,9 +164,10 @@ public class OrdemServicoController : ControllerBase
     public async Task<ActionResult<OrdemServicoResponseDto>> BuscarPorId(int id)
     {
         var ordem = await _context.OrdensServico
-            .Include(o => o.Cliente)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(o => o.Id == id);
+    .Include(o => o.Cliente)
+    .Include(o => o.Pagamentos)
+    .AsNoTracking()
+    .FirstOrDefaultAsync(o => o.Id == id);
 
         if (ordem is null)
         {
@@ -185,6 +187,7 @@ public class OrdemServicoController : ControllerBase
     {
         var ordem = await _context.OrdensServico
             .Include(o => o.Cliente)
+            .Include(o => o.Pagamentos)
             .FirstOrDefaultAsync(o => o.Id == id);
 
         if (ordem is null)
@@ -215,6 +218,25 @@ public class OrdemServicoController : ControllerBase
                 mensagem = $"Transição de status inválida: não é possível ir de '{ordem.Status}' para '{dto.Status}'.",
                 statusPermitidos = transicoesValidas
             });
+        }
+
+        // Pagamento só é exigido (e só é aceito) no exato momento em que a
+        // OS entra em Entregue — nas demais transições, dto.Pagamentos é
+        // ignorado mesmo que venha preenchido na requisição.
+        if (dto.Status == StatusOrdemServico.Entregue)
+        {
+            var pagamentos = (dto.Pagamentos ?? [])
+        .Select(p => new Pagamento { Forma = p.Forma, Valor = p.Valor, Descricao = p.Descricao })
+        .ToList();
+
+            // A regra de "a soma tem que bater com o ValorTotal" vive na
+            // entidade (TentarRegistrarPagamentos), não aqui — o controller
+            // só decide o status HTTP para o resultado, mesmo padrão já
+            // usado para a máquina de estados logo acima.
+            if (!ordem.TentarRegistrarPagamentos(pagamentos, out var erroPagamento))
+            {
+                return BadRequest(new { mensagem = erroPagamento });
+            }
         }
 
         ordem.AtualizarStatus(dto.Status);
