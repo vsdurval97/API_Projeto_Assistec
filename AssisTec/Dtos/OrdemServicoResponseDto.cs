@@ -15,7 +15,8 @@ public record OrdemServicoResponseDto(
     DateTime? DataConclusao,
     DateTime? DataEntrega,
     int ClienteId,
-    string? ClienteNome
+    string? ClienteNome,
+    IReadOnlyCollection<PagamentoResponseDto> Pagamentos
 )
 {
     public decimal ValorTotal => ValorMaoDeObra + ValorPecas;
@@ -33,6 +34,7 @@ public record OrdemServicoResponseDto(
         o.DataConclusao,
         o.DataEntrega,
         o.ClienteId,
-        o.Cliente?.Nome
+        o.Cliente?.Nome,
+        o.Pagamentos.Select(PagamentoResponseDto.FromEntity).ToList()
     );
 }

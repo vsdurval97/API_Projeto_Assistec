@@ -55,6 +55,34 @@ public class OrdemServicoApiIntegrationTests : IClassFixture<CustomWebApplicatio
         return cliente!.Id;
     }
 
+    // Cria uma OS via HTTP e avança até "Pronto" — ponto de partida comum
+    // para os testes de pagamento, que só se aplicam na transição para
+    // Entregue. Retorna também os valores usados, para os testes montarem
+    // o payload de pagamentos sem precisar reler a OS.
+    private async Task<(int Id, decimal ValorTotal)> CriarOrdemProntaViaHttpAsync(
+        decimal valorMaoDeObra, decimal valorPecas, string? nomeClienteBase = null)
+    {
+        var clienteId = await CriarClienteAsync(nomeClienteBase ?? "Cliente Pagamento");
+
+        var criarResponse = await _client.PostAsJsonAsync("/api/OrdemServico", new
+        {
+            tipoEquipamento = "Computador",
+            marca = "Marca",
+            modelo = "Modelo",
+            defeitoRelatado = "Defeito para teste de pagamento via HTTP",
+            valorMaoDeObra,
+            valorPecas,
+            clienteId
+        });
+        var ordem = await criarResponse.Content.ReadFromJsonAsync<OrdemServicoResponseDto>(OpcoesJson);
+        var id = ordem!.Id;
+
+        await _client.PutAsJsonAsync($"/api/OrdemServico/{id}/status", new { status = "EmAnalise" });
+        await _client.PutAsJsonAsync($"/api/OrdemServico/{id}/status", new { status = "Pronto" });
+
+        return (id, valorMaoDeObra + valorPecas);
+    }
+
     [Fact(DisplayName = "POST /api/OrdemServico — TipoEquipamento ausente do JSON deve retornar 400 pelo pipeline real (JsonRequired)")]
     public async Task Post_TipoEquipamentoAusenteDoPayload_DeveRetornar400ViaPipelineReal()
     {
@@ -173,7 +201,18 @@ public class OrdemServicoApiIntegrationTests : IClassFixture<CustomWebApplicatio
             esperado: "termina com 'Z' (UTC)", obtido: dataConclusaoTexto);
         Assert.EndsWith("Z", dataConclusaoTexto);
 
-        var paraEntregue = await _client.PutAsJsonAsync($"/api/OrdemServico/{id}/status", new { status = "Entregue" });
+        var paraEntregue = await _client.PutAsJsonAsync($"/api/OrdemServico/{id}/status", new
+        {
+            status = "Entregue",
+            pagamentos = new[] { new { forma = "Dinheiro", valor = 100m } } // ValorMaoDeObra(80) + ValorPecas(20)
+        });
+
+        // Captura o corpo antes do Assert: se cair em 400, precisamos saber
+        // qual "mensagem" o controller devolveu (faltou pagamento? soma
+        // divergente? outra coisa?) para diagnosticar sem adivinhar.
+        var corpoParaEntregue = await paraEntregue.Content.ReadAsStringAsync();
+        Log("Corpo da resposta ao tentar marcar como Entregue",
+            esperado: "200 OK", obtido: $"{paraEntregue.StatusCode} — {corpoParaEntregue}");
         Assert.Equal(HttpStatusCode.OK, paraEntregue.StatusCode);
 
         var bloqueado = await _client.PutAsJsonAsync($"/api/OrdemServico/{id}/status", new { status = "EmAnalise" });

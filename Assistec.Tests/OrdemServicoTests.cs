@@ -1,4 +1,3 @@
-// AssisTec.Tests/OrdemServicoTests.cs
 using AssistenciaTecnica.Api.Models;
 using Xunit;
 using Xunit.Abstractions;
@@ -86,4 +85,99 @@ public class OrdemServicoTests : TesteBase
             esperado: false, obtido: transicoesDeEntregue.Contains(statusQualquer));
         Assert.DoesNotContain(statusQualquer, transicoesDeEntregue);
     }
+
+    // -------------------------------------------------------------------
+    // TentarRegistrarPagamentos — isolado do controller e do HTTP, mesmo
+    // espírito de TryObterTransicoesPermitidas: a regra de negócio ("a
+    // soma dos pagamentos tem que bater com o ValorTotal") mora na
+    // entidade, então é testada aqui sem precisar de AppDbContext.
+    // -------------------------------------------------------------------
+
+    private static OrdemServico CriarOrdemParaTeste(decimal valorMaoDeObra, decimal valorPecas) => new()
+    {
+        Marca = "Marca",
+        Modelo = "Modelo",
+        DefeitoRelatado = "Defeito qualquer, só para satisfazer o required",
+        ValorMaoDeObra = valorMaoDeObra,
+        ValorPecas = valorPecas
+    };
+
+    [Fact(DisplayName = "TentarRegistrarPagamentos — Um único pagamento cobrindo o valor total deve ser aceito")]
+    public void TentarRegistrarPagamentos_UmPagamentoCobrindoOTotal_DeveRetornarTrueERegistrar()
+    {
+        var ordem = CriarOrdemParaTeste(valorMaoDeObra: 80m, valorPecas: 20m);
+        var pagamentos = new List<Pagamento> { new() { Forma = FormaPgto.Dinheiro, Valor = 100m } };
+
+        var aceito = ordem.TentarRegistrarPagamentos(pagamentos, out var erro);
+
+        Log("TentarRegistrarPagamentos com pagamento único = ValorTotal (100)", esperado: true, obtido: aceito);
+        Assert.True(aceito);
+
+        Log("Mensagem de erro quando o registro é aceito", esperado: "null", obtido: erro ?? "null");
+        Assert.Null(erro);
+
+        Log("Quantidade de pagamentos registrados na OS", esperado: 1, obtido: ordem.Pagamentos.Count);
+        Assert.Single(ordem.Pagamentos);
+    }
+
+    [Fact(DisplayName = "TentarRegistrarPagamentos — Múltiplas formas somando o valor total devem ser aceitas")]
+    public void TentarRegistrarPagamentos_MultiplasFormasSomandoOTotal_DeveRetornarTrueERegistrarTodos()
+    {
+        var ordem = CriarOrdemParaTeste(valorMaoDeObra: 100m, valorPecas: 0m);
+        var pagamentos = new List<Pagamento>
+    {
+        new() { Forma = FormaPgto.PagamentoInstantaneoPix, Valor = 60m },
+        new() { Forma = FormaPgto.Dinheiro, Valor = 40m }
+    };
+
+        var aceito = ordem.TentarRegistrarPagamentos(pagamentos, out var erro);
+
+        Log("TentarRegistrarPagamentos com Pix(60) + Dinheiro(40) = ValorTotal (100)",
+            esperado: true, obtido: aceito);
+        Assert.True(aceito);
+        Assert.Null(erro);
+
+        Log("Quantidade de pagamentos registrados na OS", esperado: 2, obtido: ordem.Pagamentos.Count);
+        Assert.Equal(2, ordem.Pagamentos.Count);
+    }
+
+    [Fact(DisplayName = "TentarRegistrarPagamentos — Lista vazia deve ser rejeitada, sem alterar Pagamentos")]
+    public void TentarRegistrarPagamentos_ListaVazia_DeveRetornarFalseSemAlterarPagamentos()
+    {
+        var ordem = CriarOrdemParaTeste(valorMaoDeObra: 50m, valorPecas: 0m);
+
+        var aceito = ordem.TentarRegistrarPagamentos(Array.Empty<Pagamento>(), out var erro);
+
+        Log("TentarRegistrarPagamentos com lista vazia", esperado: false, obtido: aceito);
+        Assert.False(aceito);
+
+        Log("Mensagem de erro para lista vazia",
+            esperado: "não nula/vazia", obtido: string.IsNullOrWhiteSpace(erro) ? "nula/vazia" : "preenchida");
+        Assert.False(string.IsNullOrWhiteSpace(erro));
+
+        Log("Pagamentos da OS após tentativa rejeitada", esperado: 0, obtido: ordem.Pagamentos.Count);
+        Assert.Empty(ordem.Pagamentos);
+    }
+
+    [Theory(DisplayName = "TentarRegistrarPagamentos — Soma divergente do ValorTotal (para menos ou para mais) deve ser rejeitada")]
+    [InlineData(90.0)]  // menor que o total (100)
+    [InlineData(150.0)] // maior que o total (100)
+    public void TentarRegistrarPagamentos_SomaDivergenteDoTotal_DeveRetornarFalseSemAlterarPagamentos(double valorPago)
+    {
+        var ordem = CriarOrdemParaTeste(valorMaoDeObra: 70m, valorPecas: 30m); // ValorTotal = 100
+        var pagamentos = new List<Pagamento> { new() { Forma = FormaPgto.CartaoCredito, Valor = (decimal)valorPago } };
+
+        var aceito = ordem.TentarRegistrarPagamentos(pagamentos, out var erro);
+
+        Log($"TentarRegistrarPagamentos com soma={valorPago} e ValorTotal=100", esperado: false, obtido: aceito);
+        Assert.False(aceito);
+
+        Log("Mensagem de erro para soma divergente",
+            esperado: "não nula/vazia", obtido: string.IsNullOrWhiteSpace(erro) ? "nula/vazia" : "preenchida");
+        Assert.False(string.IsNullOrWhiteSpace(erro));
+
+        Log("Pagamentos da OS após tentativa rejeitada", esperado: 0, obtido: ordem.Pagamentos.Count);
+        Assert.Empty(ordem.Pagamentos);
+    }
+
 }
