@@ -1,32 +1,64 @@
-<aside class="sidebar @(recolhida ? "sidebar-recolhida" : "")">
-    <button class="sidebar-toggle" @onclick="AlternarRecolhida" title="@(recolhida ? "Expandir" : "Recolher")">
-        @(recolhida ? "»" : "«")
-    </button>
+<div style="display:flex; flex-direction:column; height:100%; padding:16px 8px;">
 
-    <div class="sidebar-spacer"></div>
+      <MudNavMenu>
+        <MudNavLink Href="/" Match="NavLinkMatch.All"
+                    Icon="@Icons.Material.Filled.Dashboard">                    
+            Dashboard
+        </MudNavLink>
 
-    <nav class="sidebar-nav">
-        <div class="sidebar-item sidebar-item-desabilitado" title="Ainda não disponível">
-            <span class="sidebar-icon">🏢</span>
-            <span class="sidebar-label">Emitente</span>
-        </div>
-        <div class="sidebar-item sidebar-item-desabilitado" title="Ainda não disponível">
-            <span class="sidebar-icon">⚙️</span>
-            <span class="sidebar-label">Configurações</span>
-        </div>
-        <div class="sidebar-item sidebar-item-desabilitado" title="Ainda não disponível">
-            <span class="sidebar-icon">🔒</span>
-            <span class="sidebar-label">Certificado</span>
-        </div>
-        <div class="sidebar-item sidebar-item-muted">
-            <span class="sidebar-icon">⋯</span>
-            <span class="sidebar-label">Mais em breve</span>
-        </div>
-    </nav>
-</aside>
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.ViewModule">
+            Emitente
+        </MudNavLink>
 
-@code {
-    private bool recolhida = false;
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.VerifiedUser">
+            Certificado
+        </MudNavLink>
 
-    private void AlternarRecolhida() => recolhida = !recolhida;
-}
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.People">
+            Parceiros
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.Inventory2">
+            Estoque
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.Build">
+            Ordem de Serviço
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.ShoppingCart">
+            Orçamento
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.PointOfSale">
+            Pedido de Venda
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.Description">
+            Faturamento
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.AttachMoney">
+            Financeiro
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.BarChart">
+            Relatórios
+        </MudNavLink>
+
+        <MudNavLink Href="#" Disabled="true"
+                    Icon="@Icons.Material.Filled.Settings">
+            Configurações
+        </MudNavLink>
+    </MudNavMenu>
+</div>

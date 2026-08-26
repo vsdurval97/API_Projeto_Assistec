@@ -31,6 +31,8 @@
   <ItemGroup>
   <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
   <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.20" />
+  <!-- Ajuste a versão se a instalada localmente for diferente -->
+  <PackageReference Include="MudBlazor" Version="9.9.0" />
 </ItemGroup>
 
   <ItemGroup>

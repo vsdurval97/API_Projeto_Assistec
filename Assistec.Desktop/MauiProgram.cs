@@ -1,7 +1,13 @@
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using MudBlazor.Services;
+using Microsoft.Maui.LifecycleEvents;
+#if WINDOWS
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
+using WinRT.Interop;
+#endif
 namespace Assistec.Desktop;
 
 public static class MauiProgram
@@ -18,6 +24,19 @@ public static class MauiProgram
             });
 
         builder.Services.AddMauiBlazorWebView();
+        builder.Services.AddMudServices();
+        builder.ConfigureLifecycleEvents(events =>
+{
+#if WINDOWS
+    events.AddWindows(windows => windows.OnWindowCreated(window =>
+    {
+        var handle = WindowNative.GetWindowHandle(window);
+        var id = Win32Interop.GetWindowIdFromWindow(handle);
+        var appWindow = AppWindow.GetFromWindowId(id);
+        appWindow.Resize(new Windows.Graphics.SizeInt32(1920, 1080));
+    }));
+#endif
+});
 
         builder.Services.AddScoped(sp => new HttpClient
         {

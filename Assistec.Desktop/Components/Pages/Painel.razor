@@ -1,100 +1,168 @@
 @page "/"
-@inject HttpClient Http
-@inject System.Text.Json.JsonSerializerOptions Json
-@using AssistenciaTecnica.Api.Dtos
-@using AssistenciaTecnica.Api.Models
+@using System.Globalization
 
-<h1>Painel</h1>
-<p class="subtitulo">Resumo das ordens de serviço.</p>
+<div class="dashboard-grid">
 
-@if (carregando)
-{
-    <p>Conectando na API...</p>
-}
-else if (erro is not null)
-{
-    <p style="color: red;">Não foi possível conectar na API: @erro</p>
-    <p><em>Confirme se a API está rodando em http://localhost:5170.</em></p>
-}
-else
-{
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <span class="metric-label">Total de OS</span>
-            <span class="metric-value">@totalOs</span>
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color:#2C6FB0;" />
         </div>
-        <div class="metric-card">
-            <span class="metric-label">OS em análise</span>
-            <span class="metric-value">@osEmAnalise</span>
-        </div>
-        <div class="metric-card">
-            <span class="metric-label">OS prontas</span>
-            <span class="metric-value metric-value-success">@osProntas</span>
-        </div>
-        <div class="metric-card">
-            <span class="metric-label">Faturamento mensal</span>
-            <span class="metric-value">@faturamentoMensal.ToString("C", CulturaBr)</span>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total de OS</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600;">0</MudText>
         </div>
     </div>
 
-    <h2 class="modules-title">Módulos</h2>
-    <div class="modules-grid">
-        <div class="module-card module-card-desabilitado" title="Ainda não disponível">
-            <div class="module-icon">🛠️</div>
-            <span class="module-label">Ordem de Serviço</span>
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#FCEFDB;">
+            <MudIcon Icon="@Icons.Material.Filled.HourglassEmpty" Style="color:#D9A441;" />
         </div>
-        <a href="/clientes" class="module-card">
-            <div class="module-icon">👤</div>
-            <span class="module-label">Clientes</span>
-        </a>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">OS em análise</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600;">0</MudText>
+        </div>
     </div>
-    <p class="modules-nota"><em>Os cards de módulo ainda não navegam — telas de Clientes e Ordem de Serviço entram nas Partes 6 e 7.</em></p>
-}
+
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#2E7D32;" />
+        </div>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">OS prontas</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600; color:#2E7D32;">0</MudText>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2C6FB0;" />
+        </div>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Faturamento mensal</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600;">R$ 0,00</MudText>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2C6FB0;" />
+        </div>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Faturamento mensal</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600;">R$ 0,00</MudText>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-icon-circle" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2C6FB0;" />
+        </div>
+        <div class="kpi-text">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Faturamento mensal</MudText>
+            <MudText Typo="Typo.h5" Style="font-weight:600;">R$ 0,00</MudText>
+        </div>
+    </div>
+
+    <!-- faturamento 7 dias -->
+
+    <div class="chart-col">
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; height:100%;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <MudText Typo="Typo.h6" Style="font-weight:600;">
+                    Faturamento dos Últimos 7 Dias
+                </MudText>
+                <MudLink Href="#" Underline="Underline.None" Style="font-size:0.875rem;">
+                    Ver Relatório Detalhado
+                </MudLink>
+            </div>
+
+            <div class="faturamento-chart">
+                @foreach (var item in _faturamento)
+                {
+                    <div class="bar-col">
+                        <span class="bar-value">@item.ValorFormatado</span>
+                        <div class="bar" style="height:@(item.AlturaPercentual)%;"></div>
+                        <span class="bar-day">@item.Dia</span>
+                    </div>
+                }
+            </div>
+        </MudPaper>
+    </div>
+
+    <!-- Últimas Vendas -->
+        <div class="vendas-col">
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; height:100%; width:100%; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <MudText Typo="Typo.h6" Style="font-weight:600;">
+                    Últimas Vendas
+                </MudText>
+                <MudLink Href="#" Underline="Underline.None" Style="font-size:0.875rem;">
+                    Ver Todas
+                </MudLink>
+            </div>
+
+            <div class="vendas-list">
+    @foreach (var venda in _ultimasVendas)
+    {
+        <div class="venda-item">
+    <div class="venda-info">
+        <MudText Typo="Typo.body2" Style="font-weight:600;">@venda.Cliente</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Venda #@venda.Numero</MudText>
+    </div>
+    <div class="venda-valor">
+        <MudText Typo="Typo.body2" Style="font-weight:600;">@venda.ValorFormatado</MudText>
+    </div>
+    <div class="venda-status-col">
+        <span class="venda-status @venda.StatusClasse">@venda.Status</span>
+    </div>
+</div>
+    }
+</div>
+        </MudPaper>
+    </div>
+
+</div>
 
 @code {
-    private static readonly System.Globalization.CultureInfo CulturaBr = new("pt-BR");
-
-    private bool carregando = true;
-    private string? erro;
-
-    private int totalOs;
-    private int osEmAnalise;
-    private int osProntas;
-    private decimal faturamentoMensal;
-
-    protected override async Task OnInitializedAsync()
+    private record FaturamentoDia(string Dia, double Valor)
     {
-        for (var tentativa = 0; tentativa < 10; tentativa++)
+        public string ValorFormatado => $"R$ {Valor:N0}".Replace(",", ".");
+        public string AlturaPercentual { get; set; } = "0";
+    }
+
+    private List<FaturamentoDia> _faturamento = new()
+    {
+        new("Seg", 3200),
+        new("Ter", 4100),
+        new("Qua", 2800),
+        new("Qui", 4900),
+        new("Sex", 4500),
+        new("Sáb", 3800),
+        new("Dom", 1200)
+    };
+
+    protected override void OnInitialized()
+    {
+        var maxValor = _faturamento.Max(f => f.Valor);
+        foreach (var item in _faturamento)
         {
-            try
-            {
-                var ordens = await Http.GetFromJsonAsync<List<OrdemServicoResponseDto>>("api/OrdemServico", Json);
-                CalcularMetricas(ordens ?? []);
-                erro = null;
-                carregando = false;
-                return;
-            }
-            catch (Exception ex)
-            {
-                erro = ex.Message;
-                await Task.Delay(700);
-            }
+            var percentual = item.Valor / maxValor * 100;
+            item.AlturaPercentual = percentual.ToString("0.##", CultureInfo.InvariantCulture);
         }
-        carregando = false;
     }
 
-    private void CalcularMetricas(List<OrdemServicoResponseDto> ordens)
+    private record Venda(string Cliente, int Numero, double Valor, string Status)
+{
+    public string ValorFormatado => $"R$ {Valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+    public string StatusClasse => Status == "Finalizada" ? "status-finalizada" : "status-pendente";
+}
+
+    private List<Venda> _ultimasVendas = new()
     {
-        totalOs = ordens.Count;
-        osEmAnalise = ordens.Count(o => o.Status == StatusOrdemServico.EmAnalise);
-        osProntas = ordens.Count(o => o.Status == StatusOrdemServico.Pronto);
-
-        var agora = DateTime.UtcNow;
-        faturamentoMensal = ordens
-            .Where(o => o.Status == StatusOrdemServico.Entregue
-                && o.DataEntrega.HasValue
-                && o.DataEntrega.Value.Year == agora.Year
-                && o.DataEntrega.Value.Month == agora.Month)
-            .Sum(o => o.ValorTotal);
-    }
+        new("Carlos Silva de Souza", 10524, 450.00, "Finalizada"),
+        new("Mariana Alencar", 10523, 1250.00, "Finalizada"),
+        new("Auto Posto Alvorada", 10522, 890.50, "Pendente"),
+        new("Clínica Bem Estar", 10521, 230.00, "Finalizada"),
+        new("Fernanda Lima de Oliveira", 10520, 1050.00, "Finalizada")
+    };
 }
