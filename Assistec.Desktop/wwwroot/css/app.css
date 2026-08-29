@@ -10,6 +10,10 @@
     color: #FFFFFF !important;
 }
 
+.mud-nav-link {
+    position: relative;
+}
+
 .mud-nav-link.active,
 .mud-nav-link.active .mud-nav-link-text,
 .mud-nav-link.active .mud-icon-root {
@@ -17,11 +21,17 @@
     color: #FFFFFF !important;
 }
 
-.mud-nav-link.mud-disabled,
-.mud-nav-link.mud-disabled .mud-nav-link-text,
-.mud-nav-link.mud-disabled .mud-icon-root {
-    color: rgba(255, 255, 255, 0.65) !important;
-    opacity: 1 !important;
+/* Traço verde indicando o item ativo do menu lateral */
+.mud-nav-link.active::before {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: #10B981;
+    border-radius: 2px;
 }
 
 
@@ -287,4 +297,51 @@
     margin-top: auto;
     padding: 12px;
     color: rgba(255, 255, 255, 0.65);
+}
+
+/* ==========================================================================
+   PÁGINA EMITENTE — CABEÇALHO
+   Título + subtítulo à esquerda, botão de ação à direita. Mesmo padrão
+   pode ser reaproveitado em outras páginas de configuração no futuro.
+   ========================================================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+   .contato-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.contato-campos {
+    display: flex;
+    gap: 16px;
+}
+
+.contato-campos > * {
+    flex: 1;
+}
+
+/* ==========================================================================
+   PÁGINA EMITENTE — UPLOAD DE LOGOMARCA (visual, sem funcionalidade ainda)
+   ========================================================================== */
+.logo-upload-box {
+    border: 2px dashed #D5DBE1;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+    margin-top: -10px;
 }
