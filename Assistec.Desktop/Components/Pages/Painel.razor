@@ -115,9 +115,99 @@
     <div class="venda-status-col">
         <span class="venda-status @venda.StatusClasse">@venda.Status</span>
     </div>
-</div>
+    </div>
     }
 </div>
+
+        </MudPaper>
+    </div>
+
+        <div class="produtos-col">
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; height:100%; width:100%; box-sizing:border-box;">
+            <MudText Typo="Typo.h6" Style="font-weight:600; margin-bottom:16px;">
+                Produtos Mais Vendidos do Mês
+            </MudText>
+
+            <table class="produtos-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Produto</th>
+                        <th class="col-num">Qtd Atual</th>
+                        <th class="col-num">Vlr. Atual</th>
+                        <th class="col-num">Vlr. Mensal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var produto in _produtosMaisVendidos)
+                    {
+                        <tr>
+                            <td>@produto.Codigo</td>
+                            <td>@produto.Nome</td>
+                            <td class="col-num">@produto.QtdAtual</td>
+                            <td class="col-num">@produto.VlrAtualFormatado</td>
+                            <td class="col-num">@produto.VlrMensalFormatado</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </MudPaper>
+    </div>
+
+        <div class="atalhos-col">
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; height:100%; width:100%; box-sizing:border-box;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <MudText Typo="Typo.h6" Style="font-weight:600;">
+                    Atalhos Rápidos
+                </MudText>
+                <MudLink Href="#" Underline="Underline.None" Style="font-size:0.875rem;">
+                    Editar Atalhos
+                </MudLink>
+            </div>
+
+            <div class="atalhos-grid">
+                <div class="atalho-item">
+                    <div class="atalho-icon" style="background-color:#FCEFDB;">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" Style="color:#D9A441;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500;">Nota de Entrada</MudText>
+                </div>
+
+                <div class="atalho-item">
+                    <div class="atalho-icon" style="background-color:#EAF1FA;">
+                        <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Style="color:#2C6FB0;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500;">Cadastrar Cliente</MudText>
+                </div>
+
+                <div class="atalho-item">
+                    <div class="atalho-icon" style="background-color:#E4F2E5;">
+                        <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#2E7D32;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500;">Emitir NF-e</MudText>
+                </div>
+
+                <div class="atalho-item">
+                    <div class="atalho-icon" style="background-color:#EAF1FA;">
+                        <MudIcon Icon="@Icons.Material.Filled.Build" Style="color:#2C6FB0;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500;">Nova O.S</MudText>
+                </div>
+
+                <div class="atalho-item atalho-disabled">
+                    <div class="atalho-icon" style="background-color:#F0F2F4;">
+                        <MudIcon Icon="@Icons.Material.Filled.MoreHoriz" Style="color:#9AA5B1;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500; color:#9AA5B1;">Em breve</MudText>
+                </div>
+
+                <div class="atalho-item atalho-disabled">
+                    <div class="atalho-icon" style="background-color:#F0F2F4;">
+                        <MudIcon Icon="@Icons.Material.Filled.MoreHoriz" Style="color:#9AA5B1;" />
+                    </div>
+                    <MudText Typo="Typo.body2" Style="font-weight:500; color:#9AA5B1;">Em breve</MudText>
+                </div>
+            </div>
         </MudPaper>
     </div>
 
@@ -165,4 +255,19 @@
         new("Clínica Bem Estar", 10521, 230.00, "Finalizada"),
         new("Fernanda Lima de Oliveira", 10520, 1050.00, "Finalizada")
     };
+
+    private record ProdutoVendido(string Codigo, string Nome, int QtdAtual, double VlrAtual, double VlrMensal)
+{
+    public string VlrAtualFormatado => $"R$ {VlrAtual:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+    public string VlrMensalFormatado => $"R$ {VlrMensal:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+}
+
+private List<ProdutoVendido> _produtosMaisVendidos = new()
+{
+    new("0001", "Placa Mãe H510", 12, 380.00, 4560.00),
+    new("0002", "Fonte 500W", 20, 150.00, 3000.00),
+    new("0003", "Memória RAM 8GB", 18, 120.00, 2160.00),
+    new("0004", "SSD 240GB", 15, 130.00, 1950.00),
+    new("0005", "Cooler Gamer", 25, 60.00, 1500.00)
+};
 }

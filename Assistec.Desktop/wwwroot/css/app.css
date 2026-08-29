@@ -46,7 +46,8 @@
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(6, minmax(180px, 262.5px));
-    gap: clamp(12px, 0.83vw, 16px);
+    column-gap: clamp(12px, 0.83vw, 16px);
+    row-gap: clamp(16px, 2.22vh, 24px);
     width: clamp(1200px, 86.15vw, 1655px);
     max-width: 100%;
 }
@@ -193,4 +194,97 @@
 .status-pendente {
     background-color: #FCEFDB;
     color: #B8860B;
+}
+
+/* ==========================================================================
+   CARD — ATALHOS RÁPIDOS
+   .atalhos-col: posiciona o card nas colunas 4-6 da 3ª linha do grid
+   (mesma faixa horizontal do card de Últimas Vendas, logo acima).
+   Contém uma grade 2x2 de atalhos menores (ícone + label).
+   ========================================================================== */
+.atalhos-col {
+    grid-column: 4 / span 3;
+    height: fit-content;
+}
+
+.atalhos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.atalho-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.atalho-icon {
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.atalho-disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ==========================================================================
+   CARD — PRODUTOS MAIS VENDIDOS DO MÊS
+   .produtos-col: posiciona o card nas colunas 1-3 da 3ª linha do grid
+   (mesma linha do card de Atalhos Rápidos, à direita).
+   Tabela limitada a 5 produtos, dados de placeholder por enquanto.
+   ========================================================================== */
+.produtos-col {
+    grid-column: 1 / span 3;
+    height: fit-content;
+}
+
+.produtos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.produtos-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.produtos-table td {
+    padding: 10px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+}
+
+.produtos-table tr:last-child td {
+    border-bottom: none;
+}
+
+.produtos-table .col-num {
+    text-align: right;
+}
+
+/* ==========================================================================
+   MENU LATERAL — RODAPÉ (NavMenu.razor)
+   Informações técnicas (serial number, versão) fixadas no fim da sidebar.
+   Empurradas para baixo via margin-top:auto no container flex do NavMenu.
+   ========================================================================== */
+.nav-footer {
+    margin-top: auto;
+    padding: 12px;
+    color: rgba(255, 255, 255, 0.65);
 }
