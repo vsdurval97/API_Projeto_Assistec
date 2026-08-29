@@ -1,0 +1,234 @@
+@page "/certificado"
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Certificado Digital</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Gerencie o certificado A1 utilizado na emissão de documentos fiscais
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Upload">
+        @(_certificadoInstalado ? "Substituir Certificado" : "Instalar Certificado")
+    </MudButton>
+</div>
+
+<div class="cert-lower-grid">
+    @if (_certificadoInstalado)
+    {
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.Shield" Style="color:#D9A441;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Status do Certificado</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600; color:#D9A441;">Próximo do Vencimento</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Prazo</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">Faltam 23 dias</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Renove antes que expire</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Tipo</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">A1</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Certificado A1</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FBE7D8;">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Style="color:#C97A3D;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Órgão Emissor</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">Serasa Experian</MudText>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F0F2F4;">
+                <MudIcon Icon="@Icons.Material.Filled.Shield" Style="color:#9AA5B1;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Status do Certificado</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600; color:#9AA5B1;">Nenhum instalado</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F0F2F4;">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="color:#9AA5B1;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Prazo</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600; color:#9AA5B1;">--</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F0F2F4;">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#9AA5B1;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Tipo</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600; color:#9AA5B1;">--</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F0F2F4;">
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Style="color:#9AA5B1;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Órgão Emissor</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600; color:#9AA5B1;">--</MudText>
+            </div>
+        </div>
+    }
+
+    @if (_certificadoInstalado)
+    {
+        <div class="cert-detail-col">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; box-sizing:border-box;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; margin-bottom:16px;">
+                    Informações do Certificado
+                </MudText>
+
+                <div class="cert-info-row">
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Razão Social / Nome</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">Loja Exemplo Comércio LTDA</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">CNPJ / CPF</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">12.345.678/0001-90</MudText>
+                    </div>
+                </div>
+
+                <div class="cert-info-row mt-4">
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Tipo de Certificado</MudText>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">A1</MudText>
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#F1E9FA; color:#8E5CE0;">Certificado A1</MudChip>
+                        </div>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Órgão Emissor (AC)</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">Serasa Experian</MudText>
+                    </div>
+                </div>
+
+                <MudDivider Class="my-4" />
+
+                <div class="cert-info-row">
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Data de Emissão</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">15/08/2023</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Data de Validade / Expiração</MudText>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">15/08/2026 às 23:59:59</MudText>
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">23 dias</MudChip>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Vida útil restante</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">23 de 365 dias</MudText>
+                    </div>
+                    <MudProgressLinear Value="6.3" Color="Color.Warning" Rounded="true" Size="Size.Medium" />
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-6" Elevation="0" Style="border:1px solid #F5C2C2; background-color:#FDF3F3; box-sizing:border-box;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:600; color:#C0392B;">Zona de Perigo</MudText>
+                        <MudText Typo="Typo.body2" Style="color:#8A5252;">
+                            Excluir o certificado bloqueará a emissão de notas fiscais até que um novo seja cadastrado.
+                        </MudText>
+                    </div>
+                    <MudButton Variant="Variant.Filled" Style="background-color:#E53935; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.DeleteOutline">
+                        Excluir Certificado
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </div>
+    }
+
+    <div class="dicas-col">
+        <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8; height:100%; box-sizing:border-box;">
+            <MudText Typo="Typo.subtitle1" Style="font-weight:600; margin-bottom:16px;">
+                Dicas de Ajuda
+            </MudText>
+
+            <div class="dica-item">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">Como exportar meu certificado A1?</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">
+                        Acesse o painel da Autoridade Certificadora (ex: Serasa) ou o gerenciador de certificados
+                        do Windows (certmgr.msc), localize o certificado e exporte no formato .pfx com senha.
+                    </MudText>
+                </div>
+            </div>
+
+            <div class="dica-item">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">O que fazer se a senha estiver incorreta?</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">
+                        Entre em contato com a AC emissora para recuperação. Não é possível recuperar a senha
+                        localmente — o arquivo precisa ser reemitido.
+                    </MudText>
+                </div>
+            </div>
+
+            <div class="dica-item">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">Qual a diferença entre A1 e A3?</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">
+                        O A1 é um arquivo digital (.pfx) instalado no computador. O A3 fica em um token ou
+                        cartão físico, com maior segurança.
+                    </MudText>
+                </div>
+            </div>
+
+            <div class="dica-item">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">Com quanto tempo de antecedência renovar?</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">
+                        Recomendamos renovar com pelo menos 30 dias de antecedência para evitar interrupção
+                        na emissão de documentos fiscais.
+                    </MudText>
+                </div>
+            </div>
+        </MudPaper>
+    </div>
+</div>
+
+@code {
+    // Placeholder — sem backend de Certificado ainda. Troque manualmente
+    // para "false" para visualizar o estado "sem certificado instalado".
+    private bool _certificadoInstalado = false;
+}

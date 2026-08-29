@@ -345,3 +345,66 @@
     box-sizing: border-box;
     margin-top: -10px;
 }
+
+/* ==========================================================================
+   PÁGINA CERTIFICADO — LINHA DE 4 CARDS INFORMATIVOS
+   (Status, Prazo, Tipo, Órgão Emissor). Dados estáticos/placeholder —
+   não existe backend de Certificado ainda.
+   ========================================================================== */
+.cert-lower-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: clamp(12px, 0.83vw, 16px);
+    row-gap: clamp(16px, 2.22vh, 24px);
+    margin-top: 24px;
+    align-items: start;
+}
+
+.cert-detail-col {
+    grid-column: span 3;
+    height: fit-content;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    padding: 16px;
+}
+
+.info-card-icon {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Pares label/valor dentro do card de detalhe, em grid CSS de 2 colunas
+   (evita MudGrid aninhado, que já vimos vazar visualmente). */
+.cert-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* Coluna 4 da 2ª linha do grid: card "Dicas de Ajuda" (perguntas
+   frequentes estáticas, sem interação de accordion). */
+.dicas-col {
+    grid-column: 4 / span 1;
+}
+
+.dica-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dica-item:last-child {
+    margin-bottom: 0;
+}
