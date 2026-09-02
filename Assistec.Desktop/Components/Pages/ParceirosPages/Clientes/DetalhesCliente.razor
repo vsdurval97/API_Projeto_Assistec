@@ -1,0 +1,177 @@
+@page "/parceiros/clientes/{Codigo}"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaClientes" />
+    <MudLink Underline="Underline.None" Style="color:#9AA5B1;">Parceiros</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaClientes">Clientes</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@(_cliente?.Nome ?? Codigo)</MudText>
+</div>
+
+@if (_cliente is not null)
+{
+    <div class="cliente-detalhe-grid">
+        <div class="cliente-detalhe-coluna">
+            <MudPaper Class="pa-4 cliente-card-altura-fixa" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="cliente-perfil-avatar" style="background-color:@_cliente.CorAvatar;">@_cliente.Iniciais</div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_cliente.Nome</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-align:center; display:block;">@_cliente.Codigo</MudText>
+                <div style="text-align:center; margin-top:8px;">
+                    <MudChip T="string" Size="Size.Small" Style="background-color:#EAF1FA; color:#2C6FB0;">@_cliente.TipoCompleto</MudChip>
+                </div>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+    Editar Cadastro
+</MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Resumo Financeiro</MudText>
+                <div class="cliente-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total em OS</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@_cliente.TotalGastoFormatado</MudText>
+                </div>
+                <div class="cliente-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total em Vendas</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#2E7D32;">@_cliente.TotalVendasFormatado</MudText>
+                </div>
+                <div class="cliente-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total Geral</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700;">@_cliente.TotalGeralFormatado</MudText>
+                </div>
+                <div class="cliente-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Atendimentos</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_cliente.Atendimentos</MudText>
+                </div>
+                <div class="cliente-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Última visita</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_cliente.UltimaVisita.ToString("dd/MM/yyyy")</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div class="cliente-coluna-direita">
+            <div class="cliente-fiscal-col">
+                <MudPaper Class="pa-4 cliente-card-altura-fixa" Elevation="0" Style="border:1px solid #E0E4E8; overflow-y:auto;">
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Dados Cadastrais</MudText>
+
+                    <div class="cert-info-row">
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@(_cliente.TipoLabel == "PF" ? "Nome" : "Razão Social")</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Nome</MudText>
+                        </div>
+                        @if (_cliente.TipoLabel == "PJ" && !string.IsNullOrWhiteSpace(_cliente.NomeFantasia))
+                        {
+                            <div>
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Nome Fantasia</MudText>
+                                <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.NomeFantasia</MudText>
+                            </div>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+                    </div>
+
+                    <div class="cert-info-row mt-4">
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Telefone</MudText>
+                            <div class="cliente-contato-inline">
+                                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color:#9AA5B1;" />
+                                <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Telefone</MudText>
+                            </div>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">E-mail</MudText>
+                            <div class="cliente-contato-inline">
+                                <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color:#9AA5B1;" />
+                                <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Email</MudText>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="cert-info-row mt-4">
+    <div>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@(_cliente.TipoLabel == "PF" ? "CPF" : "CNPJ")</MudText>
+        <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Documento</MudText>
+    </div>
+    @if (_cliente.TipoLabel == "PJ")
+    {
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Inscrição Estadual</MudText>
+            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.InscricaoEstadual</MudText>
+        </div>
+    }
+    else
+    {
+        <div></div>
+    }
+</div>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Endereço</MudText>
+
+                    <div class="cliente-endereco-row">
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">CEP</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Cep</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Logradouro</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Logradouro</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Número</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Numero</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Bairro</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.Bairro</MudText>
+                        </div>
+                        <div>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cidade / UF</MudText>
+                            <MudText Typo="Typo.body1" Style="font-weight:600;">@_cliente.CidadeUf</MudText>
+                        </div>
+                    </div>
+                </MudPaper>
+            </div>
+
+            <div class="cliente-detalhe-conteudo">
+                <!-- Abas "Ordens de Serviço" / "Vendas" entram na próxima etapa -->
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A;">Cliente não encontrado.</MudText>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = string.Empty;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private ClienteItem? _cliente;
+
+    protected override void OnParametersSet()
+    {
+        _cliente = ClienteMockData.Clientes.FirstOrDefault(c => c.Codigo == Codigo);
+    }
+
+    private async Task AbrirEdicao()
+{
+    var parameters = new DialogParameters<NovoCliente> { { x => x.ClienteExistente, _cliente } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoCliente>("Editar Cliente", parameters, options);
+}
+
+    private void VoltarParaClientes()
+    {
+        WindowManager.Navigate(WindowId, typeof(ListaClientes), null, "Clientes");
+    }
+}

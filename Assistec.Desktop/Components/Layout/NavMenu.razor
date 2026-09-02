@@ -16,7 +16,7 @@
             Certificado
         </MudNavLink>
 
-        <MudNavLink Href="#" Disabled="true"
+        <MudNavLink Href="/parceiros"
                     Icon="@Icons.Material.Filled.People">
             Parceiros
         </MudNavLink>
@@ -62,9 +62,43 @@
         </MudNavLink>
     </MudNavMenu>
 
-        <div class="nav-footer">
+    @using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@implements IDisposable
+
+<div style="display:flex; flex-direction:column; height:100%; padding:16px 8px;">
+    
+    @if (WindowManager.Windows.Any(w => w.IsMinimized))
+    {
+        <div class="nav-minimized-windows">
+            @foreach (var window in WindowManager.Windows.Where(w => w.IsMinimized))
+            {
+                <div class="nav-minimized-item" @onclick="() => WindowManager.Restore(window.Id)">
+                    <MudIcon Icon="@window.Icon" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Style="color:#FFFFFF;">@window.Title</MudText>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="nav-footer">
         <MudText Typo="Typo.caption" Style="display:block;">Serial: AST-0001-2026</MudText>
         <MudText Typo="Typo.caption" Style="display:block;">Versão 0.1.0</MudText>
     </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        WindowManager.OnChange += HandleChange;
+    }
+
+    private void HandleChange() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        WindowManager.OnChange -= HandleChange;
+    }
+}   
 
 </div>

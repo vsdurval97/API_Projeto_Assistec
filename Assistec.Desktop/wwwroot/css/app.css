@@ -408,3 +408,363 @@
 .dica-item:last-child {
     margin-bottom: 0;
 }
+
+/* ==========================================================================
+   PÁGINA PARCEIROS
+   Grid de 6 cards (Cliente, Fornecedor, Contador, Usuário, Vendedor,
+   Transportadora), ordenados por relevância para o negócio de assistência
+   técnica. Nenhum "Acessar" está funcional ainda — nenhuma dessas telas
+   (exceto Cliente, cuja rota ainda não foi confirmada) existe no backend.
+   ========================================================================== */
+.parceiros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+}
+
+.parceiro-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    padding: 24px 16px;
+}
+
+.parceiro-icon {
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — LINHA DE 4 CARDS INFORMATIVOS
+   Reaproveita .info-card / .info-card-icon (já usados na tela de
+   Certificado). Dados estáticos/placeholder — API ainda não conectada.
+   ========================================================================== */
+.info-card-row-clientes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — BARRA DE BUSCA E FILTROS
+   Busca + segmented control de tipo (Todos/PF/PJ) + contador de resultados,
+   todos na mesma linha. Estado (_termoBusca, _filtroTipo) já preparado
+   para filtrar a tabela quando ela for implementada na próxima etapa.
+   ========================================================================== */
+.cliente-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.cliente-busca-input {
+    max-width: 320px;
+}
+
+.cliente-filtro-tipos {
+    display: flex;
+    gap: 4px;
+    background-color: #F0F2F4;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.filtro-tipo-btn {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+}
+
+.filtro-tipo-btn.active {
+    background-color: #10233A;
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — TABELA DE LISTAGEM
+   Limitada a 10 registros mais recentes (.Take(10) no code-behind), já
+   pensando em não poluir a tela quando o backend tiver mais clientes.
+   ========================================================================== */
+.clientes-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.clientes-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.clientes-table td {
+    padding: 12px 8px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.clientes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.clientes-table .col-num {
+    text-align: right;
+}
+
+.clientes-table .col-acoes {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.atendimentos-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.cliente-nome-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cliente-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cliente-nome-clicavel {
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   MODAL — NOVO CLIENTE
+   Larguras assimétricas por linha, refletindo a importância/tamanho
+   natural de cada campo (mesma proporção do mockup de referência).
+   ========================================================================== */
+.cliente-row-nome-doc {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+}
+
+.cliente-row-nome-doc-cnpj {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 16px;
+    align-items: end;
+}
+
+.cliente-row-tel-email {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.cliente-row-endereco-1 {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 16px;
+}
+
+.cliente-row-endereco-2 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO CLIENTE — BREADCRUMB
+   "Clientes" (e a seta) voltam para ListaClientes na mesma janela via
+   WindowManager.Navigate. "Parceiros" ainda não está ligado (fecharia
+   a janela e voltaria à página de Parceiros — funcionalidade futura).
+   ========================================================================== */
+.breadcrumb-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO CLIENTE — LAYOUT GERAL E COLUNA ESQUERDA
+   Grid de 2 colunas: coluna esquerda fixa (perfil, contato, resumo
+   financeiro, empilhados), coluna direita com o conteúdo de abas
+   (Ordens de Serviço / Vendas), a ser implementado na próxima etapa.
+   ========================================================================== */
+.cliente-detalhe-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.cliente-coluna-direita {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+
+.cliente-detalhe-coluna {
+    display: flex;
+    flex-direction: column;
+}
+
+.cliente-card-altura-fixa {
+    height: 360px;
+    box-sizing: border-box;
+}
+
+.cliente-perfil-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.cliente-contato-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.cliente-contato-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cliente-endereco-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1.2fr 1.5fr;
+    gap: 16px;
+}
+
+.cliente-contato-linha:last-child {
+    margin-bottom: 0;
+}
+
+.cliente-resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cliente-resumo-linha:last-child {
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
+   .content-area: âncora de posicionamento para as janelas flutuantes,
+   ocupando o mesmo espaço do @Body dentro do MudMainContent.
+   .app-window: cobre exatamente a área de conteúdo, sem arrastar/redimensionar.
+   Múltiplas podem existir simultaneamente; a de maior z-index fica visível.
+   ========================================================================== */
+.content-area {
+    position: relative;
+    min-height: calc(100vh - 64px);
+}
+
+.app-window {
+    position: absolute;
+    inset: 0;
+    background-color: #F4F6F8;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.app-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E0E4E8;
+    padding: 8px 16px;
+}
+
+.app-window-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-window-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.app-window-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+/* Abas das janelas minimizadas, na sidebar */
+.nav-minimized-windows {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 4px;
+    margin-top: 8px;
+}
+
+.nav-minimized-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #FFFFFF;
+}
+
+.nav-minimized-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}

@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MudBlazor.Services;
 using Microsoft.Maui.LifecycleEvents;
+using Assistec.Desktop.Windowing;
 #if WINDOWS
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -25,6 +26,7 @@ public static class MauiProgram
 
         builder.Services.AddMauiBlazorWebView();
         builder.Services.AddMudServices();
+        builder.Services.AddSingleton<WindowManagerService>();
         builder.ConfigureLifecycleEvents(events =>
 {
 #if WINDOWS

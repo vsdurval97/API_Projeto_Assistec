@@ -1,0 +1,194 @@
+@page "/parceiros/clientes"
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Clientes
+@inject IDialogService DialogService
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Clientes</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Gerencie o cadastro de clientes e acompanhe o histórico de atendimentos e vendas.
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoCliente">
+        Novo Cliente
+    </MudButton>
+</div>
+
+<div class="info-card-row-clientes">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total de Clientes</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">8</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">cadastrados</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Faturamento Total</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">R$ 35.020,50</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">de todos os clientes</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Loop" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Clientes Recorrentes</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">5</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">5+ atendimentos</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#FCEFDB;">
+            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="color:#D9A441;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Novos este mês</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">3</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">agosto 2026</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="cliente-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Buscar por nome, documento, telefone..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="cliente-busca-input" />
+
+    <div class="cliente-filtro-tipos">
+        <button type="button"
+                class="filtro-tipo-btn @(_filtroTipo == TipoFiltro.Todos ? "active" : "")"
+                @onclick="() => _filtroTipo = TipoFiltro.Todos">
+            Todos os Tipos
+        </button>
+        <button type="button"
+                class="filtro-tipo-btn @(_filtroTipo == TipoFiltro.PessoaFisica ? "active" : "")"
+                @onclick="() => _filtroTipo = TipoFiltro.PessoaFisica">
+            Pessoa Física
+        </button>
+        <button type="button"
+                class="filtro-tipo-btn @(_filtroTipo == TipoFiltro.PessoaJuridica ? "active" : "")"
+                @onclick="() => _filtroTipo = TipoFiltro.PessoaJuridica">
+            Pessoa Jurídica
+        </button>
+    </div>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">8 clientes</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="clientes-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Documento</th>
+                <th>Telefone</th>
+                <th>Cidade / UF</th>
+                <th class="col-num">Atendimentos</th>
+                <th class="col-num">Total Gasto</th>
+                <th>Última Visita</th>
+                <th class="col-acoes"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cliente in _clientesExibidos)
+            {
+                <tr>
+                    <td><MudLink Href="#" Underline="Underline.None">@cliente.Codigo</MudLink></td>
+                    <td>
+                        <div class="cliente-nome-cell cliente-nome-clicavel" @onclick="() => AbrirDetalhes(cliente.Codigo)">
+                            <div class="cliente-avatar" style="background-color:@cliente.CorAvatar;">@cliente.Iniciais</div>
+                            <div>
+                                <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@cliente.Nome</MudText>
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@cliente.Email</MudText>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        @cliente.Documento<br />
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#EAF1FA; color:#2C6FB0;">@cliente.TipoLabel</MudChip>
+                    </td>
+                    <td>@cliente.Telefone</td>
+                    <td>@cliente.CidadeUf</td>
+                    <td class="col-num">
+                        <div class="atendimentos-cell">
+                            @if (cliente.Recorrente)
+                            {
+                                <MudChip T="string" Size="Size.Small" Style="background-color:#F1E9FA; color:#8E5CE0;">Recorrente</MudChip>
+                            }
+                            <MudText Typo="Typo.body2" Style="font-weight:600;">@cliente.Atendimentos</MudText>
+                        </div>
+                    </td>
+                    <td class="col-num">@cliente.TotalGastoFormatado</td>
+                    <td>@cliente.UltimaVisita.ToString("dd/MM/yyyy")</td>
+                    <td class="col-acoes">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(cliente)" />
+                        <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</MudPaper>
+
+@code {
+    private enum TipoFiltro { Todos, PessoaFisica, PessoaJuridica }
+
+    private string _termoBusca = string.Empty;
+    private TipoFiltro _filtroTipo = TipoFiltro.Todos;
+
+    private async Task AbrirNovoCliente()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoCliente>("Novo Cliente", options);
+    }
+
+    private async Task AbrirEdicao(ClienteItem cliente)
+    {
+        var parameters = new DialogParameters<NovoCliente> { { x => x.ClienteExistente, cliente } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoCliente>("Editar Cliente", parameters, options);
+    }
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private void AbrirDetalhes(string codigo)
+    {
+        WindowManager.Navigate(WindowId, typeof(DetalhesCliente),
+            new Dictionary<string, object> { { "Codigo", codigo } },
+            $"Cliente {codigo}");
+    }
+
+    private IEnumerable<ClienteItem> _clientesExibidos =>
+        ClienteMockData.Clientes
+            .Where(c => _filtroTipo == TipoFiltro.Todos
+                || (_filtroTipo == TipoFiltro.PessoaFisica && c.TipoLabel == "PF")
+                || (_filtroTipo == TipoFiltro.PessoaJuridica && c.TipoLabel == "PJ"))
+            .Where(c => string.IsNullOrWhiteSpace(_termoBusca)
+                || c.Nome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || c.Documento.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || c.Telefone.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(c => c.UltimaVisita)
+            .Take(10);
+}
