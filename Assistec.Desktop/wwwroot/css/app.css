@@ -1,475 +1,770 @@
-:root {
-    --surface-1: #ffffff;
-    --surface-2: #f5f6f8;
-    --border: #e5e7eb;
-
-    --text-primary: #1a1d23;
-    --text-secondary: #5b6270;
-    --text-muted: #9aa1ae;
-
-    --bg-accent: #e8f0fe;
-    --text-accent: #1f6feb;
-    --text-success: #1a9d5c;
-
-    --sidebar-width-expandida: 188px;
-    --sidebar-width-recolhida: 56px;
-    --topbar-height: 52px;
+/* ==========================================================================
+   MENU LATERAL (NavMenu.razor)
+   Sobrescreve as cores padrão do MudNavLink: fundo azul claro vem do tema
+   (AssistecTheme.cs / DrawerBackground), aqui só forçamos texto/ícone em
+   branco, o destaque escuro do item ativo, e a opacidade do item desabilitado.
+   ========================================================================== */
+.mud-nav-link,
+.mud-nav-link .mud-nav-link-text,
+.mud-nav-link .mud-icon-root {
+    color: #FFFFFF !important;
 }
 
-* {
-    box-sizing: border-box;
+.mud-nav-link {
+    position: relative;
 }
 
-body {
-    margin: 0;
-    font-family: "Segoe UI", system-ui, sans-serif;
-    color: var(--text-primary);
-    background: var(--surface-1);
+.mud-nav-link.active,
+.mud-nav-link.active .mud-nav-link-text,
+.mud-nav-link.active .mud-icon-root {
+    background-color: #10233A !important;
+    color: #FFFFFF !important;
 }
 
-.app-shell {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
+/* Traço verde indicando o item ativo do menu lateral */
+.mud-nav-link.active::before {
+    content: "";
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background: #10B981;
+    border-radius: 2px;
 }
 
-/* Topbar */
-.topbar {
-    height: var(--topbar-height);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 16px;
-    background: var(--surface-1);
-    border-bottom: 1px solid var(--border);
+
+/* ==========================================================================
+   GLOBAL — CARDS (MudPaper)
+   Garante cantos arredondados em todo MudPaper usado no Painel, consistente
+   com os cards de KPI (que não usam MudPaper, e por isso têm border-radius
+   próprio lá embaixo).
+   ========================================================================== */
+.mud-paper {
+    border-radius: 8px !important;
 }
 
-.topbar-brand {
-    font-weight: 600;
-    font-size: 14px;
+
+/* ==========================================================================
+   PAINEL — GRID PRINCIPAL (Painel.razor)
+   Grid de 6 colunas fixas (base: Figma em 1920px de largura / Full HD).
+   Linha 1: os 6 cards de KPI, um por coluna.
+   Linha 2: card de Faturamento (colunas 1-3) e card de Últimas Vendas
+   (colunas 4-6), via grid-column: span 3 em cada um.
+   ========================================================================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(180px, 262.5px));
+    column-gap: clamp(12px, 0.83vw, 16px);
+    row-gap: clamp(16px, 2.22vh, 24px);
+    width: clamp(1200px, 86.15vw, 1655px);
+    max-width: 100%;
 }
 
-.topbar-user {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-secondary);
-}
 
-.avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: var(--bg-accent);
-    color: var(--text-accent);
+/* ==========================================================================
+   CARDS DE KPI (Total de OS, OS em análise, OS prontas, Faturamento mensal,
+   + os 2 KPIs extras adicionados depois)
+   Medida base do Figma: 262.5 x 88px. Largura já vem do grid acima; aqui
+   só a altura, que segue o mesmo padrão de conversão vh baseado em 1080px.
+   ========================================================================== */
+.kpi-card {
+    height: clamp(70px, 8.15vh, 88px);
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 12px;
-    font-weight: 600;
+    gap: 16px;
 }
 
-/* Corpo: sidebar + conteúdo */
-.app-body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-}
-
-.app-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 24px 32px;
-    background: var(--surface-1);
-}
-
-.subtitulo {
-    color: var(--text-secondary);
-    font-size: 13px;
-    margin-top: -8px;
-}
-
-/* Sidebar */
-.sidebar {
-    width: var(--sidebar-width-expandida);
-    flex-shrink: 0;
-    background: var(--surface-2);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    transition: width 0.15s ease;
-    overflow: hidden;
-}
-
-.sidebar-recolhida {
-    width: var(--sidebar-width-recolhida);
-}
-
-.sidebar-toggle {
-    height: 40px;
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 14px;
-}
-
-.sidebar-toggle:hover {
-    background: var(--border);
-}
-
-.sidebar-spacer {
-    flex: 1;
-}
-
-.sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    padding: 8px 0;
-    border-top: 1px solid var(--border);
-}
-
-.sidebar-item {
+.kpi-icon-circle {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 16px;
-    color: var(--text-primary);
-    text-decoration: none;
-    font-size: 13px;
-    white-space: nowrap;
-}
-
-.sidebar-item:hover {
-    background: var(--border);
-}
-
-.sidebar-item-muted {
-    color: var(--text-muted);
-    cursor: default;
-}
-
-.sidebar-icon {
-    width: 20px;
+    justify-content: center;
     flex-shrink: 0;
+}
+
+.kpi-text {
     text-align: center;
 }
 
-.sidebar-recolhida .sidebar-label {
-    display: none;
+
+/* ==========================================================================
+   CARD — FATURAMENTO DOS ÚLTIMOS 7 DIAS
+   .chart-col: posiciona o card nas colunas 1-3 da 2ª linha do grid.
+   Altura é "fit-content" (acompanha o conteúdo interno, não é fixa).
+   ========================================================================== */
+.chart-col {
+    grid-column: span 3;
+    height: fit-content;
 }
 
-.sidebar-item-desabilitado {
-    color: var(--text-muted);
-    cursor: not-allowed;
+/* Container das 7 barras. Medida base do Figma: 628 x 247px. */
+.faturamento-chart {
+    width: 100%;
+    height: clamp(180px, 22.87vh, 247px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
 }
 
-.sidebar-item-desabilitado:hover {
-    background: transparent;
-}
-
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    margin-top: 20px;
-}
-
-.metric-card {
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
+.bar-col {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+    flex: 1;
 }
 
-.metric-label {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.metric-value {
-    font-size: 24px;
+/* Valor em R$ exibido acima de cada barra */
+.bar-value {
+    font-size: clamp(0.7rem, 0.53vw, 0.85rem);
     font-weight: 600;
-    color: var(--text-primary);
-}
-
-.metric-value-success {
-    color: var(--text-success);
-}
-
-.modules-title {
-    font-size: 15px;
-    color: var(--text-primary);
-    margin-top: 32px;
-    margin-bottom: 12px;
-}
-
-.modules-grid {
-    display: flex;
-    gap: 16px;
-}
-
-.module-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px 20px;
-    background: var(--surface-1);
-    min-width: 220px;
-}
-
-.module-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
-    background: var(--bg-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-}
-
-.module-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.modules-nota {
-    color: var(--text-muted);
-    font-size: 12px;
-    margin-top: 12px;
-}
-
-.tabela {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-    font-size: 13px;
-}
-
-.tabela th {
-    text-align: left;
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.tabela td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-primary);
-}
-
-.tabela tbody tr:hover {
-    background: var(--surface-2);
-}
-
-a.module-card {
-    text-decoration: none;
-    cursor: pointer;
-}
-
-a.module-card:hover {
-    background: var(--surface-2);
-}
-
-.module-card-desabilitado {
-    color: var(--text-muted);
-    cursor: not-allowed;
-}
-
-.module-card-desabilitado .module-label {
-    color: var(--text-muted);
-}
-
-.link-voltar {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--text-secondary);
-    text-decoration: none;
-    margin-bottom: 12px;
-}
-
-.link-voltar:hover {
-    color: var(--text-accent);
-}
-
-.cabecalho-lista {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    color: #1B2733;
     margin-bottom: 8px;
 }
 
-.botao-primario {
-    display: inline-block;
-    background: var(--text-accent);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 13px;
+/* Barra em si — altura definida via inline style (%) no Painel.razor,
+   proporcional ao maior valor da semana. Medida base: 36px de largura. */
+.bar {
+    width: clamp(22px, 1.88vw, 36px);
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(to bottom, #2F6FED, #7EB2FA);
+}
+
+/* Sigla do dia da semana, abaixo de cada barra */
+.bar-day {
+    font-size: clamp(0.7rem, 0.53vw, 0.85rem);
+    color: #5A6B7A;
+    margin-top: 8px;
     font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
 }
 
-.botao-primario:hover {
-    opacity: 0.9;
+
+/* ==========================================================================
+   CARD — ÚLTIMAS VENDAS
+   .vendas-col: posiciona o card nas colunas 4-6 da 2ª linha do grid.
+   Largura base do Figma: 450px. Altura é "fit-content" (acompanha o
+   conteúdo, garantindo que as 5 vendas sempre caibam sem cortar).
+   ========================================================================== */
+.vendas-col {
+    grid-column: span 3;
+    height: fit-content;
 }
 
-.botao-primario:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.formulario {
-    max-width: 400px;
-    margin-top: 20px;
+.vendas-list {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+/* Cada linha da lista: nome/nº da venda à esquerda, valor/status à direita */
+.venda-item {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #F0F2F4;
+}
+
+.venda-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.venda-valor {
+    text-align: center;
+}
+
+.venda-status-col {
+    text-align: right;
+}
+
+/* "Selo" de status (Finalizada / Pendente) */
+.venda-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 12px;
+}
+
+.status-finalizada {
+    background-color: #E4F2E5;
+    color: #2E7D32;
+}
+
+.status-pendente {
+    background-color: #FCEFDB;
+    color: #B8860B;
+}
+
+/* ==========================================================================
+   CARD — ATALHOS RÁPIDOS
+   .atalhos-col: posiciona o card nas colunas 4-6 da 3ª linha do grid
+   (mesma faixa horizontal do card de Últimas Vendas, logo acima).
+   Contém uma grade 2x2 de atalhos menores (ícone + label).
+   ========================================================================== */
+.atalhos-col {
+    grid-column: 4 / span 3;
+    height: fit-content;
+}
+
+.atalhos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 16px;
 }
 
-.campo {
+.atalho-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.atalho-icon {
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.atalho-disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ==========================================================================
+   CARD — PRODUTOS MAIS VENDIDOS DO MÊS
+   .produtos-col: posiciona o card nas colunas 1-3 da 3ª linha do grid
+   (mesma linha do card de Atalhos Rápidos, à direita).
+   Tabela limitada a 5 produtos, dados de placeholder por enquanto.
+   ========================================================================== */
+.produtos-col {
+    grid-column: 1 / span 3;
+    height: fit-content;
+}
+
+.produtos-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.produtos-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.produtos-table td {
+    padding: 10px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+}
+
+.produtos-table tr:last-child td {
+    border-bottom: none;
+}
+
+.produtos-table .col-num {
+    text-align: right;
+}
+
+/* ==========================================================================
+   MENU LATERAL — RODAPÉ (NavMenu.razor)
+   Informações técnicas (serial number, versão) fixadas no fim da sidebar.
+   Empurradas para baixo via margin-top:auto no container flex do NavMenu.
+   ========================================================================== */
+.nav-footer {
+    margin-top: auto;
+    padding: 12px;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* ==========================================================================
+   PÁGINA EMITENTE — CABEÇALHO
+   Título + subtítulo à esquerda, botão de ação à direita. Mesmo padrão
+   pode ser reaproveitado em outras páginas de configuração no futuro.
+   ========================================================================== */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+   .contato-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.contato-campos {
+    display: flex;
+    gap: 16px;
+}
+
+.contato-campos > * {
+    flex: 1;
+}
+
+/* ==========================================================================
+   PÁGINA EMITENTE — UPLOAD DE LOGOMARCA (visual, sem funcionalidade ainda)
+   ========================================================================== */
+.logo-upload-box {
+    border: 2px dashed #D5DBE1;
+    border-radius: 8px;
+    padding: 16px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100%;
+    max-width: 200px;
+    aspect-ratio: 1 / 1;
+    box-sizing: border-box;
+    margin-top: -10px;
+}
+
+/* ==========================================================================
+   PÁGINA CERTIFICADO — LINHA DE 4 CARDS INFORMATIVOS
+   (Status, Prazo, Tipo, Órgão Emissor). Dados estáticos/placeholder —
+   não existe backend de Certificado ainda.
+   ========================================================================== */
+.cert-lower-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: clamp(12px, 0.83vw, 16px);
+    row-gap: clamp(16px, 2.22vh, 24px);
+    margin-top: 24px;
+    align-items: start;
+}
+
+.cert-detail-col {
+    grid-column: span 3;
+    height: fit-content;
+}
+
+.info-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    padding: 16px;
+}
+
+.info-card-icon {
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Pares label/valor dentro do card de detalhe, em grid CSS de 2 colunas
+   (evita MudGrid aninhado, que já vimos vazar visualmente). */
+.cert-info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+/* Coluna 4 da 2ª linha do grid: card "Dicas de Ajuda" (perguntas
+   frequentes estáticas, sem interação de accordion). */
+.dicas-col {
+    grid-column: 4 / span 1;
+}
+
+.dica-item {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.dica-item:last-child {
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   PÁGINA PARCEIROS
+   Grid de 6 cards (Cliente, Fornecedor, Contador, Usuário, Vendedor,
+   Transportadora), ordenados por relevância para o negócio de assistência
+   técnica. Nenhum "Acessar" está funcional ainda — nenhuma dessas telas
+   (exceto Cliente, cuja rota ainda não foi confirmada) existe no backend.
+   ========================================================================== */
+.parceiros-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+}
+
+.parceiro-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    padding: 24px 16px;
+}
+
+.parceiro-icon {
+    border-radius: 50%;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — LINHA DE 4 CARDS INFORMATIVOS
+   Reaproveita .info-card / .info-card-icon (já usados na tela de
+   Certificado). Dados estáticos/placeholder — API ainda não conectada.
+   ========================================================================== */
+.info-card-row-clientes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — BARRA DE BUSCA E FILTROS
+   Busca + segmented control de tipo (Todos/PF/PJ) + contador de resultados,
+   todos na mesma linha. Estado (_termoBusca, _filtroTipo) já preparado
+   para filtrar a tabela quando ela for implementada na próxima etapa.
+   ========================================================================== */
+.cliente-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.cliente-busca-input {
+    max-width: 320px;
+}
+
+.cliente-filtro-tipos {
+    display: flex;
+    gap: 4px;
+    background-color: #F0F2F4;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.filtro-tipo-btn {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+}
+
+.filtro-tipo-btn.active {
+    background-color: #10233A;
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PÁGINA CLIENTES — TABELA DE LISTAGEM
+   Limitada a 10 registros mais recentes (.Take(10) no code-behind), já
+   pensando em não poluir a tela quando o backend tiver mais clientes.
+   ========================================================================== */
+.clientes-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.clientes-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.clientes-table td {
+    padding: 12px 8px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.clientes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.clientes-table .col-num {
+    text-align: right;
+}
+
+.clientes-table .col-acoes {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.atendimentos-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 4px;
 }
 
-.campo label {
-    font-size: 13px;
-    color: var(--text-secondary);
-}
-
-.campo input {
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    font-size: 14px;
-}
-
-.campo .validation-message {
-    color: #d92d20;
-    font-size: 12px;
-}
-
-.acoes-formulario {
-    margin-top: 8px;
-}
-
-.link-nome {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.link-nome:hover {
-    color: var(--text-accent);
-    text-decoration: underline;
-}
-
-.acoes-formulario-multiplas {
+.cliente-nome-cell {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
 }
 
-.botao-secundario {
-    background: var(--surface-2);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 8px 16px;
-    font-size: 13px;
-    font-weight: 500;
+.cliente-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cliente-nome-clicavel {
     cursor: pointer;
 }
 
-.botao-secundario:hover {
-    background: var(--border);
-}
-
-.botao-secundario:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.escolha-modo-grid {
-    display: flex;
+/* ==========================================================================
+   MODAL — NOVO CLIENTE
+   Larguras assimétricas por linha, refletindo a importância/tamanho
+   natural de cada campo (mesma proporção do mockup de referência).
+   ========================================================================== */
+.cliente-row-nome-doc {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
     gap: 16px;
-    margin-top: 20px;
 }
 
-.escolha-modo-card {
-    flex: 1;
-    max-width: 260px;
-    text-align: left;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+.cliente-row-nome-doc-cnpj {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 16px;
+    align-items: end;
 }
 
-.escolha-modo-card:hover {
-    border-color: var(--text-accent);
+.cliente-row-tel-email {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
 }
 
-.escolha-modo-card strong {
-    font-size: 14px;
-    color: var(--text-primary);
+.cliente-row-endereco-1 {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 16px;
 }
 
-.escolha-modo-card span {
-    font-size: 12px;
-    color: var(--text-secondary);
+.cliente-row-endereco-2 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
 }
 
-.link-voltar-botao {
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-.campo-checkbox {
+/* ==========================================================================
+   TELA DETALHES DO CLIENTE — BREADCRUMB
+   "Clientes" (e a seta) voltam para ListaClientes na mesma janela via
+   WindowManager.Navigate. "Parceiros" ainda não está ligado (fecharia
+   a janela e voltaria à página de Parceiros — funcionalidade futura).
+   ========================================================================== */
+.breadcrumb-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    color: var(--text-primary);
+    margin-bottom: 24px;
 }
 
-/* Blazor error UI (já existia) */
-#blazor-error-ui {
-    background: lightyellow;
-    bottom: 0;
-    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
-    display: none;
-    left: 0;
-    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
+/* ==========================================================================
+   TELA DETALHES DO CLIENTE — LAYOUT GERAL E COLUNA ESQUERDA
+   Grid de 2 colunas: coluna esquerda fixa (perfil, contato, resumo
+   financeiro, empilhados), coluna direita com o conteúdo de abas
+   (Ordens de Serviço / Vendas), a ser implementado na próxima etapa.
+   ========================================================================== */
+.cliente-detalhe-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
 }
 
-#blazor-error-ui .dismiss {
-    cursor: pointer;
+.cliente-coluna-direita {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+
+.cliente-detalhe-coluna {
+    display: flex;
+    flex-direction: column;
+}
+
+.cliente-card-altura-fixa {
+    height: 360px;
+    box-sizing: border-box;
+}
+
+.cliente-perfil-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.cliente-contato-linha {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.cliente-contato-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cliente-endereco-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr 1.2fr 1.5fr;
+    gap: 16px;
+}
+
+.cliente-contato-linha:last-child {
+    margin-bottom: 0;
+}
+
+.cliente-resumo-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.cliente-resumo-linha:last-child {
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
+   SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
+   .content-area: âncora de posicionamento para as janelas flutuantes,
+   ocupando o mesmo espaço do @Body dentro do MudMainContent.
+   .app-window: cobre exatamente a área de conteúdo, sem arrastar/redimensionar.
+   Múltiplas podem existir simultaneamente; a de maior z-index fica visível.
+   ========================================================================== */
+.content-area {
+    position: relative;
+    min-height: calc(100vh - 64px);
+}
+
+.app-window {
     position: absolute;
-    right: 0.75rem;
-    top: 0.5rem;
+    inset: 0;
+    background-color: #F4F6F8;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.app-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E0E4E8;
+    padding: 8px 16px;
+}
+
+.app-window-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-window-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.app-window-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+/* Abas das janelas minimizadas, na sidebar */
+.nav-minimized-windows {
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 8px 4px;
+    margin-top: 8px;
+}
+
+.nav-minimized-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #FFFFFF;
+}
+
+.nav-minimized-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
 }

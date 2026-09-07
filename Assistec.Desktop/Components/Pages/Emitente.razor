@@ -1,0 +1,261 @@
+@page "/emitente"
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Dados do Emitente</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Configure as informações da sua empresa para emissão de documentos fiscais
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save">
+        Salvar Alterações
+    </MudButton>
+</div>
+
+<MudForm @ref="_form" Model="_model" Class="mt-6">
+    <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600; margin-bottom:16px;">
+            1. Dados da Empresa (Identificação)
+        </MudText>
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" md="6">
+        <MudTextField @bind-Value="_model.RazaoSocial"
+                      Label="Razão Social"
+                      Placeholder="Ex: Empresa Exemplo Comércio LTDA"
+                      Required="true"
+                      RequiredError="Razão Social é obrigatória"
+                      MaxLength="60"
+                      Counter="60"
+                      Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudTextField @bind-Value="_model.NomeFantasia"
+                      Label="Nome Fantasia"
+                      Placeholder="Ex: Loja Exemplo"
+                      MaxLength="60"
+                      Counter="60"
+                      Variant="Variant.Outlined" />
+    </MudItem>
+</MudGrid>
+
+<MudGrid Spacing="4" Class="mt-4">
+    <MudItem xs="12" sm="6" md="3">
+        <MudTextField @bind-Value="_model.Cnpj"
+              Label="CNPJ"
+              Mask="@_cnpjMask"
+              Placeholder="AA.AAA.AAA/AAAA-00"
+              Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudTextField @bind-Value="_model.InscricaoEstadual"
+                      Label="Inscrição Estadual (IE)"
+                      Placeholder="000.000.000 ou ISENTO"
+                      Validation="@(new Func<string?, string?>(ValidarIe))"
+                      Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="2">
+        <MudTextField @bind-Value="_model.InscricaoMunicipal"
+              Label="Inscrição Municipal (IM)"
+              Placeholder="000000-0"
+              MaxLength="15"
+              Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="2">
+        <MudTextField @bind-Value="_model.CnaeFiscal"
+                      Label="CNAE Fiscal"
+                      Mask="@(new PatternMask("0000-0/00"))"
+                      Placeholder="0000-0/00"
+                      Variant="Variant.Outlined" />
+    </MudItem>
+    <MudItem xs="12" sm="6" md="2">
+        <MudSelect T="int" @bind-Value="_model.RegimeTributario"
+                   Label="Regime Tributário (CRT)"
+                   Required="true"
+                   RequiredError="Selecione o regime tributário"
+                   Variant="Variant.Outlined">
+            <MudSelectItem T="int" Value="1">1 - Simples Nacional</MudSelectItem>
+            <MudSelectItem T="int" Value="2">2 - Simples Nacional - excesso de sublimite</MudSelectItem>
+            <MudSelectItem T="int" Value="3">3 - Regime Normal</MudSelectItem>
+            <MudSelectItem T="int" Value="4">4 - Simples Nacional - MEI</MudSelectItem>
+        </MudSelect>
+    </MudItem>
+</MudGrid>
+    </MudPaper>
+    <MudPaper Class="pa-4 mt-6" Elevation="0" Style="border:1px solid #E0E4E8;">
+    <MudText Typo="Typo.subtitle1" Style="font-weight:600; margin-bottom:16px;">
+        2. Endereço do Emitente
+    </MudText>
+
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="4" md="2">
+            <MudTextField @bind-Value="_model.Cep"
+                          Label="CEP"
+                          Mask="@(new PatternMask("00000-000"))"
+                          Placeholder="00000-000"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="8" md="7">
+            <MudTextField @bind-Value="_model.Logradouro"
+                          Label="Logradouro / Rua"
+                          Placeholder="Ex: Rua das Flores"
+                          MaxLength="100"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="4" md="3">
+            <MudTextField @bind-Value="_model.Numero"
+                          Label="Número"
+                          Placeholder="Ex: 123"
+                          MaxLength="10"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+    </MudGrid>
+
+    <MudGrid Spacing="4" Class="mt-4">
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.Complemento"
+                          Label="Complemento"
+                          Placeholder="Ex: Sala 201, Bloco B"
+                          MaxLength="60"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="3">
+            <MudTextField @bind-Value="_model.Bairro"
+                          Label="Bairro"
+                          Placeholder="Ex: Centro"
+                          MaxLength="60"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudSelect T="string" @bind-Value="_model.Uf"
+                       Label="Estado (UF)"
+                       Variant="Variant.Outlined">
+                @foreach (var uf in _ufs)
+                {
+                    <MudSelectItem T="string" Value="@uf">@uf</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudTextField @bind-Value="_model.Municipio"
+                          Label="Cidade / Município"
+                          Placeholder="Ex: São Paulo"
+                          MaxLength="60"
+                          Variant="Variant.Outlined" />
+        </MudItem>
+        <MudItem xs="12" sm="6" md="2">
+            <MudTextField Value="@_model.Pais"
+              Label="País"
+              ReadOnly="true"
+              Variant="Variant.Outlined" />
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+<MudPaper Class="pa-4 mt-6" Elevation="0" Style="border:1px solid #E0E4E8;">
+    <MudText Typo="Typo.subtitle1" Style="font-weight:600; margin-bottom:16px;">
+        3. Contato e Identidade Visual
+    </MudText>
+
+    <div class="contato-layout">
+    <div class="contato-esquerda">
+    <div class="contato-campos">
+        <MudTextField @bind-Value="_model.Telefone"
+                      Label="Telefone"
+                      Mask="@(new PatternMask("(00) 00000-0000"))"
+                      Placeholder="(00) 00000-0000"
+                      Variant="Variant.Outlined" />
+        <MudTextField @bind-Value="_model.Email"
+                      Label="E-mail"
+                      Placeholder="contato@empresa.com.br"
+                      InputType="InputType.Email"
+                      Variant="Variant.Outlined" />
+    </div>
+
+    <MudAlert Severity="Severity.Info" Class="mt-4" Variant="Variant.Outlined">
+        <MudText Typo="Typo.body2" Style="font-weight:600;">Dica sobre o logotipo</MudText>
+        <MudText Typo="Typo.caption">
+            Recomendamos imagens no formato PNG com fundo transparente, tamanho mínimo de 200x200px.
+            A logomarca será impressa nos documentos fiscais emitidos.
+        </MudText>
+    </MudAlert>
+</div>
+
+    <div class="contato-direita">
+        <MudText Typo="Typo.caption" Class="mb-1" Style="display:block; color:#5A6B7A; margin-top:-20px;">Logomarca / Logotipo</MudText>
+        <div class="logo-upload-box">
+            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Style="color:#9AA5B1;" Size="Size.Large" />
+            <MudText Typo="Typo.body2" Style="font-weight:600; margin-top:8px;">
+                Arraste ou <span style="color:#2C6FB0;">clique para enviar</span>
+            </MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-top:4px;">
+                PNG, JPG ou SVG · máx. 2MB
+            </MudText>
+        </div>
+    </div>
+</div>
+</MudPaper>
+</MudForm>
+
+@code {
+    private MudForm _form = null!;
+    private EmitenteModel _model = new();
+
+    private class EmitenteModel
+{
+    public string RazaoSocial { get; set; } = string.Empty;
+    public string? NomeFantasia { get; set; }
+
+    private string? _cnpj;
+    public string? Cnpj
+    {
+        get => _cnpj;
+        set => _cnpj = value?.ToUpperInvariant();
+    }
+
+    public string? InscricaoEstadual { get; set; }
+    public string? InscricaoMunicipal { get; set; }
+    public string? CnaeFiscal { get; set; }
+    public int RegimeTributario { get; set; }
+
+    public string? Cep { get; set; }
+    public string? Logradouro { get; set; }
+    public string? Numero { get; set; }
+    public string? Complemento { get; set; }
+    public string? Bairro { get; set; }
+    public string? Uf { get; set; }
+    public string? Municipio { get; set; }
+    public string Pais { get; set; } = "Brasil";
+
+    public string? Telefone { get; set; }
+    public string? Email { get; set; }
+}
+
+    private string? ValidarIe(string? ie)
+    {
+        if (string.IsNullOrWhiteSpace(ie))
+            return null;
+
+        if (ie.Trim().Equals("ISENTO", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (!ie.All(char.IsDigit))
+            return "Informe apenas números ou 'ISENTO'";
+
+        return null;
+    }
+
+    private readonly PatternMask _cnpjMask = new("**.***.***/****-00")
+{
+    MaskChars = new[]
+    {
+        new MaskChar('*', @"[0-9A-Za-z]"),
+        new MaskChar('0', @"[0-9]")
+    }
+};
+private readonly string[] _ufs =
+{
+    "AC","AL","AP","AM","BA","CE","DF","ES","GO",
+    "MA","MT","MS","MG","PA","PB","PR","PE","PI",
+    "RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+};
+}

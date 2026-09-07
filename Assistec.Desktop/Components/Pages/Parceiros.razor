@@ -1,0 +1,79 @@
+@page "/parceiros"
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Clientes
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+
+<MudText Typo="Typo.h4" Style="font-weight:600;">Parceiros</MudText>
+<MudText Typo="Typo.body1" Style="color:#5A6B7A; margin-bottom:24px;">
+    Selecione o tipo de parceiro comercial que deseja gerenciar, visualizar ou cadastrar no sistema.
+</MudText>
+
+<div class="parceiros-grid">
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Style="color:#2C6FB0;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Cliente</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cadastro de clientes, histórico de compras e CRM</MudText>
+        <MudButton Variant="Variant.Outlined"
+           OnClick="@(() => WindowManager.Open<ListaClientes>("Clientes", Icons.Material.Filled.Person))"
+           EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+                Acessar
+        </MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="color:#2E7D32;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Fornecedor</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Gerenciamento de fornecedores e compras</MudText>
+        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+            Acessar
+        </MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#FCEFDB;">
+            <MudIcon Icon="@Icons.Material.Filled.Calculate" Style="color:#D9A441;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Contador</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Contato contábil e acesso a documentos fiscais</MudText>
+        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+            Acessar
+        </MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Style="color:#8E5CE0;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Usuário</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Permissões, acessos e configurações de login</MudText>
+        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+            Acessar
+        </MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#FBE0EA;">
+            <MudIcon Icon="@Icons.Material.Filled.WorkspacePremium" Style="color:#C2185B;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Vendedor</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Comissões, metas e desempenho da equipe</MudText>
+        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+            Acessar
+        </MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#FBE7D8;">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#C97A3D;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Transportadora</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Controle de frotas e logística de distribuição</MudText>
+        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+            Acessar
+        </MudButton>
+    </div>
+</div>
