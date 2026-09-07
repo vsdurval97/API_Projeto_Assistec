@@ -599,7 +599,7 @@
 
 .cliente-row-endereco-1 {
     display: grid;
-    grid-template-columns: 1fr 3fr 1fr;
+    grid-template-columns: 1fr 2.5fr 1fr 1.5fr;
     gap: 16px;
 }
 
@@ -697,6 +697,274 @@
 
 .cliente-resumo-linha:last-child {
     margin-bottom: 0;
+}
+
+/* ==========================================================================
+   PÁGINA FORNECEDORES — LINHA DE 4 CARDS INFORMATIVOS
+   Reaproveita .info-card / .info-card-icon. Dados estáticos/placeholder —
+   "fornecedor" não existe no backend ainda.
+   ========================================================================== */
+.info-card-row-fornecedores {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   MODAL NOVO FORNECEDOR
+   ========================================================================== */
+.fornecedor-row-razao-fantasia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.fornecedor-row-fiscal {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.4fr;
+    gap: 16px;
+}
+
+.fornecedor-row-contato {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.fornecedor-row-endereco-1 {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr 1fr 1.5fr;
+    gap: 16px;
+}
+
+.fornecedor-row-endereco-2 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+}
+
+.fornecedor-row-condicoes {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   PÁGINA FORNECEDORES — BARRA DE BUSCA E FILTROS POR CATEGORIA
+   ========================================================================== */
+.fornecedor-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.fornecedor-busca-input {
+    max-width: 320px;
+}
+
+.fornecedor-categorias-filtro {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.categoria-filtro-btn {
+    border: none;
+    background-color: #F0F2F4;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.categoria-filtro-btn.active {
+    background-color: #2E7D32;
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PÁGINA FORNECEDORES — TABELA DE LISTAGEM
+   Mesma estrutura de .clientes-table, mantida separada seguindo a
+   convenção do projeto (classes específicas por página).
+   ========================================================================== */
+.fornecedores-table {
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.fornecedores-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.fornecedores-table td {
+    padding: 12px 8px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.fornecedores-table tr:last-child td {
+    border-bottom: none;
+}
+
+.fornecedores-table .col-num {
+    text-align: right;
+}
+
+.fornecedores-table .col-acoes {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.fornecedor-nome-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.fornecedor-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.fornecedor-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO FORNECEDOR — LAYOUT GERAL
+   ========================================================================== */
+.fornecedor-detalhe-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.fornecedor-detalhe-coluna {
+    display: flex;
+    flex-direction: column;
+}
+
+.fornecedor-perfil-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.fornecedor-contato-linha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.fornecedor-contato-linha:last-child {
+    margin-bottom: 0;
+}
+
+.fornecedor-condicoes-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.fornecedor-condicoes-linha:last-child {
+    margin-bottom: 0;
+}
+
+.fornecedor-nome-clicavel {
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO FORNECEDOR — CARD "PEDIDOS DE COMPRA"
+   ========================================================================== */
+.fornecedor-pedidos-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.fornecedor-pedidos-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.fornecedor-pedidos-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.fornecedor-pedidos-table td {
+    padding: 12px 8px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.fornecedor-pedidos-table tr:last-child td {
+    border-bottom: none;
+}
+
+.fornecedor-pedidos-table .col-num {
+    text-align: right;
+}
+
+.fornecedor-pedidos-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #F0F2F4;
 }
 
 /* ==========================================================================

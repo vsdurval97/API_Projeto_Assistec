@@ -1,0 +1,231 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(FornecedorExistente is null ? "Novo Fornecedor" : "Editar Fornecedor")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                @(FornecedorExistente is null ? "Preencha os dados do fornecedor" : "Atualize os dados do fornecedor")
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block; margin-bottom:8px;">Tipo de Pessoa</MudText>
+            <MudRadioGroup T="TipoPessoa" @bind-Value="_model.TipoPessoa" Class="mb-4">
+                <MudRadio T="TipoPessoa" Value="TipoPessoa.Juridica" Color="Color.Primary">Pessoa Jurídica</MudRadio>
+                <MudRadio T="TipoPessoa" Value="TipoPessoa.Fisica" Color="Color.Primary">Pessoa Física</MudRadio>
+            </MudRadioGroup>
+
+            <div class="@(_model.TipoPessoa == TipoPessoa.Juridica ? "fornecedor-row-razao-fantasia" : "")">
+                <MudTextField @bind-Value="_model.RazaoSocial"
+                              Label="@(_model.TipoPessoa == TipoPessoa.Fisica ? "Nome" : "Razão Social")"
+                              Placeholder="@(_model.TipoPessoa == TipoPessoa.Fisica ? "Nome completo" : "Razão Social completa")"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                @if (_model.TipoPessoa == TipoPessoa.Juridica)
+                {
+                    <MudTextField @bind-Value="_model.NomeFantasia"
+                                  Label="Nome Fantasia"
+                                  Placeholder="Nome comercial"
+                                  Variant="Variant.Outlined" />
+                }
+            </div>
+
+            <div class="fornecedor-row-fiscal mt-4">
+                <MudTextField @bind-Value="_model.Documento"
+                              Label="@(_model.TipoPessoa == TipoPessoa.Fisica ? "CPF" : "CNPJ")"
+                              Mask="@(_model.TipoPessoa == TipoPessoa.Fisica ? new PatternMask("000.000.000-00") : new PatternMask("00.000.000/0000-00"))"
+                              Placeholder="@(_model.TipoPessoa == TipoPessoa.Fisica ? "000.000.000-00" : "00.000.000/0000-00")"
+                              Variant="Variant.Outlined" />
+                @if (_model.TipoPessoa == TipoPessoa.Juridica)
+                {
+                    <MudTextField @bind-Value="_model.InscricaoEstadual"
+                                  Label="Inscrição Estadual"
+                                  Placeholder="Isento ou número"
+                                  Variant="Variant.Outlined" />
+                }
+                <MudSelect T="string" @bind-Value="_model.Categoria" Label="Categoria de Fornecimento" Placeholder="Selecione..." Variant="Variant.Outlined">
+                    @foreach (var categoria in _categorias)
+                    {
+                        <MudSelectItem T="string" Value="@categoria">@categoria</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Contato Comercial</MudText>
+
+            <div class="fornecedor-row-contato mt-2">
+                <MudTextField @bind-Value="_model.NomeContato"
+                              Label="Nome do Contato"
+                              Placeholder="Nome do responsável"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Telefone"
+                              Label="Telefone / WhatsApp"
+                              Mask="@(new PatternMask("(00) 00000-0000"))"
+                              Placeholder="(00) 00000-0000"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Email"
+                              Label="E-mail Comercial"
+                              Placeholder="email@empresa.com.br"
+                              InputType="InputType.Email"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Endereço</MudText>
+
+            <div class="fornecedor-row-endereco-1 mt-2">
+                <MudTextField @bind-Value="_model.Cep"
+                              Label="CEP"
+                              Mask="@(new PatternMask("00000-000"))"
+                              Placeholder="00000-000"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Logradouro"
+                              Label="Logradouro"
+                              Placeholder="Rua, Av..."
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Numero"
+                              Label="Número"
+                              Placeholder="123"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Complemento"
+                              Label="Complemento"
+                              Placeholder="Sala, bloco, referência..."
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <div class="fornecedor-row-endereco-2 mt-4">
+                <MudTextField @bind-Value="_model.Bairro"
+                              Label="Bairro"
+                              Placeholder="Bairro"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Municipio"
+                              Label="Cidade"
+                              Placeholder="Cidade"
+                              Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.Uf" Label="UF" Variant="Variant.Outlined">
+                    @foreach (var uf in _ufs)
+                    {
+                        <MudSelectItem T="string" Value="@uf">@uf</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Condições Comerciais</MudText>
+
+            <div class="fornecedor-row-condicoes mt-2">
+                <MudTextField @bind-Value="_model.PrazoEntrega"
+                              Label="Prazo de Entrega"
+                              Placeholder="Ex: 2-3 dias úteis"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.CondicaoPagamento"
+                              Label="Condição de Pagamento"
+                              Placeholder="Ex: 30 ddl, À vista"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Site"
+                              Label="Site / Portal do Fornecedor"
+                              Placeholder="https://"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <MudTextField @bind-Value="_model.Observacoes"
+                          Label="Observações"
+                          Placeholder="Produtos de destaque, restrições, acordos especiais..."
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Class="mt-4" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Salvar">
+            @(FornecedorExistente is null ? "Salvar" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm _form = null!;
+    private FornecedorFormModel _model = new();
+
+    private enum TipoPessoa { Fisica, Juridica }
+
+    private class FornecedorFormModel
+    {
+        public TipoPessoa TipoPessoa { get; set; } = TipoPessoa.Juridica;
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string? NomeFantasia { get; set; }
+        public string? Documento { get; set; }
+        public string? InscricaoEstadual { get; set; }
+        public string? Categoria { get; set; }
+        public string? NomeContato { get; set; }
+        public string? Telefone { get; set; }
+        public string? Email { get; set; }
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Numero { get; set; }
+        public string? Complemento { get; set; }
+        public string? Bairro { get; set; }
+        public string? Municipio { get; set; }
+        public string? Uf { get; set; }
+        public string? PrazoEntrega { get; set; }
+        public string? CondicaoPagamento { get; set; }
+        public string? Site { get; set; }
+        public string? Observacoes { get; set; }
+    }
+
+    private readonly string[] _categorias =
+    {
+        "Peças e Componentes", "Eletrônicos e Acessórios", "Informática e Periféricos",
+        "Suprimentos e Consumíveis", "Importados e Especiais"
+    };
+
+    private readonly string[] _ufs =
+    {
+        "AC","AL","AP","AM","BA","CE","DF","ES","GO",
+        "MA","MT","MS","MG","PA","PB","PR","PE","PI",
+        "RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+    };
+
+    [Parameter] public FornecedorItem? FornecedorExistente { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (FornecedorExistente is null) return;
+
+        var f = FornecedorExistente;
+
+        _model.RazaoSocial = f.RazaoSocial;
+        _model.NomeFantasia = f.NomeFantasia;
+        _model.Documento = f.Cnpj;
+        _model.InscricaoEstadual = f.InscricaoEstadual;
+        _model.Categoria = f.Categoria;
+        _model.NomeContato = f.NomeContato;
+        _model.Telefone = f.Telefone;
+        _model.Email = f.Email;
+        _model.Cep = f.Cep;
+        _model.Logradouro = f.Logradouro;
+        _model.Numero = f.Numero;
+        _model.Complemento = f.Complemento;
+        _model.Bairro = f.Bairro;
+        _model.Municipio = f.Municipio;
+        _model.Uf = f.Uf;
+        _model.PrazoEntrega = f.PrazoEntrega;
+        _model.CondicaoPagamento = f.CondicaoPagamento;
+        _model.Site = f.Site;
+        _model.Observacoes = f.Observacoes;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

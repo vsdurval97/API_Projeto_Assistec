@@ -1,5 +1,6 @@
 @page "/parceiros"
 @using Assistec.Desktop.Components.Pages.ParceirosPages.Clientes
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Fornecedores
 @using Assistec.Desktop.Windowing
 @inject WindowManagerService WindowManager
 
@@ -28,9 +29,11 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Fornecedor</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Gerenciamento de fornecedores e compras</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaFornecedores>("Fornecedores", Icons.Material.Filled.LocalShipping))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 
     <div class="parceiro-card">
