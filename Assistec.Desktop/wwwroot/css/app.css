@@ -968,6 +968,228 @@
 }
 
 /* ==========================================================================
+   PÁGINA USUÁRIOS — LINHA DE 3 CARDS INFORMATIVOS
+   ========================================================================== */
+.info-card-row-usuarios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA USUÁRIOS — BUSCA E FILTROS (PERFIL + STATUS)
+   ========================================================================== */
+.usuario-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.usuario-busca-input {
+    max-width: 260px;
+}
+
+.usuario-perfis-filtro {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.perfil-filtro-btn {
+    border: none;
+    background-color: #F0F2F4;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.perfil-filtro-btn.active {
+    background-color: #C2185B;
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PÁGINA USUÁRIOS — TABELA DE LISTAGEM
+   ========================================================================== */
+.usuarios-table {
+    width: 100%;
+    min-width: 1150px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.usuarios-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 24px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.usuarios-table td {
+    padding: 12px 24px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.usuarios-table tr:last-child td {
+    border-bottom: none;
+}
+
+.usuarios-table .col-num {
+    text-align: right;
+    padding-right: 36px !important;
+}
+
+.usuarios-table .col-acoes {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.usuario-nome-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.usuario-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.usuario-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.usuarios-table th:nth-child(6),
+.usuarios-table td:nth-child(6) {
+    padding-left: 16px;
+}
+
+/* ==========================================================================
+   MODAL NOVO USUÁRIO
+   ========================================================================== */
+.usuario-row-nome-telefone {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+}
+
+.usuario-row-login-perfil-status {
+    display: grid;
+    grid-template-columns: 1.4fr 1.4fr 1fr;
+    gap: 16px;
+}
+
+.usuario-row-senha {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.usuario-permissoes-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.permissoes-table {
+    width: 100%;
+    min-width: 500px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.permissoes-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 8px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.permissoes-table td {
+    padding: 6px 8px 6px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.permissoes-table tr:last-child td {
+    border-bottom: none;
+}
+
+.permissoes-table .col-check {
+    text-align: center;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO USUÁRIO
+   Reaproveita .fornecedor-detalhe-grid / .fornecedor-detalhe-coluna /
+   .fornecedor-condicoes-linha (mesmo layout 2 colunas de DetalhesFornecedor).
+   ========================================================================== */
+.usuario-perfil-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.usuario-nome-clicavel {
+    cursor: pointer;
+}
+
+.usuario-acao-rapida {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+}
+
+.usuario-acao-rapida:last-child {
+    margin-bottom: 0;
+}
+
+/* ==========================================================================
    SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
    .content-area: âncora de posicionamento para as janelas flutuantes,
    ocupando o mesmo espaço do @Body dentro do MudMainContent.

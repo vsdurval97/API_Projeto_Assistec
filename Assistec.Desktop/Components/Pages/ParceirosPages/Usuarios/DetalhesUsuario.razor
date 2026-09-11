@@ -1,0 +1,171 @@
+@page "/parceiros/usuarios/{Codigo}"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaUsuarios" />
+    <MudLink Underline="Underline.None" Style="color:#9AA5B1;">Parceiros</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaUsuarios">Usuários</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@(_usuario?.Nome ?? Codigo)</MudText>
+</div>
+
+@if (_usuario is not null)
+{
+    <div class="fornecedor-detalhe-grid mt-4">
+        <div class="fornecedor-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="usuario-perfil-avatar" style="background-color:@_usuario.CorAvatar;">@_usuario.Iniciais</div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_usuario.Nome</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-align:center; display:block;">@_usuario.Email</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1; text-align:center; display:block;">@_usuario.Codigo</MudText>
+                <div style="text-align:center; margin-top:8px; display:flex; gap:8px; justify-content:center;">
+                    <MudChip T="string" Size="Size.Small" Style="@ChipEstilo(CorPerfil(_usuario.Perfil))">@_usuario.Perfil</MudChip>
+                    @if (_usuario.Ativo)
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                    }
+                </div>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar Cadastro
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Informações</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Telefone</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(_usuario.Telefone ?? "—")</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Cadastrado em</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_usuario.CadastradoEm.ToString("dd/MM/yyyy")</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Último acesso</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_usuario.UltimoAcesso.ToString("dd/MM/yyyy HH:mm")</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total de acessos</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_usuario.TotalAcessos.ToString("N0")</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Ações Rápidas</MudText>
+                <div class="usuario-acao-rapida" style="color:#C2185B;">
+                    <MudIcon Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">Redefinir senha</MudText>
+                </div>
+                <div class="usuario-acao-rapida" style="color:#C97A3D;">
+                    <MudIcon Icon="@Icons.Material.Filled.Logout" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">Forçar logout</MudText>
+                </div>
+                <div class="usuario-acao-rapida" style="color:#5A6B7A;">
+                    <MudIcon Icon="@Icons.Material.Filled.Block" Size="Size.Small" />
+                    <MudText Typo="Typo.body2">@(_usuario.Ativo ? "Desativar usuário" : "Ativar usuário")</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div>
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div style="display:flex; align-items:flex-start; gap:12px;">
+                    <div>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Permissões por Módulo</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Baseado no perfil <b>@_usuario.Perfil</b></MudText>
+                    </div>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.EditNote">
+                        Editar Permissões
+                    </MudButton>
+                </div>
+
+                <div style="overflow-x:auto; margin-top:16px;">
+                    <table class="permissoes-table">
+                        <thead>
+                            <tr>
+                                <th>Módulo</th>
+                                <th class="col-check">Visualizar</th>
+                                <th class="col-check">Criar</th>
+                                <th class="col-check">Editar</th>
+                                <th class="col-check">Excluir</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var permissao in _permissoes)
+                            {
+                                <tr>
+                                    <td>@permissao.Modulo</td>
+                                    <td class="col-check">@IndicadorPermissao(permissao.Visualizar)</td>
+                                    <td class="col-check">@IndicadorPermissao(permissao.Criar)</td>
+                                    <td class="col-check">@IndicadorPermissao(permissao.Editar)</td>
+                                    <td class="col-check">@IndicadorPermissao(permissao.Excluir)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A; margin-top:16px;">Usuário não encontrado.</MudText>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = string.Empty;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private UsuarioItem? _usuario;
+    private List<PermissaoModuloItem> _permissoes = new();
+
+    protected override void OnParametersSet()
+    {
+        _usuario = UsuarioMockData.Usuarios.FirstOrDefault(u => u.Codigo == Codigo);
+        _permissoes = PermissoesPadrao.ObterPadrao(_usuario?.Perfil);
+    }
+
+    private static RenderFragment IndicadorPermissao(bool ativo) => builder =>
+    {
+        builder.OpenComponent<MudIcon>(0);
+        builder.AddAttribute(1, "Icon", ativo ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Cancel);
+        builder.AddAttribute(2, "Style", ativo ? "color:#2E7D32;" : "color:#D9D9D9;");
+        builder.AddAttribute(3, "Size", Size.Small);
+        builder.CloseComponent();
+    };
+
+    private static (string Bg, string Texto) CorPerfil(string perfil) => perfil switch
+    {
+        "Administrador" => ("#FBE4EC", "#C2185B"),
+        "Gerente" => ("#F1E9FA", "#8E5CE0"),
+        "Vendedor" => ("#EAF1FA", "#2C6FB0"),
+        "Financeiro" => ("#E4F2E5", "#2E7D32"),
+        "Estoque" => ("#FBE7D8", "#C97A3D"),
+        "Suporte" => ("#FCEFDB", "#D9A441"),
+        _ => ("#F0F2F4", "#5A6B7A")
+    };
+
+    private static string ChipEstilo((string Bg, string Texto) cor) => $"background-color:{cor.Bg}; color:{cor.Texto};";
+
+    private async Task AbrirEdicao()
+    {
+        // TODO: NovoUsuario ainda não tem parâmetro de edição (UsuarioExistente) — próximo passo.
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoUsuario>("Editar Usuário", options);
+    }
+
+    private void VoltarParaUsuarios()
+    {
+        WindowManager.Navigate(WindowId, typeof(ListaUsuarios), null, "Usuários");
+    }
+}

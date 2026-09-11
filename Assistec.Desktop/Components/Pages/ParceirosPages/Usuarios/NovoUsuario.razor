@@ -1,0 +1,157 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">Novo Usuário</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Crie uma conta de acesso ao sistema</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Dados do Usuário</MudText>
+
+            <div class="usuario-row-nome-telefone mt-2">
+                <MudTextField @bind-Value="_model.Nome"
+                              Label="Nome Completo"
+                              Placeholder="Nome do usuário"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Telefone"
+                              Label="Telefone / WhatsApp"
+                              Mask="@(new PatternMask("(00) 00000-0000"))"
+                              Placeholder="(00) 00000-0000"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <div class="usuario-row-login-perfil-status mt-4">
+                <MudTextField @bind-Value="_model.Login"
+                              Label="Login"
+                              Placeholder="Nome de usuário para entrar no sistema"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.Perfil" Label="Perfil de Acesso" Placeholder="Selecione..." Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined">
+                    @foreach (var perfil in _perfis)
+                    {
+                        <MudSelectItem T="string" Value="@perfil">@perfil</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="string" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("Ativo")">Ativo</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Inativo")">Inativo</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Senha de Acesso</MudText>
+
+            <div class="usuario-row-senha mt-2">
+                <MudTextField @bind-Value="_model.Senha"
+                              Label="Senha"
+                              Placeholder="Mínimo 8 caracteres"
+                              InputType="InputType.Password"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.ConfirmarSenha"
+                              Label="Confirmar Senha"
+                              Placeholder="Repita a senha"
+                              InputType="InputType.Password"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <MudCheckBox T="bool" @bind-Value="_model.SolicitarTrocaSenha" Label="Solicitar troca de senha no primeiro acesso" Color="Color.Primary" Class="mt-2" />
+
+            <MudDivider Class="my-4" />
+
+            <div class="usuario-permissoes-header">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Permissões por Módulo</MudText>
+                <MudSpacer />
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="MarcarTudo">Marcar tudo</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" OnClick="LimparTudo">Limpar tudo</MudButton>
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="permissoes-table">
+                    <thead>
+                        <tr>
+                            <th>Módulo</th>
+                            <th class="col-check">Visualizar</th>
+                            <th class="col-check">Criar</th>
+                            <th class="col-check">Editar</th>
+                            <th class="col-check">Excluir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var permissao in _permissoes)
+                        {
+                            <tr>
+                                <td>@permissao.Modulo</td>
+                                <td class="col-check"><MudCheckBox T="bool" @bind-Value="permissao.Visualizar" Color="Color.Primary" /></td>
+                                <td class="col-check"><MudCheckBox T="bool" @bind-Value="permissao.Criar" Color="Color.Primary" /></td>
+                                <td class="col-check"><MudCheckBox T="bool" @bind-Value="permissao.Editar" Color="Color.Primary" /></td>
+                                <td class="col-check"><MudCheckBox T="bool" @bind-Value="permissao.Excluir" Color="Color.Primary" /></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Salvar">Salvar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm _form = null!;
+    private UsuarioFormModel _model = new();
+
+    private class UsuarioFormModel
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string? Telefone { get; set; }
+        public string Login { get; set; } = string.Empty;
+        public string? Perfil { get; set; }
+        public string Status { get; set; } = "Ativo";
+        public string? Senha { get; set; }
+        public string? ConfirmarSenha { get; set; }
+        public bool SolicitarTrocaSenha { get; set; } = true;
+    }
+
+    
+    private readonly string[] _perfis =
+    {
+        "Administrador", "Gerente", "Vendedor", "Financeiro", "Estoque", "Suporte", "Somente Leitura"
+    };
+
+    private List<PermissaoModuloItem> _permissoes = PermissoesPadrao.ObterPadrao(null);
+
+    private void MarcarTudo()
+    {
+        foreach (var p in _permissoes)
+        {
+            p.Visualizar = p.Criar = p.Editar = p.Excluir = true;
+        }
+    }
+
+    private void LimparTudo()
+    {
+        foreach (var p in _permissoes)
+        {
+            p.Visualizar = p.Criar = p.Editar = p.Excluir = false;
+        }
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

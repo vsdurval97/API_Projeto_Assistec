@@ -1,4 +1,8 @@
 @page "/parceiros/usuarios"
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Usuarios
+@inject IDialogService DialogService
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
 
 <div class="page-header">
     <div>
@@ -7,8 +11,209 @@
             Permissões, acessos e configurações de login.
         </MudText>
     </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoUsuario">
+    Novo Usuário
+</MudButton>
 </div>
 
-<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
-    <MudText Typo="Typo.body1" Style="color:#5A6B7A;">Tela em construção.</MudText>
+<div class="info-card-row-usuarios">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.People" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Usuários Ativos</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_usuariosAtivos</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">de @UsuarioMockData.Usuarios.Count cadastrados</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Badge" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Perfis Distintos</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_perfisDistintos</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">em uso</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Wifi" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Usuários Online</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_usuariosOnline</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">agora</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="usuario-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Nome, e-mail ou código..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="usuario-busca-input" />
+
+    <div class="usuario-perfis-filtro">
+        <button type="button"
+                class="perfil-filtro-btn @(_perfilFiltro == null ? "active" : "")"
+                @onclick="() => _perfilFiltro = null">
+            Todos os Perfis
+        </button>
+        @foreach (var perfil in _perfis)
+        {
+            <button type="button"
+                    class="perfil-filtro-btn @(_perfilFiltro == perfil ? "active" : "")"
+                    @onclick="() => _perfilFiltro = perfil">
+                @perfil
+            </button>
+        }
+    </div>
+
+    <div class="cliente-filtro-tipos">
+        <button type="button"
+                class="filtro-tipo-btn @(_statusFiltro == StatusFiltro.Todos ? "active" : "")"
+                @onclick="() => _statusFiltro = StatusFiltro.Todos">
+            Todos
+        </button>
+        <button type="button"
+                class="filtro-tipo-btn @(_statusFiltro == StatusFiltro.Ativo ? "active" : "")"
+                @onclick="() => _statusFiltro = StatusFiltro.Ativo">
+            Ativo
+        </button>
+        <button type="button"
+                class="filtro-tipo-btn @(_statusFiltro == StatusFiltro.Inativo ? "active" : "")"
+                @onclick="() => _statusFiltro = StatusFiltro.Inativo">
+            Inativo
+        </button>
+    </div>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_usuariosExibidos.Count() usuários</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="usuarios-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Usuário</th>
+                <th>Perfil</th>
+                <th>Status</th>
+                <th class="col-num">Total Acessos</th>
+                <th>Último Acesso</th>
+                <th>Cadastrado em</th>
+                <th class="col-acoes"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var usuario in _usuariosExibidos)
+            {
+                var cor = CorPerfil(usuario.Perfil);
+                <tr>
+                    <td><MudLink Href="#" Underline="Underline.None">@usuario.Codigo</MudLink></td>
+                    <td>
+                        <div class="usuario-nome-cell usuario-nome-clicavel" @onclick="() => AbrirDetalhes(usuario.Codigo)">
+        <div class="usuario-avatar" style="background-color:@usuario.CorAvatar;">@usuario.Iniciais</div>
+        <div>
+            <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@usuario.Nome</MudText>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@usuario.Email</MudText>
+        </div>
+    </div>
+                    </td>
+                    <td>
+                        <MudChip T="string" Size="Size.Small" Style="@($"background-color:{cor.Bg}; color:{cor.Texto};")">@usuario.Perfil</MudChip>
+
+                    </td>
+                    <td>
+                        @if (usuario.Ativo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                        }
+                    </td>
+                    <td class="col-num">@usuario.TotalAcessos.ToString("N0")</td>
+                    <td>@usuario.UltimoAcesso.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@usuario.CadastradoEm.ToString("dd/MM/yyyy")</td>
+                    <td class="col-acoes">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
+                        <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" OnClick="() => AbrirDetalhes(usuario.Codigo)" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="usuario-tabela-footer">
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma linha para ver as permissões detalhadas do usuário</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_usuariosExibidos.Count() de @UsuarioMockData.Usuarios.Count usuários</MudText>
+    </div>
 </MudPaper>
+
+@code {
+    private enum StatusFiltro { Todos, Ativo, Inativo }
+
+    private string _termoBusca = string.Empty;
+    private string? _perfilFiltro = null;
+    private StatusFiltro _statusFiltro = StatusFiltro.Todos;
+
+    private readonly string[] _perfis =
+    {
+        "Administrador", "Gerente", "Vendedor", "Financeiro", "Estoque", "Suporte", "Somente Leitura"
+    };
+
+    private int _usuariosAtivos => UsuarioMockData.Usuarios.Count(u => u.Ativo);
+    private int _perfisDistintos => UsuarioMockData.Usuarios.Select(u => u.Perfil).Distinct().Count();
+    private int _usuariosOnline => UsuarioMockData.Usuarios.Count(u => u.Online);
+
+    private static (string Bg, string Texto) CorPerfil(string perfil) => perfil switch
+    {
+        "Administrador" => ("#FBE4EC", "#C2185B"),
+        "Gerente" => ("#F1E9FA", "#8E5CE0"),
+        "Vendedor" => ("#EAF1FA", "#2C6FB0"),
+        "Financeiro" => ("#E4F2E5", "#2E7D32"),
+        "Estoque" => ("#FBE7D8", "#C97A3D"),
+        "Suporte" => ("#FCEFDB", "#D9A441"),
+        _ => ("#F0F2F4", "#5A6B7A")
+    };
+
+    private async Task AbrirNovoUsuario()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoUsuario>("Novo Usuário", options);
+}
+
+[CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+private void AbrirDetalhes(string codigo)
+{
+    WindowManager.Navigate(WindowId, typeof(DetalhesUsuario),
+        new Dictionary<string, object> { { "Codigo", codigo } },
+        $"Usuário {codigo}");
+}
+
+    private IEnumerable<UsuarioItem> _usuariosExibidos =>
+        UsuarioMockData.Usuarios
+            .Where(u => _perfilFiltro == null || u.Perfil == _perfilFiltro)
+            .Where(u => _statusFiltro == StatusFiltro.Todos
+                || (_statusFiltro == StatusFiltro.Ativo && u.Ativo)
+                || (_statusFiltro == StatusFiltro.Inativo && !u.Ativo))
+            .Where(u => string.IsNullOrWhiteSpace(_termoBusca)
+                || u.Nome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || u.Email.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || u.Codigo.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(u => u.UltimoAcesso)
+            .Take(10);
+}
