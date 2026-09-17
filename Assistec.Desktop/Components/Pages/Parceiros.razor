@@ -4,6 +4,7 @@
 @using Assistec.Desktop.Components.Pages.ParceirosPages.Contador
 @using Assistec.Desktop.Components.Pages.ParceirosPages.Usuarios
 @using Assistec.Desktop.Components.Pages.ParceirosPages.Vendedores
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Transportadoras
 @using Assistec.Desktop.Windowing
 @inject WindowManagerService WindowManager
 
@@ -84,8 +85,10 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Transportadora</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Controle de frotas e logística de distribuição</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<Transportadora>("Transportadoras", Icons.Material.Filled.EmojiTransportation))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 </div>

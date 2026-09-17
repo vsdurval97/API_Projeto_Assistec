@@ -1447,6 +1447,259 @@
 }
 
 /* ==========================================================================
+   PÁGINA TRANSPORTADORAS — ABAS DO TOPO (Transportadora/Veículo/Motorista)
+   ========================================================================== */
+.transportadora-top-tabs .mud-tabs-toolbar {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.transportadora-top-tabs .mud-tab.mud-tab-active {
+    color: #C97A3D;
+}
+
+.transportadora-top-tabs .mud-tabs-slider {
+    background-color: #C97A3D !important;
+}
+
+/* ==========================================================================
+   PÁGINA TRANSPORTADORAS — LINHA DE 4 CARDS INFORMATIVOS
+   ========================================================================== */
+.info-card-row-transportadoras {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA TRANSPORTADORAS — BUSCA E FILTRO POR MODAL
+   ========================================================================== */
+.transportadora-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.transportadora-busca-input {
+    max-width: 280px;
+}
+
+.transportadora-modal-filtro {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.modal-filtro-btn {
+    border: none;
+    background-color: #F0F2F4;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.modal-filtro-btn.active {
+    background-color: #C97A3D;
+    color: #FFFFFF;
+}
+
+/* ==========================================================================
+   PÁGINA TRANSPORTADORAS — TABELA DE LISTAGEM
+   ========================================================================== */
+.transportadoras-table {
+    width: 100%;
+    min-width: 1150px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.transportadoras-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 20px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.transportadoras-table td {
+    padding: 12px 20px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.transportadoras-table tr:last-child td {
+    border-bottom: none;
+}
+
+.transportadoras-table .col-num {
+    text-align: right;
+}
+
+.transportadoras-table .col-acoes {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.transportadora-nome-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.transportadora-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.rntrc-badge {
+    background-color: #F0F2F4;
+    color: #5A6B7A;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-family: monospace;
+}
+
+.transportadora-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   PÁGINA TRANSPORTADORAS — FILTRO SELECT (dropdown de transportadora)
+   ========================================================================== */
+.transportadora-select-filtro {
+    max-width: 220px;
+}
+
+/* ==========================================================================
+   ABA VEÍCULOS — TABELA
+   ========================================================================== */
+.veiculos-table {
+    width: 100%;
+    min-width: 1500px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.veiculos-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 18px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.veiculos-table td {
+    padding: 12px 18px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.veiculos-table tr:last-child td {
+    border-bottom: none;
+}
+
+.veiculos-table .col-num {
+    text-align: right;
+}
+
+.veiculos-table .col-acoes {
+    text-align: right;
+}
+
+/* ==========================================================================
+   ABA MOTORISTAS — TABELA
+   ========================================================================== */
+.motoristas-table {
+    width: 100%;
+    min-width: 1400px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.motoristas-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 18px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.motoristas-table td {
+    padding: 12px 18px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.motoristas-table tr:last-child td {
+    border-bottom: none;
+}
+
+.motoristas-table .col-acoes {
+    text-align: right;
+}
+
+.motorista-nome-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.motorista-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #FFFFFF;
+    font-weight: 600;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+
+/* ==========================================================================
    SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
    .content-area: âncora de posicionamento para as janelas flutuantes,
    ocupando o mesmo espaço do @Body dentro do MudMainContent.
