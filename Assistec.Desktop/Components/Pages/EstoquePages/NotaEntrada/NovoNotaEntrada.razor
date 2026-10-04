@@ -1,0 +1,329 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(NotaExistente is null ? "Nova Nota de Entrada" : $"Nota de Entrada {NotaExistente.Numero}")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Registre, confira e incorpore os produtos ao estoque.</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="true">
+            <MudTabPanel Text="Revisão Completa da Nota">
+                <div class="nota-bloco-cabecalho mt-4">
+                    <div class="nota-bloco-natureza">
+                        <MudSelect T="string" @bind-Value="_model.Natureza" Label="Natureza da Operação" Variant="Variant.Outlined" SelectedValuesChanged="AplicarNatureza">
+                            @foreach (var natureza in NaturezaOperacaoMockData.Naturezas)
+                            {
+                                <MudSelectItem T="string" Value="@natureza.Nome">
+                                    <div>
+                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@natureza.Nome <span style="color:#9AA5B1; font-weight:400;">— CFOP @natureza.Cfop</span></MudText>
+                                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@natureza.Descricao</MudText>
+                                    </div>
+                                </MudSelectItem>
+                            }
+                        </MudSelect>
+                        @if (!string.IsNullOrEmpty(_cfopAtualizadoMensagem))
+                        {
+                            <MudText Typo="Typo.caption" Style="color:#2E7D32; display:flex; align-items:center; gap:4px; margin-top:4px;">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" /> @_cfopAtualizadoMensagem
+                            </MudText>
+                        }
+                    </div>
+
+                    <div class="nota-row-identificacao">
+                        <MudTextField @bind-Value="_model.Numero" Label="Número" Placeholder="Número NF-e" Variant="Variant.Outlined" />
+                        <MudTextField @bind-Value="_model.Serie" Label="Série" Variant="Variant.Outlined" />
+                        <MudSelect T="string" @bind-Value="_model.Modelo" Label="Modelo" Variant="Variant.Outlined">
+                            <MudSelectItem T="string" Value="@("55 – NF-e")">55 – NF-e</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("65 – NFC-e")">65 – NFC-e</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("1 – Nota fiscal")">1 – Nota fiscal</MudSelectItem>
+                        </MudSelect>
+                    </div>
+                </div>
+
+                <div class="nota-row-chave-pedido mt-4">
+                    <MudTextField @bind-Value="_model.Chave" Label="Chave de Acesso" Placeholder="44 dígitos" MaxLength="44" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.PedidoCompra" Label="Pedido de Compra" Placeholder="Sem vínculo" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.Emissao" Label="Emissão" Placeholder="dd/mm/aaaa" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.Entrada" Label="Entrada" Placeholder="dd/mm/aaaa" Variant="Variant.Outlined" />
+                </div>
+
+                <MudDivider Class="my-4" />
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Fornecedor / Remetente</MudText>
+
+                <div class="nota-row-fornecedor mt-2">
+                    <MudTextField @bind-Value="_model.Fornecedor" Label="Razão Social" Placeholder="Fornecedor" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.Cnpj" Label="CNPJ" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.Ie" Label="Inscrição Estadual" Variant="Variant.Outlined" />
+                </div>
+
+                <MudDivider Class="my-4" />
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Itens e Tributação</MudText>
+
+                <div class="mt-2" style="overflow-x:auto;">
+                    <table class="nota-itens-table">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>NCM</th>
+                                <th>CFOP</th>
+                                <th class="col-num">Qtd.</th>
+                                <th class="col-num">V. Unit.</th>
+                                <th class="col-num">ICMS</th>
+                                <th class="col-num">IPI</th>
+                                <th class="col-num">PIS</th>
+                                <th class="col-num">COFINS</th>
+                                <th class="col-num">IBS</th>
+                                <th class="col-num">CBS</th>
+                                <th class="col-num">IS</th>
+                                <th class="col-num">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in _model.Itens)
+                            {
+                                <tr>
+                                    <td>
+                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo</MudText>
+                                    </td>
+                                    <td><MudTextField @bind-Value="item.Ncm" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:80px;" /></td>
+                                    <td><MudTextField @bind-Value="item.Cfop" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:60px;" /></td>
+                                    <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:600; color:#2E7D32;">@item.Quantidade.ToString("0.##")</MudText></td>
+                                    <td class="col-num">@FormatarMoeda(item.ValorUnitario)</td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Icms" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Ipi" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Pis" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Cofins" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Ibs" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Cbs" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudNumericField @bind-Value="item.Is" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:85px;" /></td>
+                                    <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(item.Quantidade * item.ValorUnitario - item.Desconto)</MudText></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="nota-totais-tributos mt-4">
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total ICMS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Icms)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total IPI</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Ipi)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total PIS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Pis)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total COFINS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Cofins)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total IBS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Ibs)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total CBS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Cbs)</MudText></div>
+                    <div class="nota-total-tributo-box"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Total IS</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Is)</MudText></div>
+                </div>
+
+                <div class="nota-row-financeiro-final mt-4">
+                    <div class="nota-condicoes-box">
+                        <MudSelect T="string" @bind-Value="_model.CondicaoPagamento" Label="Condição de Pagamento" Variant="Variant.Outlined">
+                            <MudSelectItem T="string" Value="@("À vista")">À vista</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("21 dias")">21 dias</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("28 dias")">28 dias</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("30 dias")">30 dias</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("30/60 dias")">30/60 dias</MudSelectItem>
+                        </MudSelect>
+                        <div class="nota-condicoes-row2">
+                            <MudNumericField @bind-Value="_model.OutrasDespesas" Label="Outras Despesas" Format="N2" Adornment="Adornment.Start" AdornmentText="R$" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.Desconto" Label="Desconto Geral" Format="N2" Adornment="Adornment.Start" AdornmentText="R$" Variant="Variant.Outlined" />
+                        </div>
+                    </div>
+
+                    <div class="nota-resumo-box">
+                        <div class="nota-resumo-grid">
+                            <div><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Produtos</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totalProdutos)</MudText></div>
+                            <div><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Frete</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_model.ValorFrete)</MudText></div>
+                            <div><MudText Typo="Typo.caption" Style="color:#9AA5B1;">IPI</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_totaisTributos.Ipi)</MudText></div>
+                            <div><MudText Typo="Typo.caption" Style="color:#9AA5B1;">Outras Despesas</MudText><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(_model.OutrasDespesas)</MudText></div>
+                        </div>
+                        <div class="nota-resumo-total">
+                            <MudText Typo="Typo.body2" Style="font-weight:700; color:#9A3412;">Valor Total da NF-e</MudText>
+                            <MudText Typo="Typo.h5" Style="font-weight:700; color:#C97A3D;">@FormatarMoeda(_totalNota)</MudText>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nota-status-row mt-4">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Status da Entrada</MudText>
+                    <MudSelect T="StatusNota" @bind-Value="_model.Status" Variant="Variant.Outlined" Style="max-width:260px;">
+                        @foreach (var status in Enum.GetValues<StatusNota>())
+                        {
+                            <MudSelectItem T="StatusNota" Value="@status">@RotuloStatus(status)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Transporte e Observações">
+                <div class="nota-row-transporte mt-4">
+                    <MudSelect T="string" @bind-Value="_model.TipoFrete" Label="Modalidade do Frete" Variant="Variant.Outlined">
+                        <MudSelectItem T="string" Value="@("CIF – Emitente")">CIF – Emitente</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("FOB – Destinatário")">FOB – Destinatário</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Sem frete")">Sem frete</MudSelectItem>
+                    </MudSelect>
+                    <MudNumericField @bind-Value="_model.ValorFrete" Label="Valor do Frete" Format="N2" Adornment="Adornment.Start" AdornmentText="R$" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="produto-alerta-info mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                        A transportadora, volumes, espécie, peso bruto e peso líquido poderão ser preenchidos quando disponíveis no XML.
+                    </MudText>
+                </div>
+
+                <MudTextField @bind-Value="_model.Observacao"
+                              Label="Observações e Informações Complementares"
+                              Placeholder="Informações adicionais da nota, instruções de recebimento e observações internas..."
+                              Variant="Variant.Outlined"
+                              Lines="5"
+                              Class="mt-4" />
+            </MudTabPanel>
+        </MudTabs>
+    </DialogContent>
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto;">@_model.Itens.Count item(ns) · @FormatarMoeda(_totalNota)</MudText>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" Disabled="@(string.IsNullOrEmpty(_model.Numero) || string.IsNullOrEmpty(_model.Fornecedor) || _model.Itens.Count == 0)" OnClick="Salvar">
+            @(NotaExistente is null ? "Registrar Nota" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public NotaEntradaItem? NotaExistente { get; set; }
+    [Parameter] public NotaEntradaItem? NotaPreenchida { get; set; }
+
+    private NotaFormModel _model = new();
+    private string? _cfopAtualizadoMensagem;
+
+    private class NotaFormModel
+    {
+        public string Numero { get; set; } = string.Empty;
+        public string Serie { get; set; } = "1";
+        public string Chave { get; set; } = string.Empty;
+        public string Modelo { get; set; } = "55 – NF-e";
+        public string? Emissao { get; set; }
+        public string? Entrada { get; set; }
+        public string Fornecedor { get; set; } = string.Empty;
+        public string? Cnpj { get; set; }
+        public string? Ie { get; set; }
+        public string? PedidoCompra { get; set; }
+        public string Natureza { get; set; } = "Compra para comercialização";
+        public string TipoFrete { get; set; } = "CIF – Emitente";
+        public double ValorFrete { get; set; }
+        public double OutrasDespesas { get; set; }
+        public double Desconto { get; set; }
+        public string CondicaoPagamento { get; set; } = "28 dias";
+        public string? Observacao { get; set; }
+        public StatusNota Status { get; set; } = StatusNota.PendenteConferencia;
+        public List<ItemLinhaEditavel> Itens { get; set; } = new();
+    }
+
+    private class ItemLinhaEditavel
+    {
+        public string Codigo { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
+        public string Ncm { get; set; } = string.Empty;
+        public string Cfop { get; set; } = string.Empty;
+        public double Quantidade { get; set; }
+        public double ValorUnitario { get; set; }
+        public double Desconto { get; set; }
+        public double Icms { get; set; }
+        public double Ipi { get; set; }
+        public double Pis { get; set; }
+        public double Cofins { get; set; }
+        public double Ibs { get; set; }
+        public double Cbs { get; set; }
+        public double Is { get; set; }
+    }
+
+    private double _totalProdutos => _model.Itens.Sum(i => i.Quantidade * i.ValorUnitario - i.Desconto);
+
+    private double _totalNota => _totalProdutos + _model.ValorFrete + _model.OutrasDespesas - _model.Desconto + _model.Itens.Sum(i => i.Ipi + i.Is);
+
+    private (double Icms, double Ipi, double Pis, double Cofins, double Ibs, double Cbs, double Is) _totaisTributos => (
+        _model.Itens.Sum(i => i.Icms),
+        _model.Itens.Sum(i => i.Ipi),
+        _model.Itens.Sum(i => i.Pis),
+        _model.Itens.Sum(i => i.Cofins),
+        _model.Itens.Sum(i => i.Ibs),
+        _model.Itens.Sum(i => i.Cbs),
+        _model.Itens.Sum(i => i.Is)
+    );
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private static string RotuloStatus(StatusNota status) => status switch
+    {
+        StatusNota.PendenteConferencia => "Pendente de conferência",
+        StatusNota.EmConferencia => "Em conferência",
+        StatusNota.Conferida => "Conferida",
+        StatusNota.EstoqueAtualizado => "Estoque atualizado",
+        _ => "Cancelada"
+    };
+
+    protected override void OnInitialized()
+{
+    var origem = NotaExistente ?? NotaPreenchida;
+    if (origem is null) return;
+
+    var n = origem;
+    _model.Numero = n.Numero;
+    _model.Serie = n.Serie;
+    _model.Chave = n.Chave;
+    _model.Modelo = n.Modelo;
+    _model.Emissao = n.Emissao.ToString("dd/MM/yyyy");
+    _model.Entrada = n.Entrada.ToString("dd/MM/yyyy");
+    _model.Fornecedor = n.Fornecedor;
+    _model.Cnpj = n.Cnpj;
+    _model.Ie = n.Ie;
+    _model.PedidoCompra = n.PedidoCompra;
+    _model.Natureza = n.Natureza;
+    _model.TipoFrete = n.TipoFrete;
+    _model.ValorFrete = n.ValorFrete;
+    _model.OutrasDespesas = n.OutrasDespesas;
+    _model.Desconto = n.Desconto;
+    _model.CondicaoPagamento = n.CondicaoPagamento;
+    _model.Observacao = n.Observacao;
+    _model.Status = n.Status;
+    _model.Itens = n.Itens.Select(i => new ItemLinhaEditavel
+    {
+        Codigo = i.Codigo,
+        Descricao = i.Descricao,
+        Ncm = i.Ncm,
+        Cfop = i.Cfop,
+        Quantidade = i.Quantidade,
+        ValorUnitario = i.ValorUnitario,
+        Desconto = i.Desconto,
+        Icms = i.Icms,
+        Ipi = i.Ipi,
+        Pis = i.Pis,
+        Cofins = i.Cofins,
+        Ibs = i.Ibs,
+        Cbs = i.Cbs,
+        Is = i.Is
+    }).ToList();
+}
+
+    private void AplicarNatureza(IEnumerable<string> _)
+    {
+        var natureza = NaturezaOperacaoMockData.Naturezas.FirstOrDefault(n => n.Nome == _model.Natureza);
+        if (natureza is null) return;
+
+        foreach (var item in _model.Itens)
+        {
+            item.Cfop = natureza.Cfop;
+        }
+
+        _cfopAtualizadoMensagem = $"CFOP {natureza.Cfop} aplicado aos {_model.Itens.Count} produto(s).";
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

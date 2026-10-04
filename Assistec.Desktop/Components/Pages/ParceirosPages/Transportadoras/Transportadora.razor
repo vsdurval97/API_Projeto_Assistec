@@ -1,4 +1,7 @@
 @page "/parceiros/transportadoras"
+@inject IDialogService DialogService
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
 
 <MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" Class="transportadora-top-tabs">
     <MudTabPanel Text="Transportadora">
@@ -9,9 +12,9 @@
                     Gerencie empresas de logística, fretes e todos os dados exigidos pela NF-e.
                 </MudText>
             </div>
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add">
-                Nova Transportadora
-            </MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovaTransportadora">
+    Nova Transportadora
+</MudButton>
         </div>
 
         <div class="info-card-row-transportadoras">
@@ -107,13 +110,13 @@
                         <tr>
                             <td><MudLink Href="#" Underline="Underline.None">@transportadora.Codigo</MudLink></td>
                             <td>
-                                <div class="transportadora-nome-cell">
-                                    <div class="transportadora-avatar" style="background-color:@transportadora.CorAvatar;">@transportadora.Iniciais</div>
-                                    <div>
-                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@transportadora.NomeFantasia</MudText>
-                                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@transportadora.RazaoSocial</MudText>
-                                    </div>
-                                </div>
+                                <div class="transportadora-nome-cell transportadora-nome-clicavel" @onclick="() => AbrirDetalhes(transportadora.Codigo)">
+        <div class="transportadora-avatar" style="background-color:@transportadora.CorAvatar;">@transportadora.Iniciais</div>
+        <div>
+            <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@transportadora.NomeFantasia</MudText>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@transportadora.RazaoSocial</MudText>
+        </div>
+    </div>
                             </td>
                             <td>@transportadora.Cnpj</td>
                             <td><span class="rntrc-badge">@transportadora.Rntrc</span></td>
@@ -126,9 +129,9 @@
                             <td class="col-num">@transportadora.TotalFaturadoFormatado</td>
                             <td>@transportadora.UltimoFrete.ToString("dd/MM/yyyy")</td>
                             <td class="col-acoes">
-                                <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
-                                <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" />
-                            </td>
+    <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(transportadora)" />
+    <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" OnClick="() => AbrirDetalhes(transportadora.Codigo)" />
+</td>
                         </tr>
                     }
                 </tbody>
@@ -141,7 +144,7 @@
         </MudPaper>
     </MudTabPanel>
 
-    <MudTabPanel Text="Veículo">
+    <MudTabPanel Text="Veículo">        
     <div class="page-header mt-4">
         <div>
             <MudText Typo="Typo.h4" Style="font-weight:600;">Veículos</MudText>
@@ -149,9 +152,9 @@
                 Cadastro de veículos da frota com todos os dados exigidos pelo MDF-e.
             </MudText>
         </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add">
-            Novo Veículo
-        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoMotorista">
+    Novo Motorista
+</MudButton>
     </div>
 
     <div class="info-card-row-transportadoras">
@@ -270,13 +273,13 @@
                             <MudText Typo="Typo.caption" Style="color:#9AA5B1;">UF: @veiculo.Uf</MudText>
                         </td>
                         <td>
-                            @veiculo.Modelo<br />
+                            @veiculo.Marca @veiculo.Modelo<br />
                             <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@veiculo.Ano · @veiculo.Cor</MudText>
                         </td>
                         <td>@veiculo.Renavam</td>
                         <td><MudText Typo="Typo.caption" Style="color:#9AA5B1; font-family:monospace;">@veiculo.Chassi</MudText></td>
                         <td><MudChip T="string" Size="Size.Small" Style="@ChipEstilo(corRodado)">@veiculo.RodadoLabel</MudChip></td>
-                        <td>@veiculo.Carroceria</td>
+                        <td>@veiculo.CarroceriaLabel</td>
                         <td class="col-num">@veiculo.TaraKg.ToString("N0")</td>
                         <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:600;">@veiculo.CapacidadeKg.ToString("N0")</MudText></td>
                         <td class="col-num">@veiculo.CapacidadeM3.ToString("N0")</td>
@@ -286,8 +289,8 @@
                         </td>
                         <td>@(veiculo.UltimoMdfe?.ToString("dd/MM/yyyy") ?? "—")</td>
                         <td class="col-acoes">
-                            <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
-                        </td>
+    <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicaoVeiculo(veiculo)" />
+</td>
                     </tr>
                 }
             </tbody>
@@ -303,9 +306,9 @@
                 Cadastro de condutores habilitados para emissão do MDF-e.
             </MudText>
         </div>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add">
-            Novo Motorista
-        </MudButton>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoMotorista">
+    Novo Motorista
+</MudButton>
     </div>
 
     <div class="info-card-row-transportadoras">
@@ -452,11 +455,11 @@
                                 <MudText Typo="Typo.body2" Style="color:#9AA5B1;">—</MudText>
                             }
                         </td>
-                        <td><span class="rntrc-badge">@motorista.VeiculoPlaca</span></td>
+                        <td><span class="rntrc-badge">@(VeiculoMockData.Veiculos.FirstOrDefault(v => v.Codigo == motorista.VeiculoId)?.Placa ?? "—")</span></td>
                         <td>@transportadora.NomeFantasia</td>
                         <td>@(motorista.UltimoMdfe?.ToString("dd/MM/yyyy") ?? "—")</td>
                         <td class="col-acoes">
-                            <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" />
+                            <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicaoMotorista(motorista)" />
                         </td>
                     </tr>
                 }
@@ -508,6 +511,41 @@ private int _transportadorasComVeiculos => VeiculoMockData.Veiculos.Select(v => 
 
 private string _capTotalKgFormatada => (_capTotalKg / 1000).ToString("N0") + " t";
 
+[CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+private async Task AbrirNovaTransportadora()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoTransportadora>("Nova Transportadora", options);
+}
+
+private async Task AbrirEdicao(TransportadoraItem transportadora)
+{
+    var parameters = new DialogParameters<NovoTransportadora> { { x => x.TransportadoraExistente, transportadora } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoTransportadora>("Editar Transportadora", parameters, options);
+}
+
+private void AbrirDetalhes(string codigo)
+{
+    WindowManager.Navigate(WindowId, typeof(DetalhesTransportadora),
+        new Dictionary<string, object> { { "Codigo", codigo } },
+        $"Transportadora {codigo}");
+}
+
+private async Task AbrirNovoVeiculo()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVeiculo>("Novo Veículo", options);
+}
+
+private async Task AbrirEdicaoVeiculo(VeiculoItem veiculo)
+{
+    var parameters = new DialogParameters<NovoVeiculo> { { x => x.VeiculoExistente, veiculo } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVeiculo>("Editar Veículo", parameters, options);
+}
+
 private static (string Bg, string Texto) CorRodado(TipoRodado rodado) => rodado switch
 {
     TipoRodado.Truck => ("#FBE7D8", "#C97A3D"),
@@ -539,6 +577,19 @@ private int _motoristasAtivos => MotoristaMockData.Motoristas.Count(m => m.Statu
 private int _habilitadosMopp => MotoristaMockData.Motoristas.Count(m => m.HabilitadoMopp);
 private int _cnhAtencao => MotoristaMockData.Motoristas.Count(m => m.SituacaoCnh != SituacaoCnh.Valida);
 private int _transportadorasComMotoristas => MotoristaMockData.Motoristas.Select(m => m.TransportadoraCodigo).Distinct().Count();
+
+private async Task AbrirNovoMotorista()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoMotorista>("Novo Motorista", options);
+}
+
+private async Task AbrirEdicaoMotorista(MotoristaItem motorista)
+{
+    var parameters = new DialogParameters<NovoMotorista> { { x => x.MotoristaExistente, motorista } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoMotorista>("Editar Motorista", parameters, options);
+}
 
 private IEnumerable<MotoristaItem> _motoristasExibidos =>
     MotoristaMockData.Motoristas

@@ -1,0 +1,225 @@
+@page "/parceiros/transportadoras/{Codigo}"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaTransportadoras" />
+    <MudLink Underline="Underline.None" Style="color:#9AA5B1;">Parceiros</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaTransportadoras">Transportadoras</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@(_transportadora?.NomeFantasia ?? Codigo)</MudText>
+</div>
+
+@if (_transportadora is not null)
+{
+    <div class="fornecedor-detalhe-grid mt-4">
+        <div class="fornecedor-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="fornecedor-perfil-avatar" style="background-color:@_transportadora.CorAvatar;">@_transportadora.Iniciais</div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_transportadora.NomeFantasia</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-align:center; display:block;">@_transportadora.RazaoSocial</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1; text-align:center; display:block;">@_transportadora.Codigo</MudText>
+                <div style="text-align:center; margin-top:8px;">
+                    <MudText Typo="Typo.body2" Style="@($"color:{CorModal(_transportadora.Modal)}; font-weight:700; display:inline-block; background-color:#FBE7D8; padding:2px 10px; border-radius:6px;")">@_transportadora.ModalLabel</MudText>
+                </div>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar Cadastro
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Dados NF-e</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">CNPJ</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.Cnpj</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">IE</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.Ie</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">RNTRC</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.Rntrc</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">CEP</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.Cep</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Município</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.Municipio / @_transportadora.Uf</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Contato</MudText>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_transportadora.NomeContato</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_transportadora.Telefone</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_transportadora.Email</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Resumo Financeiro</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total de fretes</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#8E5CE0;">@_transportadora.Fretes</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total faturado</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#C97A3D;">@_transportadora.TotalFaturadoFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Entregue</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#2E7D32;">@_totalEntregueFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Em aberto</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#D9A441;">@_emAbertoFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Último frete</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_transportadora.UltimoFrete.ToString("dd/MM/yyyy")</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div>
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Histórico de Fretes</MudText>
+                    <MudChip T="string" Size="Size.Small" Style="background-color:#FBE7D8; color:#C97A3D;">@_fretes.Count</MudChip>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add">
+                        Novo Frete
+                    </MudButton>
+                </div>
+
+                <div style="overflow-x:auto; margin-top:16px;">
+                    <table class="fornecedor-pedidos-table">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Data</th>
+                                <th>Origem</th>
+                                <th>Destino</th>
+                                <th>Placa</th>
+                                <th>Modalidade</th>
+                                <th>Status</th>
+                                <th>NF-e</th>
+                                <th class="col-num">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var frete in _fretes)
+                            {
+                                <tr>
+                                    <td><MudLink Href="#" Underline="Underline.None">@frete.Numero</MudLink></td>
+                                    <td>@frete.Data.ToString("dd/MM/yyyy")</td>
+                                    <td>@frete.Origem</td>
+                                    <td>@frete.Destino</td>
+                                    <td><span class="rntrc-badge">@frete.Placa</span></td>
+                                    <td>@frete.Modalidade</td>
+                                    <td>
+                                        @if (frete.Status == StatusFrete.Entregue)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Entregue</MudChip>
+                                        }
+                                        else if (frete.Status == StatusFrete.EmTransito)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">Em trânsito</MudChip>
+                                        }
+                                        else if (frete.Status == StatusFrete.Aguardando)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Aguardando</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B;">Cancelado</MudChip>
+                                        }
+                                    </td>
+                                    <td><MudText Typo="Typo.caption" Style="color:#9AA5B1;">@frete.Nfe</MudText></td>
+                                    <td class="col-num">@frete.ValorFormatado</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (_fretes.Count > 0)
+                {
+                    <div class="fornecedor-pedidos-footer">
+                        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                            Entregue: <span style="color:#2E7D32; font-weight:600;">@_totalEntregueFormatado</span>
+                            &nbsp;·&nbsp; Em aberto: <span style="color:#D9A441; font-weight:600;">@_emAbertoFormatado</span>
+                        </MudText>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:700;">@_totalGeralFormatado</MudText>
+                    </div>
+                }
+                else
+                {
+                    <MudText Typo="Typo.body2" Style="color:#9AA5B1; text-align:center; margin-top:24px;">Nenhum frete registrado.</MudText>
+                }
+            </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A; margin-top:16px;">Transportadora não encontrada.</MudText>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = string.Empty;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private TransportadoraItem? _transportadora;
+    private List<FreteItem> _fretes = new();
+
+    protected override void OnParametersSet()
+    {
+        _transportadora = TransportadoraMockData.Transportadoras.FirstOrDefault(t => t.Codigo == Codigo);
+        _fretes = FreteMockData.Fretes.Where(f => f.TransportadoraCodigo == Codigo).OrderByDescending(f => f.Data).ToList();
+    }
+
+    private double _totalEntregue => _fretes.Where(f => f.Status == StatusFrete.Entregue).Sum(f => f.Valor);
+    private double _emAberto => _fretes.Where(f => f.Status == StatusFrete.Aguardando || f.Status == StatusFrete.EmTransito).Sum(f => f.Valor);
+    private double _totalGeral => _fretes.Sum(f => f.Valor);
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private string _totalEntregueFormatado => FormatarMoeda(_totalEntregue);
+    private string _emAbertoFormatado => FormatarMoeda(_emAberto);
+    private string _totalGeralFormatado => FormatarMoeda(_totalGeral);
+
+    private static string CorModal(ModalTransporte modal) => modal switch
+    {
+        ModalTransporte.Rodoviario => "#C97A3D",
+        ModalTransporte.Aereo => "#2C6FB0",
+        ModalTransporte.Aquaviario => "#2E7D32",
+        _ => "#8E5CE0"
+    };
+
+    private async Task AbrirEdicao()
+    {
+        var parameters = new DialogParameters<NovoTransportadora> { { x => x.TransportadoraExistente, _transportadora } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoTransportadora>("Editar Transportadora", parameters, options);
+    }
+
+    private void VoltarParaTransportadoras()
+    {
+        WindowManager.Navigate(WindowId, typeof(Transportadora), null, "Transportadoras");
+    }
+}

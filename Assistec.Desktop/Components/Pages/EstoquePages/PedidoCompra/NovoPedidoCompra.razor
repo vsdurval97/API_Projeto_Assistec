@@ -1,0 +1,252 @@
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Fornecedores
+@using Assistec.Desktop.Components.Pages.EstoquePages.Produtos
+
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(PedidoExistente is null ? "Novo Pedido de Compra" : $"Pedido {PedidoExistente.Numero}")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Preencha os dados comerciais e os itens solicitados ao fornecedor.</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="true">
+            <MudTabPanel Text="Dados Gerais">
+                <div class="pedido-row-fornecedor mt-4">
+                    <MudSelect T="string" @bind-Value="_model.FornecedorCodigo" Label="Fornecedor" Placeholder="Selecione o fornecedor" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined">
+                        @foreach (var fornecedor in FornecedorMockData.Fornecedores)
+                        {
+                            <MudSelectItem T="string" Value="@fornecedor.Codigo">@fornecedor.NomeFantasia</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+
+                <div class="pedido-row-dados-1 mt-4">
+                    <MudTextField @bind-Value="_model.Numero" Label="Número do Pedido" Variant="Variant.Outlined" />
+                    <MudTextField Value="@_cnpjSelecionado" Label="CNPJ" ReadOnly="true" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="_model.Emissao" Label="Data de Emissão" Placeholder="dd/mm/aaaa" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="pedido-row-dados-2 mt-4">
+                    <MudTextField @bind-Value="_model.Previsao" Label="Previsão de Entrega" Placeholder="dd/mm/aaaa" Variant="Variant.Outlined" />
+                    <MudSelect T="string" @bind-Value="_model.Comprador" Label="Comprador Responsável" Variant="Variant.Outlined">
+                        <MudSelectItem T="string" Value="@("Mariana Costa")">Mariana Costa</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Carlos Mendes")">Carlos Mendes</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Rafael Lima")">Rafael Lima</MudSelectItem>
+                    </MudSelect>
+                    <MudSelect T="StatusPedidoDeCompra" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined">
+                        @foreach (var status in Enum.GetValues<StatusPedidoDeCompra>())
+                        {
+                            <MudSelectItem T="StatusPedidoDeCompra" Value="@status">@RotuloStatus(status)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </div>
+            </MudTabPanel>
+
+            <MudTabPanel Text="@($"Itens ({_model.Itens.Count})")">
+                <div class="pedido-add-item mt-4">
+                    <MudSelect T="string" @bind-Value="_produtoSelecionado" Label="Produto" Variant="Variant.Outlined">
+                        @foreach (var produto in ProdutoMockData.Produtos)
+                        {
+                            <MudSelectItem T="string" Value="@produto.CodigoInterno">@produto.CodigoInterno — @produto.Descricao</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudButton Variant="Variant.Filled" Style="background-color:#10233A; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AdicionarItem">
+                        Adicionar
+                    </MudButton>
+                </div>
+
+                <div class="mt-4" style="overflow-x:auto;">
+                    <table class="pedido-itens-table">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th class="col-num">Qtd.</th>
+                                <th class="col-num">Valor Unit.</th>
+                                <th class="col-num">Subtotal</th>
+                                <th class="col-acoes"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in _model.Itens)
+                            {
+                                <tr>
+                                    <td>
+                                        <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo · @item.Unidade</MudText>
+                                    </td>
+                                    <td class="col-num">
+                                        <MudNumericField @bind-Value="item.Quantidade" Min="1" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:80px;" />
+                                    </td>
+                                    <td class="col-num">
+                                        <MudNumericField @bind-Value="item.ValorUnitario" Min="0" Format="N2" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:110px;" />
+                                    </td>
+                                    <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@FormatarMoeda(item.Quantidade * item.ValorUnitario)</MudText></td>
+                                    <td class="col-acoes">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => RemoverItem(item)" />
+                                    </td>
+                                </tr>
+                            }
+                            @if (_model.Itens.Count == 0)
+                            {
+                                <tr><td colspan="5" style="text-align:center; padding:32px; color:#9AA5B1;">Nenhum item adicionado ao pedido.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+                    <div class="pedido-total-box">
+                        <MudText Typo="Typo.caption" Style="color:#2E7D32;">Total do pedido</MudText>
+                        <MudText Typo="Typo.h6" Style="font-weight:700; color:#166534;">@FormatarMoeda(_totalPedido)</MudText>
+                    </div>
+                </div>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Entrega e Observações">
+                <div class="pedido-row-entrega mt-4">
+                    <MudSelect T="string" @bind-Value="_model.Condicao" Label="Condição de Pagamento" Variant="Variant.Outlined">
+                        <MudSelectItem T="string" Value="@("À vista")">À vista</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("21 dias")">21 dias</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("28 dias")">28 dias</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("30 dias")">30 dias</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("30/60 dias")">30/60 dias</MudSelectItem>
+                    </MudSelect>
+                    <MudSelect T="string" @bind-Value="_model.Frete" Label="Modalidade do Frete" Variant="Variant.Outlined">
+                        <MudSelectItem T="string" Value="@("CIF")">CIF</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("FOB")">FOB</MudSelectItem>
+                        <MudSelectItem T="string" Value="@("Sem frete")">Sem frete</MudSelectItem>
+                    </MudSelect>
+                </div>
+
+                <MudTextField @bind-Value="_model.Observacao"
+                              Label="Observações ao Fornecedor"
+                              Placeholder="Instruções de entrega, condições acordadas ou observações internas..."
+                              Variant="Variant.Outlined"
+                              Lines="4"
+                              Class="mt-4" />
+
+                <div class="produto-alerta-info mt-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                        O pedido poderá ser enviado ao fornecedor após a aprovação do responsável.
+                    </MudText>
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+    </DialogContent>
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto;">@_model.Itens.Count item(ns) · @FormatarMoeda(_totalPedido)</MudText>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" Disabled="@(_model.FornecedorCodigo is null || _model.Itens.Count == 0)" OnClick="Salvar">
+            @(PedidoExistente is null ? "Criar Pedido" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public PedidoCompraEstoqueItem? PedidoExistente { get; set; }
+
+    private PedidoFormModel _model = new();
+    private string? _produtoSelecionado;
+
+    private class PedidoFormModel
+    {
+        public string? FornecedorCodigo { get; set; }
+        public string Numero { get; set; } = string.Empty;
+        public string? Emissao { get; set; }
+        public string? Previsao { get; set; }
+        public string Comprador { get; set; } = "Mariana Costa";
+        public string Condicao { get; set; } = "28 dias";
+        public string Frete { get; set; } = "CIF";
+        public string? Observacao { get; set; }
+        public StatusPedidoDeCompra Status { get; set; } = StatusPedidoDeCompra.Rascunho;
+        public List<ItemLinhaEditavel> Itens { get; set; } = new();
+    }
+
+    private class ItemLinhaEditavel
+    {
+        public string Codigo { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
+        public string Unidade { get; set; } = string.Empty;
+        public int Quantidade { get; set; } = 1;
+        public double ValorUnitario { get; set; }
+    }
+
+    private string _cnpjSelecionado =>
+        FornecedorMockData.Fornecedores.FirstOrDefault(f => f.Codigo == _model.FornecedorCodigo)?.Cnpj ?? string.Empty;
+
+    private double _totalPedido => _model.Itens.Sum(i => i.Quantidade * i.ValorUnitario);
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private static string RotuloStatus(StatusPedidoDeCompra status) => status switch
+    {
+        StatusPedidoDeCompra.Rascunho => "Rascunho",
+        StatusPedidoDeCompra.AguardandoAprovacao => "Aguardando aprovação",
+        StatusPedidoDeCompra.Aprovado => "Aprovado",
+        StatusPedidoDeCompra.ParcialmenteRecebido => "Parcialmente recebido",
+        StatusPedidoDeCompra.Concluido => "Concluído",
+        _ => "Cancelado"
+    };
+
+    protected override void OnInitialized()
+    {
+        if (PedidoExistente is null)
+        {
+            var ultimoNumero = PedidoCompraEstoqueMockData.Pedidos
+                .Select(p => int.TryParse(p.Numero.Split('-').Last(), out var n) ? n : 0)
+                .DefaultIfEmpty(0)
+                .Max();
+            _model.Numero = $"PC-2026-{(ultimoNumero + 1):D4}";
+            return;
+        }
+
+        var p = PedidoExistente;
+        _model.FornecedorCodigo = FornecedorMockData.Fornecedores.FirstOrDefault(f => f.NomeFantasia == p.Fornecedor || f.RazaoSocial == p.Fornecedor)?.Codigo;
+        _model.Numero = p.Numero;
+        _model.Emissao = p.Emissao.ToString("dd/MM/yyyy");
+        _model.Previsao = p.Previsao.ToString("dd/MM/yyyy");
+        _model.Comprador = p.Comprador;
+        _model.Condicao = p.Condicao;
+        _model.Frete = p.Frete;
+        _model.Observacao = p.Observacao;
+        _model.Status = p.Status;
+        _model.Itens = p.Itens.Select(i => new ItemLinhaEditavel
+        {
+            Codigo = i.Codigo,
+            Descricao = i.Descricao,
+            Unidade = i.Unidade,
+            Quantidade = i.Quantidade,
+            ValorUnitario = i.ValorUnitario
+        }).ToList();
+    }
+
+    private void AdicionarItem()
+    {
+        if (_produtoSelecionado is null) return;
+        if (_model.Itens.Any(i => i.Codigo == _produtoSelecionado)) return;
+
+        var produto = ProdutoMockData.Produtos.FirstOrDefault(p => p.CodigoInterno == _produtoSelecionado);
+        if (produto is null) return;
+
+        _model.Itens.Add(new ItemLinhaEditavel
+        {
+            Codigo = produto.CodigoInterno,
+            Descricao = produto.Descricao,
+            Unidade = produto.UnidadeComercial.ToString(),
+            Quantidade = 1,
+            ValorUnitario = produto.PrecoVenda
+        });
+    }
+
+    private void RemoverItem(ItemLinhaEditavel item) => _model.Itens.Remove(item);
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

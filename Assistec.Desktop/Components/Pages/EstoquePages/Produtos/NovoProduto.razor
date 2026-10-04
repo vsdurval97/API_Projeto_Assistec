@@ -1,0 +1,561 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(ProdutoExistente is null ? "Novo Produto" : "Editar Produto")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                @(ProdutoExistente is null ? "Preencha todos os dados fiscais para emissão correta de NF-e" : $"{ProdutoExistente.CodigoInterno} · {ProdutoExistente.Descricao}")
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="produto-modal-layout">
+            <div class="produto-modal-nav">
+                @foreach (var secao in _secoes)
+                {
+                    <button type="button" class="produto-secao-btn @(_secaoAtual == secao.Key ? "active" : "")" @onclick="() => _secaoAtual = secao.Key">
+                        @secao.Label
+                    </button>
+                }
+            </div>
+
+            <div class="produto-modal-conteudo">
+                <MudForm @ref="_form" Model="_model">
+
+                    @if (_secaoAtual == "identificacao")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Identificação do Produto</MudText>
+
+                        <div class="produto-row-identificacao-1">
+                            <MudTextField @bind-Value="_model.CodigoInterno" Label="Código Interno" Placeholder="PRD-000" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.Descricao" Label="Descrição" Placeholder="Nome do produto conforme será impresso na NF-e" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                            <MudSelect T="StatusProduto" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined">
+                                <MudSelectItem T="StatusProduto" Value="StatusProduto.Ativo">Ativo</MudSelectItem>
+                                <MudSelectItem T="StatusProduto" Value="StatusProduto.Inativo">Inativo</MudSelectItem>
+                                <MudSelectItem T="StatusProduto" Value="StatusProduto.Descontinuado">Descontinuado</MudSelectItem>
+                            </MudSelect>
+                        </div>
+
+                        <MudTextField @bind-Value="_model.DescricaoComplementar" Label="Descrição Complementar" Placeholder="Especificações técnicas adicionais (não impressas na NF-e)" Variant="Variant.Outlined" Lines="2" Class="mt-4" />
+
+                        <div class="produto-row-2col mt-4">
+                            <MudTextField @bind-Value="_model.CodigoBarras" Label="Código de Barras (GTIN/EAN-13)" Placeholder="0000000000000" MaxLength="14" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.CodigoFornecedor" Label="Código do Fornecedor" Placeholder="Código usado pelo fornecedor" Variant="Variant.Outlined" />
+                        </div>
+
+                        <div class="produto-row-3col mt-4">
+                            <MudTextField @bind-Value="_model.Marca" Label="Marca" Placeholder="Fabricante ou marca" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.Modelo" Label="Modelo / Referência" Placeholder="Referência do produto" Variant="Variant.Outlined" />
+                            <MudSelect T="string" @bind-Value="_model.Categoria" Label="Categoria" Placeholder="Selecione..." Variant="Variant.Outlined">
+                                @foreach (var categoria in ProdutoMockData.Categorias)
+                                {
+                                    <MudSelectItem T="string" Value="@categoria">@categoria</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+
+                        <MudTextField @bind-Value="_model.FornecedorPrincipal" Label="Fornecedor Principal" Placeholder="Nome do fornecedor" Variant="Variant.Outlined" Class="mt-4" />
+
+                        <div class="produto-alerta-info mt-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                                A <b>Descrição</b> é o campo que aparece no XML da NF-e (tag <code>&lt;xProd&gt;</code>). Use no máximo 120 caracteres, sem abreviações que dificultem a identificação pelo Fisco.
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "fiscal")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Classificação Fiscal — NF-e</MudText>
+
+                        <div class="produto-alerta-atencao mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#D9A441;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#92400E;">
+                                Estes campos são obrigatórios na NF-e. O <b>NCM</b> determina as alíquotas de IPI e o regime tributário aplicável. Erros aqui podem gerar rejeição pela SEFAZ.
+                            </MudText>
+                        </div>
+
+                        <div class="produto-row-fiscal-1">
+                            <MudTextField @bind-Value="_model.Ncm" Label="NCM" Placeholder="00000000" MaxLength="8" Required="true" RequiredError="Campo obrigatório" HelperText="8 dígitos" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.Cest" Label="CEST" Placeholder="0000000" MaxLength="7" HelperText="7 dígitos (ST)" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.CfopPadrao" Label="CFOP Padrão" Placeholder="5102" MaxLength="4" Required="true" RequiredError="Campo obrigatório" HelperText="Venda estadual" Variant="Variant.Outlined" />
+                            <MudTextField @bind-Value="_model.ExTipi" Label="Ex TIPI" Placeholder="00" MaxLength="3" HelperText="Para IPI" Variant="Variant.Outlined" />
+                        </div>
+
+                        <MudSelect T="OrigemProduto" @bind-Value="_model.Origem" Label="Origem da Mercadoria" Required="true" RequiredError="Campo obrigatório" HelperText="Tag <orig> — compõe o 1º dígito do CST de ICMS" Variant="Variant.Outlined" Class="mt-4">
+                            @foreach (var origem in Enum.GetValues<OrigemProduto>())
+                            {
+                                <MudSelectItem T="OrigemProduto" Value="@origem">@RotuloOrigem(origem)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+
+                    @if (_secaoAtual == "unidades")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Unidades de Medida e Pesagem</MudText>
+
+                        <div class="produto-alerta-info mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                                A NF-e exige <b>unidade comercial</b> (como o produto é vendido) e <b>unidade tributável</b> (base de cálculo). Quando diferentes, informe o fator de conversão. Ex: vende por CX de 100 UN → fator = 100.
+                            </MudText>
+                        </div>
+
+                        <div class="produto-row-3col">
+                            <MudSelect T="UnidadeMedida" @bind-Value="_model.UnidadeComercial" Label="Unidade Comercial (uCom)" Required="true" RequiredError="Campo obrigatório" HelperText="Como o produto é comercializado" Variant="Variant.Outlined">
+                                @foreach (var unidade in Enum.GetValues<UnidadeMedida>())
+                                {
+                                    <MudSelectItem T="UnidadeMedida" Value="@unidade">@unidade</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect T="UnidadeMedida" @bind-Value="_model.UnidadeTributavel" Label="Unidade Tributável (uTrib)" Required="true" RequiredError="Campo obrigatório" HelperText="Base de cálculo dos impostos" Variant="Variant.Outlined">
+                                @foreach (var unidade in Enum.GetValues<UnidadeMedida>())
+                                {
+                                    <MudSelectItem T="UnidadeMedida" Value="@unidade">@unidade</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudNumericField @bind-Value="_model.FatorConversao" Label="Fator de Conversão" Min="1" Required="true" RequiredError="Campo obrigatório" HelperText="uTrib por uCom" Variant="Variant.Outlined" />
+                        </div>
+
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Peso</MudText>
+
+                        <div class="produto-row-2col mt-2">
+                            <MudNumericField @bind-Value="_model.PesoLiquido" Label="Peso Líquido (kg)" Placeholder="0,000" Required="true" RequiredError="Campo obrigatório" HelperText="Tag <pesoL> — sem embalagem" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.PesoBruto" Label="Peso Bruto (kg)" Placeholder="0,000" Required="true" RequiredError="Campo obrigatório" HelperText="Tag <pesoB> — com embalagem" Variant="Variant.Outlined" />
+                        </div>
+
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Dimensões (cm)</MudText>
+
+                        <div class="produto-row-3col mt-2">
+                            <MudNumericField @bind-Value="_model.Largura" Label="Largura" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.Altura" Label="Altura" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.Profundidade" Label="Profundidade" Variant="Variant.Outlined" />
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "icms")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Tributação ICMS</MudText>
+
+                        <div class="produto-alerta-atencao mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#D9A441;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#92400E;">
+                                O CST compõe-se de <b>Origem (1 dígito)</b> + <b>Situação Tributária (2 dígitos)</b>. Empresas do Simples Nacional usam <b>CSOSN</b> em vez do CST convencional — os dois campos ficam disponíveis por enquanto; a seleção do regime do Emitente vai decidir qual é exigido, quando isso existir no backend.
+                            </MudText>
+                        </div>
+
+                        <div class="produto-row-icms-1">
+                            <MudSelect T="string" @bind-Value="_model.CstIcms" Label="CST ICMS" HelperText="Regime Normal" Variant="Variant.Outlined">
+                                @foreach (var cst in ProdutoOpcoesFiscais.CstIcms)
+                                {
+                                    <MudSelectItem T="string" Value="@cst">@cst</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect T="string" @bind-Value="_model.Csosn" Label="CSOSN" HelperText="Simples Nacional" Variant="Variant.Outlined">
+                                @foreach (var csosn in ProdutoOpcoesFiscais.Csosn)
+                                {
+                                    <MudSelectItem T="string" Value="@csosn">@csosn</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect T="ModalidadeBC" @bind-Value="_model.ModalidadeBC" Label="Modalidade de BC do ICMS" Variant="Variant.Outlined">
+                                @foreach (var modalidade in Enum.GetValues<ModalidadeBC>())
+                                {
+                                    <MudSelectItem T="ModalidadeBC" Value="@modalidade">@RotuloModalidadeBC(modalidade)</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+
+                        <div class="produto-row-2col mt-4">
+                            <MudNumericField @bind-Value="_model.AliquotaIcms" Label="Alíquota ICMS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.ReducaoBc" Label="Redução de BC (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                        </div>
+
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Substituição Tributária (ST)</MudText>
+
+                        <div class="produto-row-2col mt-2">
+                            <MudNumericField @bind-Value="_model.MvaSt" Label="MVA / IVA ST (%)" Adornment="Adornment.End" AdornmentText="%" HelperText="Margem de Valor Agregado para ST" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.AliquotaIcmsSt" Label="Alíquota ICMS ST (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "pis-cofins")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">PIS e COFINS</MudText>
+
+                        <div class="produto-alerta-info mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                                CST 01 = tributado à alíquota básica (PIS 0,65% / COFINS 3% — Lucro Presumido). Para Lucro Real, verifique se aplica regime não-cumulativo (CST 01 pode ser 1,65% / 7,6%).
+                            </MudText>
+                        </div>
+
+                        <div class="produto-row-2col">
+                            <div>
+                                <MudText Typo="Typo.caption" Style="font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">PIS</MudText>
+                                <MudSelect T="string" @bind-Value="_model.CstPis" Label="CST PIS" Variant="Variant.Outlined" Class="mt-2">
+                                    @foreach (var cst in ProdutoOpcoesFiscais.CstPisCofins)
+                                    {
+                                        <MudSelectItem T="string" Value="@cst">@cst</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudNumericField @bind-Value="_model.AliquotaPis" Label="Alíquota PIS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" Class="mt-4" />
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Style="font-weight:600; text-transform:uppercase; letter-spacing:0.03em;">COFINS</MudText>
+                                <MudSelect T="string" @bind-Value="_model.CstCofins" Label="CST COFINS" Variant="Variant.Outlined" Class="mt-2">
+                                    @foreach (var cst in ProdutoOpcoesFiscais.CstPisCofins)
+                                    {
+                                        <MudSelectItem T="string" Value="@cst">@cst</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudNumericField @bind-Value="_model.AliquotaCofins" Label="Alíquota COFINS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" Class="mt-4" />
+                            </div>
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "ipi")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">IPI — Imposto sobre Produtos Industrializados</MudText>
+
+                        <div class="produto-alerta-atencao mb-4">
+                            <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#D9A441;" Size="Size.Small" />
+                            <MudText Typo="Typo.caption" Style="color:#92400E;">
+                                IPI incide apenas sobre <b>produtos industrializados</b>. Se o produto não for sujeito a IPI, use CST 99 com alíquota 0%. O <b>Ex TIPI</b> (aba Classif. Fiscal) afina a alíquota dentro de um NCM.
+                            </MudText>
+                        </div>
+
+                        <div class="produto-row-2col">
+                            <MudSelect T="string" @bind-Value="_model.CstIpi" Label="CST IPI" Variant="Variant.Outlined">
+                                @foreach (var cst in ProdutoOpcoesFiscais.CstIpi)
+                                {
+                                    <MudSelectItem T="string" Value="@cst">@cst</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudNumericField @bind-Value="_model.AliquotaIpi" Label="Alíquota IPI (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "ibs-cbs")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Novo Regime Tributário — Reforma EC 132/2023</MudText>
+
+                        <div class="produto-caixa-reforma mb-4">
+                            <MudText Typo="Typo.body2" Style="font-weight:600; color:#1E40AF;">Vigência gradual 2026–2033</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#1E40AF; display:block; margin-top:4px;">
+                                O IBS e a CBS coexistem com ICMS e PIS/COFINS durante o período de transição. Em 2026 e 2027, apenas 1% de CBS é exigível. A extinção total dos tributos antigos ocorre em 2033. As alíquotas de referência do IBS (estadual + municipal) serão definidas pelo Comitê Gestor do IBS.
+                            </MudText>
+                            <div class="produto-reforma-refs">
+                                <div class="produto-reforma-ref-item"><MudText Typo="Typo.caption" Style="color:#5A6B7A;">CBS referência</MudText><MudText Typo="Typo.body1" Style="font-weight:700; color:#1E40AF;">8,8%</MudText></div>
+                                <div class="produto-reforma-ref-item"><MudText Typo="Typo.caption" Style="color:#5A6B7A;">IBS estadual ref.</MudText><MudText Typo="Typo.body1" Style="font-weight:700; color:#1E40AF;">13,3%</MudText></div>
+                                <div class="produto-reforma-ref-item"><MudText Typo="Typo.caption" Style="color:#5A6B7A;">IBS municipal ref.</MudText><MudText Typo="Typo.body1" Style="font-weight:700; color:#1E40AF;">2,1%</MudText></div>
+                                <div class="produto-reforma-ref-item"><MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total IBS+CBS ref.</MudText><MudText Typo="Typo.body1" Style="font-weight:700; color:#1E40AF;">24,2%</MudText></div>
+                            </div>
+                        </div>
+
+                        <div class="produto-bloco-tributo">
+                            <div class="produto-bloco-tributo-titulo">
+                                <span class="produto-tag-cbs">CBS — Federal</span>
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Substitui PIS e COFINS — administrado pela Receita Federal</MudText>
+                            </div>
+                            <div class="produto-row-cbs">
+                                <MudSelect T="string" @bind-Value="_model.CstCbs" Label="CST CBS" Variant="Variant.Outlined">
+                                    @foreach (var cst in ProdutoOpcoesFiscais.CstIbsCbs)
+                                    {
+                                        <MudSelectItem T="string" Value="@cst.Codigo">@cst.Label</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudNumericField @bind-Value="_model.AliquotaCbs" Label="Alíquota CBS (%)" Adornment="Adornment.End" AdornmentText="%" HelperText="Ref. federal: 8,8%" Variant="Variant.Outlined" />
+                                <MudNumericField @bind-Value="_model.ReducaoCbs" Label="Redução BC CBS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                                <MudNumericField @bind-Value="_model.CreditoPresumidoCbs" Label="Créd. Presumido CBS (%)" Adornment="Adornment.End" AdornmentText="%" HelperText="Regimes especiais" Variant="Variant.Outlined" />
+                            </div>
+                        </div>
+
+                        <div class="produto-bloco-tributo mt-4">
+                            <div class="produto-bloco-tributo-titulo">
+                                <span class="produto-tag-ibs">IBS — Estadual + Municipal</span>
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Substitui ICMS e ISS — administrado pelo Comitê Gestor do IBS</MudText>
+                            </div>
+                            <div class="produto-row-ibs">
+                                <MudSelect T="string" @bind-Value="_model.CstIbs" Label="CST IBS" Variant="Variant.Outlined">
+                                    @foreach (var cst in ProdutoOpcoesFiscais.CstIbsCbs)
+                                    {
+                                        <MudSelectItem T="string" Value="@cst.Codigo">@cst.Label</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudNumericField @bind-Value="_model.AliquotaIbsEstadual" Label="Alíquota Estadual (%)" Adornment="Adornment.End" AdornmentText="%" HelperText="Ref.: 13,3%" Variant="Variant.Outlined" />
+                                <MudNumericField @bind-Value="_model.AliquotaIbsMunicipal" Label="Alíquota Municipal (%)" Adornment="Adornment.End" AdornmentText="%" HelperText="Ref.: 2,1%" Variant="Variant.Outlined" />
+                                <MudNumericField @bind-Value="_model.ReducaoIbs" Label="Redução BC IBS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                            </div>
+                            <MudSelect T="string" @bind-Value="_model.DiferencialIbs" Label="Diferencial de Alíquota IBS (DIFAL)" HelperText="Aplicável em operações interestaduais com consumidor final" Variant="Variant.Outlined" Class="mt-4">
+                                @foreach (var opcao in ProdutoOpcoesFiscais.DifalOpcoes)
+                                {
+                                    <MudSelectItem T="string" Value="@opcao">@opcao</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+
+                        <div class="produto-bloco-tributo mt-4">
+                            <div class="produto-bloco-tributo-header">
+                                <div class="produto-bloco-tributo-titulo">
+                                    <span class="produto-tag-is">IS — Imposto Seletivo</span>
+                                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Produtos prejudiciais à saúde ou ao meio ambiente</MudText>
+                                </div>
+                                <MudCheckBox T="bool" @bind-Value="_model.IncideIs" Label="Produto sujeito ao IS" Color="Color.Primary" />
+                            </div>
+
+                            <div class="produto-row-is">
+                                <MudSelect T="string" @bind-Value="_model.CategoriaIs" Label="Categoria IS" Placeholder="Não sujeito ao IS" Variant="Variant.Outlined">
+                                    @foreach (var categoria in ProdutoOpcoesFiscais.CategoriasIs)
+                                    {
+                                        <MudSelectItem T="string" Value="@categoria">@categoria</MudSelectItem>
+                                    }
+                                </MudSelect>
+                                <MudTextField @bind-Value="_model.CstIs" Label="CST IS" Placeholder="01" MaxLength="2" Variant="Variant.Outlined" />
+                                <MudNumericField @bind-Value="_model.AliquotaIs" Label="Alíquota IS (%)" Adornment="Adornment.End" AdornmentText="%" Variant="Variant.Outlined" />
+                                <MudSelect T="string" @bind-Value="_model.BaseCalculoIs" Label="Base de Cálculo IS" Variant="Variant.Outlined">
+                                    @foreach (var opcao in ProdutoOpcoesFiscais.BaseCalculoIsOpcoes)
+                                    {
+                                        <MudSelectItem T="string" Value="@opcao">@opcao</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </div>
+
+                            <div class="produto-alerta-atencao mt-4">
+                                <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#D9A441;" Size="Size.Small" />
+                                <MudText Typo="Typo.caption" Style="color:#92400E;">
+                                    O IS incide sobre a <b>produção, extração, comercialização ou importação</b> de bens prejudiciais à saúde ou ao meio ambiente. Alíquotas e categorias definidas pela Lei Complementar do IS (em regulamentação). Verifique o NCM do produto na tabela TIPI/IS antes de marcar sujeição.
+                                </MudText>
+                            </div>
+                        </div>
+                    }
+
+                    @if (_secaoAtual == "precos")
+                    {
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:12px;">Preços e Controle de Estoque</MudText>
+
+                        <div class="produto-row-precos">
+                            <MudNumericField @bind-Value="_model.PrecoCusto" Label="Preço de Custo (R$)" Adornment="Adornment.Start" AdornmentText="R$" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.PrecoVenda" Label="Preço de Venda (R$)" Adornment="Adornment.Start" AdornmentText="R$" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                            <div class="produto-margem-box">
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Margem (calculada)</MudText>
+                                <MudText Typo="Typo.h6" Style="font-weight:700; color:#2E7D32;">@_margemCalculada.ToString("0.0")%</MudText>
+                            </div>
+                        </div>
+
+                        <MudDivider Class="my-4" />
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Controle de Estoque</MudText>
+
+                        <div class="produto-row-3col mt-2">
+                            <MudTextField Value="@_model.EstoqueAtual.ToString()" Label="Estoque Atual" ReadOnly="true" HelperText="Atualizado via Nota de Entrada" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.EstoqueMinimo" Label="Estoque Mínimo" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+                            <MudNumericField @bind-Value="_model.EstoqueMaximo" Label="Estoque Máximo" Variant="Variant.Outlined" />
+                        </div>
+
+                        <MudTextField @bind-Value="_model.Localizacao" Label="Localização no Almoxarifado" Placeholder="Ex: A-01-03 (setor-corredor-prateleira)" Variant="Variant.Outlined" Class="mt-4" />
+                    }
+                </MudForm>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto;">Campos obrigatórios variam por seção — vide indicadores.</MudText>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Salvar">
+            @(ProdutoExistente is null ? "Salvar" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public ProdutoItem? ProdutoExistente { get; set; }
+
+    private MudForm _form = null!;
+    private ProdutoFormModel _model = new();
+    private string _secaoAtual = "identificacao";
+
+    private readonly (string Key, string Label)[] _secoes =
+    {
+        ("identificacao", "Identificação"),
+        ("fiscal", "Classif. Fiscal"),
+        ("unidades", "Unid. e Peso"),
+        ("icms", "ICMS"),
+        ("pis-cofins", "PIS / COFINS"),
+        ("ipi", "IPI"),
+        ("ibs-cbs", "IBS / CBS / IS"),
+        ("precos", "Preços e Estoque"),
+    };
+
+    private class ProdutoFormModel
+    {
+        public string CodigoInterno { get; set; } = string.Empty;
+        public string Descricao { get; set; } = string.Empty;
+        public string? DescricaoComplementar { get; set; }
+        public string? CodigoBarras { get; set; }
+        public string? CodigoFornecedor { get; set; }
+        public string? Marca { get; set; }
+        public string? Modelo { get; set; }
+        public string? Categoria { get; set; }
+        public StatusProduto Status { get; set; } = StatusProduto.Ativo;
+        public string? FornecedorPrincipal { get; set; }
+
+        public string? Ncm { get; set; }
+        public string? Cest { get; set; }
+        public string? CfopPadrao { get; set; } = "5102";
+        public OrigemProduto Origem { get; set; } = OrigemProduto.Nacional;
+        public string? ExTipi { get; set; }
+
+        public UnidadeMedida UnidadeComercial { get; set; } = UnidadeMedida.UN;
+        public UnidadeMedida UnidadeTributavel { get; set; } = UnidadeMedida.UN;
+        public double FatorConversao { get; set; } = 1;
+
+        public double PesoLiquido { get; set; }
+        public double PesoBruto { get; set; }
+        public double Largura { get; set; }
+        public double Altura { get; set; }
+        public double Profundidade { get; set; }
+
+        public string CstIcms { get; set; } = "00";
+        public string Csosn { get; set; } = "102";
+        public ModalidadeBC ModalidadeBC { get; set; } = ModalidadeBC.ValorDaOperacao;
+        public double AliquotaIcms { get; set; } = 12;
+        public double ReducaoBc { get; set; }
+        public double MvaSt { get; set; }
+        public double AliquotaIcmsSt { get; set; }
+
+        public string CstPis { get; set; } = "01";
+        public double AliquotaPis { get; set; } = 0.65;
+        public string CstCofins { get; set; } = "01";
+        public double AliquotaCofins { get; set; } = 3;
+
+        public string CstIpi { get; set; } = "99";
+        public double AliquotaIpi { get; set; }
+
+        public string CstIbs { get; set; } = "01";
+        public double AliquotaIbsEstadual { get; set; } = 13.3;
+        public double AliquotaIbsMunicipal { get; set; } = 2.1;
+        public double ReducaoIbs { get; set; }
+        public string DiferencialIbs { get; set; } = "Não aplicável";
+        public string CstCbs { get; set; } = "01";
+        public double AliquotaCbs { get; set; } = 8.8;
+        public double ReducaoCbs { get; set; }
+        public double CreditoPresumidoCbs { get; set; }
+        public bool IncideIs { get; set; }
+        public string? CstIs { get; set; }
+        public double AliquotaIs { get; set; }
+        public string BaseCalculoIs { get; set; } = "Valor da Operação";
+        public string? CategoriaIs { get; set; }
+
+        public double PrecoCusto { get; set; }
+        public double PrecoVenda { get; set; }
+        public int EstoqueAtual { get; set; }
+        public int EstoqueMinimo { get; set; }
+        public int EstoqueMaximo { get; set; }
+        public string? Localizacao { get; set; }
+    }
+
+    private double _margemCalculada => _model.PrecoCusto <= 0 ? 0 : Math.Round((_model.PrecoVenda - _model.PrecoCusto) / _model.PrecoCusto * 100, 1);
+
+    private static string RotuloOrigem(OrigemProduto origem) => origem switch
+    {
+        OrigemProduto.Nacional => "0 – Nacional",
+        OrigemProduto.EstrangeiraImportacaoDireta => "1 – Estrangeira (importação direta)",
+        OrigemProduto.EstrangeiraMercadoInterno => "2 – Estrangeira (mercado interno)",
+        OrigemProduto.NacionalConteudoEstrangeiroAcima40 => "3 – Nacional c/ >40% cont. estrangeiro",
+        OrigemProduto.NacionalProducaoBasica => "4 – Nacional produção básica",
+        OrigemProduto.NacionalConteudoEstrangeiroAte40 => "5 – Nacional c/ ≤40% cont. estrangeiro",
+        OrigemProduto.EstrangeiraImportacaoDiretaSemSimilar => "6 – Estrangeira (importação direta, sem similar)",
+        OrigemProduto.EstrangeiraMercadoInternoSemSimilar => "7 – Estrangeira (mercado interno, sem similar)",
+        _ => "8 – Nacional c/ importação de insumos"
+    };
+
+    private static string RotuloModalidadeBC(ModalidadeBC modalidade) => modalidade switch
+    {
+        ModalidadeBC.MargemValorAgregado => "0 – Margem valor agregado",
+        ModalidadeBC.Pauta => "1 – Pauta",
+        ModalidadeBC.PrecoTabelado => "2 – Preço tabelado",
+        _ => "3 – Valor da operação"
+    };
+
+    protected override void OnInitialized()
+    {
+        if (ProdutoExistente is null) return;
+
+        var p = ProdutoExistente;
+
+        _model.CodigoInterno = p.CodigoInterno;
+        _model.Descricao = p.Descricao;
+        _model.DescricaoComplementar = p.DescricaoComplementar;
+        _model.CodigoBarras = p.CodigoBarras;
+        _model.CodigoFornecedor = p.CodigoFornecedor;
+        _model.Marca = p.Marca;
+        _model.Modelo = p.Modelo;
+        _model.Categoria = p.Categoria;
+        _model.Status = p.Status;
+        _model.FornecedorPrincipal = p.FornecedorPrincipal;
+
+        _model.Ncm = p.Ncm;
+        _model.Cest = p.Cest;
+        _model.CfopPadrao = p.CfopPadrao;
+        _model.Origem = p.Origem;
+        _model.ExTipi = p.ExTipi;
+
+        _model.UnidadeComercial = p.UnidadeComercial;
+        _model.UnidadeTributavel = p.UnidadeTributavel;
+        _model.FatorConversao = p.FatorConversao;
+
+        _model.PesoLiquido = p.PesoLiquido;
+        _model.PesoBruto = p.PesoBruto;
+        _model.Largura = p.Largura;
+        _model.Altura = p.Altura;
+        _model.Profundidade = p.Profundidade;
+
+        _model.CstIcms = p.CstIcms;
+        _model.Csosn = p.Csosn ?? "102";
+        _model.ModalidadeBC = p.ModalidadeBC;
+        _model.AliquotaIcms = p.AliquotaIcms;
+        _model.ReducaoBc = p.ReducaoBc;
+        _model.MvaSt = p.MvaSt;
+        _model.AliquotaIcmsSt = p.AliquotaIcmsSt;
+
+        _model.CstPis = p.CstPis;
+        _model.AliquotaPis = p.AliquotaPis;
+        _model.CstCofins = p.CstCofins;
+        _model.AliquotaCofins = p.AliquotaCofins;
+
+        _model.CstIpi = p.CstIpi;
+        _model.AliquotaIpi = p.AliquotaIpi;
+
+        _model.CstIbs = p.CstIbs;
+        _model.AliquotaIbsEstadual = p.AliquotaIbsEstadual;
+        _model.AliquotaIbsMunicipal = p.AliquotaIbsMunicipal;
+        _model.ReducaoIbs = p.ReducaoIbs;
+        _model.DiferencialIbs = p.DiferencialIbs;
+        _model.CstCbs = p.CstCbs;
+        _model.AliquotaCbs = p.AliquotaCbs;
+        _model.ReducaoCbs = p.ReducaoCbs;
+        _model.CreditoPresumidoCbs = p.CreditoPresumidoCbs;
+        _model.IncideIs = p.IncideIs;
+        _model.CstIs = p.CstIs;
+        _model.AliquotaIs = p.AliquotaIs;
+        _model.BaseCalculoIs = p.BaseCalculoIs;
+        _model.CategoriaIs = p.CategoriaIs;
+
+        _model.PrecoCusto = p.PrecoCusto;
+        _model.PrecoVenda = p.PrecoVenda;
+        _model.EstoqueAtual = p.EstoqueAtual;
+        _model.EstoqueMinimo = p.EstoqueMinimo;
+        _model.EstoqueMaximo = p.EstoqueMaximo;
+        _model.Localizacao = p.Localizacao;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

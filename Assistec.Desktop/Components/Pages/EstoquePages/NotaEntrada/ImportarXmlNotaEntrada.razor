@@ -1,0 +1,427 @@
+@inject IDialogService DialogService
+
+@using Assistec.Desktop.Components.Pages.EstoquePages.Produtos
+
+<MudDialog>
+    <TitleContent>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div class="xml-wizard-icone">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">Conferir Importação do XML</MudText>
+                <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Inclua os produtos e informe como cada unidade da nota entra no estoque.</MudText>
+            </div>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="xml-wizard-steps mb-4">
+            <div class="xml-step xml-step-concluido"><span class="xml-step-numero">1</span> XML Carregado</div>
+            <div class="xml-step-linha xml-step-linha-concluida"></div>
+            <div class="xml-step xml-step-atual"><span class="xml-step-numero">2</span> Produtos e Conversões</div>
+            <div class="xml-step-linha"></div>
+            <div class="xml-step xml-step-pendente"><span class="xml-step-numero">3</span> Revisar Nota</div>
+        </div>
+
+        @if (!_arquivoCarregado)
+{
+    <div class="xml-upload-area">
+        <MudIcon Icon="@Icons.Material.Filled.UploadFile" Style="color:#9AA5B1; font-size:2.5rem;" />
+        <MudText Typo="Typo.body1" Style="font-weight:600; margin-top:8px;">Selecione o arquivo XML da NF-e</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">A leitura do conteúdo real do arquivo será feita pelo backend; por enquanto, qualquer arquivo selecionado carrega os dados de exemplo.</MudText>
+        
+        <InputFile id="upload-xml" OnChange="CarregarArquivo" accept=".xml" style="display:none;" />
+        
+        <MudButton HtmlTag="label"
+                   for="upload-xml"
+                   Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   Style="background-color:#079cff; color:#FFFFFF; margin-top:12px;" 
+                   StartIcon="@Icons.Material.Filled.UploadFile">
+            Selecionar Arquivo
+        </MudButton>
+    </div>
+}
+        else
+        {
+            <div class="xml-arquivo-card mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#C97A3D;" />
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_nomeArquivo</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">NF-e @_xml.NumeroNfe · @_xml.FornecedorFantasia · @_xml.Itens.Count itens</MudText>
+                </div>
+                <MudSpacer />
+                <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">XML validado</MudChip>
+            </div>
+
+            @if (_mostrarAjuda)
+            {
+                <div class="xml-ajuda-box mb-4">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#2C6FB0;" Size="Size.Small" />
+                    <div style="flex:1;">
+                        <MudText Typo="Typo.body2" Style="font-weight:700; color:#1E40AF;">Como funciona o fator de conversão?</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#1E40AF; display:block; margin-top:4px;">
+                            Use quantas unidades de estoque existem em uma unidade da nota. Exemplo: se a nota traz 1 caixa com 100 unidades, informe fator 100. Assim, 20 caixas darão entrada como 2.000 unidades, sem alterar o valor total.
+                        </MudText>
+                    </div>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="() => _mostrarAjuda = false" />
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(_mensagem))
+            {
+                <div class="xml-mensagem-sucesso mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Style="font-weight:600;">@_mensagem</MudText>
+                </div>
+            }
+
+            <div class="xml-add-produto mb-3">
+                <MudSelect T="string" @bind-Value="_produtoParaAdicionar" Label="Adicionar produto do catálogo" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    @foreach (var produto in _catalogoDisponivel)
+                    {
+                        <MudSelectItem T="string" Value="@produto.CodigoInterno">@produto.CodigoInterno — @produto.Descricao</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudButton Variant="Variant.Filled" Style="background-color:#10233A; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AdicionarProdutoCatalogo">
+                    Adicionar
+                </MudButton>
+                @if (_naoIdentificados > 0)
+                {
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" StartIcon="@Icons.Material.Filled.AutoFixHigh" OnClick="CriarTodos">
+                        Criar Todos os Novos (@_naoIdentificados)
+                    </MudButton>
+                }
+            </div>
+
+            <div style="overflow-x:auto;">
+                <table class="xml-itens-table">
+                    <thead>
+                        <tr>
+                            <th>Item da Nota</th>
+                            <th>UND Nota</th>
+                            <th class="col-num">Qtd. Nota</th>
+                            <th>Produto no ERP</th>
+                            <th>UND Estoque</th>
+                            <th>Fator de Conversão</th>
+                            <th>Entrada no Estoque</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (var i = 0; i < _itens.Count; i++)
+                        {
+                            var index = i;
+                            var item = _itens[index];
+                            var quantidadeConvertida = item.QuantidadeXml * item.Fator;
+                            var custoConvertido = item.Fator > 0 ? item.ValorUnitarioXml / item.Fator : 0;
+
+                            <tr>
+                                <td style="max-width:220px;">
+                                    <MudText Typo="Typo.body2" Style="font-weight:600;">@item.DescricaoXml</MudText>
+                                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.CodigoXml</MudText>
+                                    <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block;">@FormatarMoeda(item.ValorUnitarioXml)/@item.UnidadeXml</MudText>
+                                </td>
+                                <td>
+                                    <MudSelect T="string" @bind-Value="item.UnidadeXml" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:80px;">
+                                        <MudSelectItem T="string" Value="@("UN")">UN</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("RL")">RL</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("CX")">CX</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("MT")">MT</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("LT")">LT</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("KG")">KG</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("PR")">PR</MudSelectItem>
+                                    </MudSelect>
+                                </td>
+                                <td class="col-num">
+                                    <MudNumericField @bind-Value="item.QuantidadeXml" Min="0.0001" Format="N4" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:90px;" />
+                                </td>
+                                <td style="min-width:200px;">
+                                    @if (!string.IsNullOrEmpty(item.ProdutoCodigo))
+                                    {
+                                        <div class="xml-produto-vinculado">
+                                            <MudText Typo="Typo.caption" Style="font-weight:700; color:#2E7D32;">@item.ProdutoCodigo</MudText>
+                                            <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block;">@ObterDescricaoProduto(item.ProdutoCodigo)</MudText>
+                                        </div>
+                                        <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => IniciarVinculo(index)">Alterar vínculo</MudButton>
+                                    }
+                                    else
+                                    {
+                                        <div class="xml-produto-nao-encontrado">
+                                            <MudText Typo="Typo.caption" Style="font-weight:700; color:#C97A3D;">Não encontrado no estoque</MudText>
+                                            <div style="display:flex; gap:6px; margin-top:6px;">
+                                                <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="font-size:0.7rem;" OnClick="() => IniciarVinculo(index)">Vincular existente</MudButton>
+                                                <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:#C97A3D; color:#FFFFFF; font-size:0.7rem;" OnClick="() => AbrirCriarProduto(index)">Criar produto</MudButton>
+                                            </div>
+                                        </div>
+                                    }
+
+                                    @if (_vinculandoIndex == index)
+                                    {
+                                        <div class="xml-vinculo-box mt-2">
+                                            <MudSelect T="string" @bind-Value="_produtoParaVincular" Label="Selecione o produto" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                                @foreach (var produto in _catalogoDisponivel)
+                                                {
+                                                    <MudSelectItem T="string" Value="@produto.CodigoInterno">@produto.CodigoInterno — @produto.Descricao</MudSelectItem>
+                                                }
+                                            </MudSelect>
+                                            <div style="display:flex; gap:6px; margin-top:6px;">
+                                                <MudButton Variant="Variant.Filled" Size="Size.Small" Style="background-color:#2C6FB0; color:#FFFFFF;" OnClick="() => ConfirmarVinculo(index)">Confirmar</MudButton>
+                                                <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="() => _vinculandoIndex = null">Cancelar</MudButton>
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                                <td>
+                                    <MudSelect T="string" @bind-Value="item.UnidadeEstoque" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:80px;">
+                                        <MudSelectItem T="string" Value="@("UN")">UN</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("RL")">RL</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("CX")">CX</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("MT")">MT</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("LT")">LT</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("KG")">KG</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("PR")">PR</MudSelectItem>
+                                    </MudSelect>
+                                </td>
+                                <td>
+                                    <MudNumericField @bind-Value="item.Fator" Min="0" Format="N4" Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:90px;" />
+                                    @if (item.Fator <= 0)
+                                    {
+                                        <MudText Typo="Typo.caption" Style="color:#C2185B; display:block;">Fator inválido</MudText>
+                                    }
+                                </td>
+                                <td style="min-width:140px;">
+                                    <div class="@(item.Fator > 0 ? "xml-entrada-box-ok" : "xml-entrada-box-erro")">
+                                        <MudText Typo="Typo.body2" Style="font-weight:700;">@quantidadeConvertida.ToString("N0") @item.UnidadeEstoque</MudText>
+                                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block;">@item.QuantidadeXml.ToString("0.##") @item.UnidadeXml × @item.Fator.ToString("0.####")</MudText>
+                                        <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block;">Custo: @FormatarMoeda(custoConvertido)/@item.UnidadeEstoque</MudText>
+                                    </div>
+                                </td>
+                                <td>
+                                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Error" OnClick="() => RemoverItem(index)" />
+                                </td>
+                            </tr>
+                        }
+                        @if (_itens.Count == 0)
+                        {
+                            <tr><td colspan="8" style="text-align:center; padding:32px; color:#9AA5B1;">Nenhum produto adicionado.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="xml-total-row mt-4">
+                <div>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">O valor fiscal da nota não será alterado.</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">A conversão afeta somente a quantidade e o custo unitário lançados no estoque.</MudText>
+                </div>
+                <div style="text-align:right;">
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total dos produtos no XML</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:700;">@FormatarMoeda(_itens.Sum(i => i.QuantidadeXml * i.ValorUnitarioXml))</MudText>
+                </div>
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (_arquivoCarregado)
+        {
+            @if (_pendencias == 0 && _itens.Count > 0)
+            {
+                <MudText Typo="Typo.caption" Style="color:#2E7D32; display:flex; align-items:center; gap:4px; margin-right:auto;">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Size="Size.Small" /> Todos os itens estão prontos
+                </MudText>
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Style="color:#C2185B; margin-right:auto;">
+                    @(_itens.Count == 0 ? "Adicione pelo menos um produto" : $"{_pendencias} item(ns) com pendência")
+                </MudText>
+            }
+        }
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;"
+                   EndIcon="@Icons.Material.Filled.ChevronRight"
+                   Disabled="@(!_arquivoCarregado || _pendencias > 0 || _itens.Count == 0)"
+                   OnClick="ContinuarParaRevisao">
+            Continuar para Revisão
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private InputFile? _inputRef;
+    private bool _arquivoCarregado;
+    private string _nomeArquivo = string.Empty;
+    private XmlImportadoInfo _xml = null!;
+    private bool _mostrarAjuda = true;
+    private string _mensagem = string.Empty;
+
+    private class ItemXmlLinha
+    {
+        public string CodigoXml { get; set; } = string.Empty;
+        public string DescricaoXml { get; set; } = string.Empty;
+        public string Ncm { get; set; } = string.Empty;
+        public string Cfop { get; set; } = string.Empty;
+        public string UnidadeXml { get; set; } = "UN";
+        public double QuantidadeXml { get; set; }
+        public double ValorUnitarioXml { get; set; }
+        public string? ProdutoCodigo { get; set; }
+        public string UnidadeEstoque { get; set; } = "UN";
+        public double Fator { get; set; } = 1;
+    }
+
+    private record ProdutoCatalogoLinha(string CodigoInterno, string Descricao, string Ncm, string Unidade, double Valor);
+
+    private List<ItemXmlLinha> _itens = new();
+    private List<ProdutoCatalogoLinha> _produtosCriadosNestaSessao = new();
+
+    private int? _vinculandoIndex;
+    private string? _produtoParaVincular;
+    private string? _produtoParaAdicionar;
+
+    private IEnumerable<ProdutoCatalogoLinha> _catalogoDisponivel =>
+        Produtos.ProdutoMockData.Produtos.Select(p => new ProdutoCatalogoLinha(p.CodigoInterno, p.Descricao, p.Ncm, p.UnidadeComercial.ToString(), p.PrecoVenda))
+            .Concat(_produtosCriadosNestaSessao);
+
+    private int _pendencias => _itens.Count(i => string.IsNullOrEmpty(i.ProdutoCodigo) || i.Fator <= 0);
+    private int _naoIdentificados => _itens.Count(i => string.IsNullOrEmpty(i.ProdutoCodigo));
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private string ObterDescricaoProduto(string? codigo) =>
+        _catalogoDisponivel.FirstOrDefault(p => p.CodigoInterno == codigo)?.Descricao ?? string.Empty;
+
+    private async Task CarregarArquivo(InputFileChangeEventArgs e)
+    {
+        // A leitura real do conteúdo do XML será feita pelo backend.
+        // Por enquanto, qualquer arquivo selecionado carrega os dados de exemplo já extraídos.
+        _nomeArquivo = e.File.Name;
+        _xml = XmlImportadoMockData.Exemplo;
+        _itens = _xml.Itens.Select(i => new ItemXmlLinha
+        {
+            CodigoXml = i.CodigoXml,
+            DescricaoXml = i.DescricaoXml,
+            Ncm = i.Ncm,
+            Cfop = i.Cfop,
+            UnidadeXml = i.UnidadeXml,
+            QuantidadeXml = i.QuantidadeXml,
+            ValorUnitarioXml = i.ValorUnitarioXml,
+            UnidadeEstoque = i.UnidadeXml,
+            Fator = 1,
+            ProdutoCodigo = null
+        }).ToList();
+        _arquivoCarregado = true;
+        _produtoParaAdicionar = _catalogoDisponivel.FirstOrDefault()?.CodigoInterno;
+        await Task.CompletedTask;
+    }
+
+    private void IniciarVinculo(int index)
+    {
+        _vinculandoIndex = index;
+        _produtoParaVincular = _catalogoDisponivel.FirstOrDefault()?.CodigoInterno;
+    }
+
+    private void ConfirmarVinculo(int index)
+    {
+        if (_produtoParaVincular is null) return;
+        _itens[index].ProdutoCodigo = _produtoParaVincular;
+        var produto = _catalogoDisponivel.First(p => p.CodigoInterno == _produtoParaVincular);
+        _itens[index].UnidadeEstoque = produto.Unidade;
+        _vinculandoIndex = null;
+        _mensagem = $"Item da nota vinculado ao produto {produto.CodigoInterno}.";
+    }
+
+    private async Task AbrirCriarProduto(int index)
+    {
+        var item = _itens[index];
+        var proximoCodigo = $"PRD-{(Produtos.ProdutoMockData.Produtos.Count + _produtosCriadosNestaSessao.Count + 1):D3}";
+
+        var parameters = new DialogParameters<CriarProdutoRapido>
+        {
+            { x => x.CodigoSugerido, proximoCodigo },
+            { x => x.CodigoXml, item.CodigoXml },
+            { x => x.DescricaoXml, item.DescricaoXml },
+            { x => x.NcmSugerido, item.Ncm },
+            { x => x.UnidadeSugerida, item.UnidadeEstoque },
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseButton = true };
+        var dialogResult = await DialogService.ShowAsync<CriarProdutoRapido>("Criar Produto", parameters, options);
+        var result = await dialogResult.Result;
+
+        if (result is { Canceled: false } && result.Data is CriarProdutoRapido.ProdutoRapidoResultado novo)
+        {
+            var custoUnitario = item.Fator > 0 ? item.ValorUnitarioXml / item.Fator : item.ValorUnitarioXml;
+            _produtosCriadosNestaSessao.Add(new ProdutoCatalogoLinha(novo.Codigo, novo.Descricao, item.Ncm, novo.Unidade, custoUnitario));
+            _itens[index].ProdutoCodigo = novo.Codigo;
+            _itens[index].UnidadeEstoque = novo.Unidade;
+            _mensagem = $"{novo.Codigo} cadastrado e vinculado ao item da nota.";
+        }
+    }
+
+    private void CriarTodos()
+    {
+        var criados = 0;
+        foreach (var item in _itens.Where(i => string.IsNullOrEmpty(i.ProdutoCodigo)))
+        {
+            var codigo = $"PRD-{(Produtos.ProdutoMockData.Produtos.Count + _produtosCriadosNestaSessao.Count + 1):D3}";
+            var custoUnitario = item.Fator > 0 ? item.ValorUnitarioXml / item.Fator : item.ValorUnitarioXml;
+            _produtosCriadosNestaSessao.Add(new ProdutoCatalogoLinha(codigo, item.DescricaoXml, item.Ncm, item.UnidadeEstoque, custoUnitario));
+            item.ProdutoCodigo = codigo;
+            criados++;
+        }
+        _mensagem = $"{criados} produto(s) criado(s) e vinculado(s). Revise os cadastros fiscais posteriormente.";
+    }
+
+    private void AdicionarProdutoCatalogo()
+    {
+        if (_produtoParaAdicionar is null) return;
+        var produto = _catalogoDisponivel.First(p => p.CodigoInterno == _produtoParaAdicionar);
+        if (_itens.Any(i => i.ProdutoCodigo == produto.CodigoInterno)) return;
+
+        _itens.Add(new ItemXmlLinha
+        {
+            CodigoXml = produto.CodigoInterno,
+            DescricaoXml = produto.Descricao,
+            Ncm = produto.Ncm,
+            Cfop = "5102",
+            UnidadeXml = produto.Unidade,
+            QuantidadeXml = 1,
+            ValorUnitarioXml = produto.Valor,
+            ProdutoCodigo = produto.CodigoInterno,
+            UnidadeEstoque = produto.Unidade,
+            Fator = 1
+        });
+    }
+
+    private void RemoverItem(int index) => _itens.RemoveAt(index);
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void ContinuarParaRevisao()
+    {
+        var itensNota = _itens.Select(i => new ItemNotaEntradaLinha(
+            i.ProdutoCodigo ?? i.CodigoXml,
+            ObterDescricaoProduto(i.ProdutoCodigo) is { Length: > 0 } desc ? desc : i.DescricaoXml,
+            i.Ncm, i.Cfop, i.UnidadeEstoque,
+            i.QuantidadeXml * i.Fator,
+            i.Fator > 0 ? i.ValorUnitarioXml / i.Fator : i.ValorUnitarioXml,
+            i.UnidadeXml, i.QuantidadeXml, i.Fator,
+            0,
+            i.QuantidadeXml * i.ValorUnitarioXml * 0.12, 0,
+            i.QuantidadeXml * i.ValorUnitarioXml * 0.0065,
+            i.QuantidadeXml * i.ValorUnitarioXml * 0.03,
+            0, 0, 0
+        )).ToList();
+
+        var notaPreenchida = new NotaEntradaItem(
+            string.Empty, _xml.NumeroNfe, _xml.Serie, _xml.Chave, _xml.Modelo,
+            _xml.Emissao, DateTime.Today, _xml.FornecedorNome, _xml.FornecedorCnpj, _xml.FornecedorIe,
+            null, "Compra para comercialização", "CIF – Emitente", 0, 0,
+            0, "28 dias", $"Importada do arquivo {_nomeArquivo}. Conversões de unidade revisadas antes da entrada.",
+            StatusNota.PendenteConferencia, itensNota);
+
+        MudDialog.Close(DialogResult.Ok(notaPreenchida));
+    }
+}

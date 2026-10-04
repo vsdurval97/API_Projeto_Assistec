@@ -1,0 +1,202 @@
+@page "/estoque/notas-entrada"
+
+@inject IDialogService DialogService
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Notas de Entrada</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Receba NF-e de fornecedores, confira tributos e atualize os saldos do estoque.
+        </MudText>
+    </div>
+    <div style="display:flex; gap:12px;">
+    <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.UploadFile" OnClick="AbrirImportarXml">
+    Importar XML
+</MudButton>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovaEntrada">
+        Nova Entrada
+    </MudButton>
+</div>
+</div>
+
+<div class="info-card-row-notas">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Recebidas Hoje</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">4</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">notas fiscais</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#FCEFDB;">
+            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Style="color:#D9A441;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Pendentes</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_pendentes</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">aguardam conferência</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Conferência</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_emConferencia</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">em processamento</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Entradas no Mês</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_valorMesFormatado</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">valor fiscal</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="nota-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Buscar por nota, fornecedor ou chave de acesso..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="nota-busca-input" />
+
+    <MudSelect T="StatusNota?" @bind-Value="_statusFiltro" Placeholder="Todos os status" Variant="Variant.Outlined" Margin="Margin.Dense" Class="nota-select-filtro">
+        <MudSelectItem T="StatusNota?" Value="@((StatusNota?)null)">Todos</MudSelectItem>
+        @foreach (var nota in _notasExibidas)
+{
+    var cor = CorStatus(nota.Status);
+    <tr class="pedido-linha-clicavel" @onclick="() => AbrirEdicao(nota)">        
+    </tr>
+}
+    </MudSelect>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_notasExibidas.Count() notas</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="notas-entrada-table">
+        <thead>
+            <tr>
+                <th>Nota Fiscal</th>
+                <th>Fornecedor</th>
+                <th>Entrada</th>
+                <th>Pedido</th>
+                <th class="col-num">Itens</th>
+                <th class="col-num">Valor Total</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var nota in _notasExibidas)
+            {
+                var cor = CorStatus(nota.Status);
+                <tr>
+                    <td>
+                        <MudText Typo="Typo.body2" Style="color:#2C6FB0; font-weight:700;">NF @nota.Numero</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Série @nota.Serie · @nota.Modelo.Split(' ')[0]</MudText>
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.body2" Style="font-weight:600;">@nota.Fornecedor</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@nota.Cnpj</MudText>
+                    </td>
+                    <td>@nota.Entrada.ToString("dd/MM/yyyy")</td>
+                    <td><MudText Typo="Typo.caption" Style="color:#5A6B7A;">@(nota.PedidoCompra ?? "Sem vínculo")</MudText></td>
+                    <td class="col-num">@nota.Itens.Count</td>
+                    <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@nota.TotalNotaFormatado</MudText></td>
+                    <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{cor.Bg}; color:{cor.Texto};")">@nota.StatusLabel</MudChip></td>
+                    <td><MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#9AA5B1;" /></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="nota-tabela-footer">
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma nota para consultar ou editar</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_notasExibidas.Count() de @NotaEntradaMockData.Notas.Count notas</MudText>
+    </div>
+</MudPaper>
+
+@code {
+    private string _termoBusca = string.Empty;
+    private StatusNota? _statusFiltro = null;
+
+    private int _pendentes => NotaEntradaMockData.Notas.Count(n => n.Status == StatusNota.PendenteConferencia);
+    private int _emConferencia => NotaEntradaMockData.Notas.Count(n => n.Status == StatusNota.EmConferencia);
+    private double _valorMes => NotaEntradaMockData.Notas.Where(n => n.Status != StatusNota.Cancelada).Sum(n => n.TotalNota);
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private string _valorMesFormatado => FormatarMoeda(_valorMes);
+
+    private static string RotuloStatus(StatusNota status) => status switch
+    {
+        StatusNota.PendenteConferencia => "Pendente de conferência",
+        StatusNota.EmConferencia => "Em conferência",
+        StatusNota.Conferida => "Conferida",
+        StatusNota.EstoqueAtualizado => "Estoque atualizado",
+        _ => "Cancelada"
+    };
+
+    private async Task AbrirNovaEntrada()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoNotaEntrada>("Nova Nota de Entrada", options);
+}
+
+private async Task AbrirEdicao(NotaEntradaItem nota)
+{
+    var parameters = new DialogParameters<NovoNotaEntrada> { { x => x.NotaExistente, nota } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoNotaEntrada>($"Nota de Entrada {nota.Numero}", parameters, options);
+}
+
+private async Task AbrirImportarXml()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
+    var dialogResult = await DialogService.ShowAsync<ImportarXmlNotaEntrada>("Importar XML", options);
+    var result = await dialogResult.Result;
+
+    if (result is { Canceled: false } && result.Data is NotaEntradaItem notaPreenchida)
+    {
+        var parameters = new DialogParameters<NovoNotaEntrada> { { x => x.NotaPreenchida, notaPreenchida } };
+        var novaOptions = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoNotaEntrada>("Nova Nota de Entrada", parameters, novaOptions);
+    }
+}
+
+    private static (string Bg, string Texto) CorStatus(StatusNota status) => status switch
+    {
+        StatusNota.PendenteConferencia => ("#FCEFDB", "#D9A441"),
+        StatusNota.EmConferencia => ("#EAF1FA", "#2C6FB0"),
+        StatusNota.Conferida => ("#F1E9FA", "#8E5CE0"),
+        StatusNota.EstoqueAtualizado => ("#E4F2E5", "#2E7D32"),
+        _ => ("#FBE4EC", "#C2185B")
+    };
+
+    private IEnumerable<NotaEntradaItem> _notasExibidas =>
+        NotaEntradaMockData.Notas
+            .Where(n => _statusFiltro == null || n.Status == _statusFiltro)
+            .Where(n => string.IsNullOrWhiteSpace(_termoBusca)
+                || n.Numero.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || n.Fornecedor.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || n.Chave.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase));
+}

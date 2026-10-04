@@ -1,0 +1,79 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">Criar Produto no Estoque</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">O novo cadastro será vinculado automaticamente ao item da nota.</MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <div class="produto-alerta-atencao mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#D9A441;" Size="Size.Small" />
+            <MudText Typo="Typo.caption" Style="color:#92400E;">
+                Dados recebidos na nota: <b>@CodigoXml</b> · @DescricaoXml
+            </MudText>
+        </div>
+
+        <div class="pedido-row-dados-1">
+            <MudTextField @bind-Value="_codigo" Label="Código Interno" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+            <MudTextField @bind-Value="_ncm" Label="NCM" Placeholder="8 dígitos" MaxLength="8" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" />
+            <MudSelect T="string" @bind-Value="_unidade" Label="Unidade de Estoque" Variant="Variant.Outlined">
+                <MudSelectItem T="string" Value="@("UN")">UN</MudSelectItem>
+                <MudSelectItem T="string" Value="@("RL")">RL</MudSelectItem>
+                <MudSelectItem T="string" Value="@("CX")">CX</MudSelectItem>
+                <MudSelectItem T="string" Value="@("MT")">MT</MudSelectItem>
+                <MudSelectItem T="string" Value="@("LT")">LT</MudSelectItem>
+                <MudSelectItem T="string" Value="@("KG")">KG</MudSelectItem>
+                <MudSelectItem T="string" Value="@("PR")">PR</MudSelectItem>
+            </MudSelect>
+        </div>
+
+        <MudTextField @bind-Value="_descricao" Label="Descrição do Produto" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" Class="mt-4" />
+
+        <div class="produto-alerta-info mt-4">
+            <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#2C6FB0;" Size="Size.Small" />
+            <MudText Typo="Typo.caption" Style="color:#1E40AF;">
+                Os demais dados fiscais poderão ser complementados posteriormente no cadastro de Produtos.
+            </MudText>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save"
+                   Disabled="@(string.IsNullOrEmpty(_codigo) || string.IsNullOrEmpty(_descricao) || _ncm?.Length != 8)"
+                   OnClick="Confirmar">
+            Criar e Vincular Produto
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public string CodigoSugerido { get; set; } = string.Empty;
+    [Parameter] public string CodigoXml { get; set; } = string.Empty;
+    [Parameter] public string DescricaoXml { get; set; } = string.Empty;
+    [Parameter] public string NcmSugerido { get; set; } = string.Empty;
+    [Parameter] public string UnidadeSugerida { get; set; } = "UN";
+
+    public record ProdutoRapidoResultado(string Codigo, string Descricao, string Unidade);
+
+    private string _codigo = string.Empty;
+    private string _descricao = string.Empty;
+    private string _ncm = string.Empty;
+    private string _unidade = "UN";
+
+    protected override void OnInitialized()
+    {
+        _codigo = CodigoSugerido;
+        _descricao = DescricaoXml;
+        _ncm = NcmSugerido;
+        _unidade = UnidadeSugerida;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Confirmar()
+    {
+        MudDialog.Close(DialogResult.Ok(new ProdutoRapidoResultado(_codigo, _descricao, _unidade)));
+    }
+}

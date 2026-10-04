@@ -1,0 +1,230 @@
+@page "/estoque/produtos"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Produtos</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Cadastro completo com dados fiscais exigidos para emissão de NF-e.
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoProduto">
+        Novo Produto
+    </MudButton>
+</div>
+
+<div class="info-card-row-produtos">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total de Produtos</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@ProdutoMockData.Produtos.Count</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">cadastrados</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Valor em Estoque</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_valorEstoqueFormatado</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">custo total</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#FCEFDB;">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#D9A441;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Abaixo do Mínimo</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_abaixoMinimo</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">precisam de reposição</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#FBE4EC;">
+            <MudIcon Icon="@Icons.Material.Filled.RemoveShoppingCart" Style="color:#C2185B;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Sem Estoque</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_semEstoque</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">itens zerados</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="produto-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Descrição, código, NCM, EAN..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="produto-busca-input" />
+
+    <div class="cliente-filtro-tipos">
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == null ? "active" : "")" @onclick="() => _statusFiltro = null">Todos</button>
+        <button type="button" class="filtro-tipo-btn @(_apenasCritico ? "active" : "")" @onclick="MarcarCritico">Crítico</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusProduto.Ativo ? "active" : "")" @onclick="() => DefinirStatus(StatusProduto.Ativo)">Ativo</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusProduto.Inativo ? "active" : "")" @onclick="() => DefinirStatus(StatusProduto.Inativo)">Inativo</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusProduto.Descontinuado ? "active" : "")" @onclick="() => DefinirStatus(StatusProduto.Descontinuado)">Descontinuado</button>
+    </div>
+
+    <MudSelect T="string" @bind-Value="_categoriaFiltro" Placeholder="Todas as categorias" Variant="Variant.Outlined" Margin="Margin.Dense" Class="produto-select-filtro">
+        <MudSelectItem T="string" Value="@((string?)null)">Todas as categorias</MudSelectItem>
+        @foreach (var categoria in ProdutoMockData.Categorias)
+        {
+            <MudSelectItem T="string" Value="@categoria">@categoria</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_produtosExibidos.Count() produtos</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="produtos-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Produto</th>
+                <th>NCM</th>
+                <th>Origem</th>
+                <th>Unid.</th>
+                <th class="col-num">Custo</th>
+                <th class="col-num">Venda</th>
+                <th class="col-num">Margem</th>
+                <th class="col-num">Estoque</th>
+                <th class="col-num">Mín.</th>
+                <th>Status</th>
+                <th class="col-acoes"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var produto in _produtosExibidos)
+            {
+                <tr>
+                    <td><span class="produto-codigo-badge">@produto.CodigoInterno</span></td>
+                    <td @onclick="() => AbrirDetalhes(produto.Codigo)" style="cursor:pointer;">
+                        <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@produto.Descricao</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@produto.Marca · @produto.Categoria</MudText>
+                    </td>
+                    <td><MudText Typo="Typo.caption" Style="font-family:monospace; color:#5A6B7A;">@produto.Ncm</MudText></td>
+                    <td>@produto.OrigemCodigo</td>
+                    <td>@produto.UnidadeComercial</td>
+                    <td class="col-num">@produto.PrecoCustoFormatado</td>
+                    <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@produto.PrecoVendaFormatado</MudText></td>
+                    <td class="col-num">
+                        <MudText Typo="Typo.body2" Style="@($"font-weight:700; color:{CorMargem(produto.MargemLucro)};")">@produto.MargemLucro.ToString("0.0")%</MudText>
+                    </td>
+                    <td class="col-num">
+                        <MudText Typo="Typo.body2" Style="@($"font-weight:700; color:{CorEstoque(produto.EstoqueStatus)};")">@produto.EstoqueAtual</MudText>
+                    </td>
+                    <td class="col-num"><MudText Typo="Typo.caption" Style="color:#9AA5B1;">@produto.EstoqueMinimo</MudText></td>
+                    <td>
+                        @if (produto.Status == StatusProduto.Ativo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                        }
+                        else if (produto.Status == StatusProduto.Inativo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B;">Descontinuado</MudChip>
+                        }
+                    </td>
+                    <td class="col-acoes">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(produto)" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="produto-tabela-footer">
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em um produto para ver todos os dados fiscais</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_produtosExibidos.Count() de @ProdutoMockData.Produtos.Count produtos</MudText>
+    </div>
+</MudPaper>
+
+@code {
+    private string _termoBusca = string.Empty;
+    private string? _categoriaFiltro = null;
+    private StatusProduto? _statusFiltro = null;
+    private bool _apenasCritico = false;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private void DefinirStatus(StatusProduto status)
+    {
+        _statusFiltro = status;
+        _apenasCritico = false;
+    }
+
+    private void MarcarCritico()
+    {
+        _apenasCritico = true;
+        _statusFiltro = null;
+    }
+
+    private int _semEstoque => ProdutoMockData.Produtos.Count(p => p.EstoqueAtual == 0);
+    private int _abaixoMinimo => ProdutoMockData.Produtos.Count(p => p.EstoqueAtual > 0 && p.EstoqueAtual < p.EstoqueMinimo);
+    private double _valorEstoque => ProdutoMockData.Produtos.Sum(p => p.EstoqueAtual * p.PrecoCusto);
+
+    private string _valorEstoqueFormatado => "R$ " + (_valorEstoque / 1000).ToString("N1") + "k";
+
+    private static string CorMargem(double margem) => margem >= 80 ? "#2E7D32" : margem >= 40 ? "#2C6FB0" : "#C97A3D";
+
+    private static string CorEstoque(string status) => status switch
+    {
+        "Zero" => "#C2185B",
+        "Baixo" => "#D9A441",
+        _ => "#10233A"
+    };
+
+    private async Task AbrirNovoProduto()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoProduto>("Novo Produto", options);
+    }
+
+    private void AbrirDetalhes(string codigo)
+    {
+        WindowManager.Navigate(WindowId, typeof(DetalhesProduto),
+            new Dictionary<string, object> { { "Codigo", codigo } },
+            $"Produto {codigo}");
+    }
+
+    private async Task AbrirEdicao(ProdutoItem produto)
+    {
+        var parameters = new DialogParameters<NovoProduto> { { x => x.ProdutoExistente, produto } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoProduto>("Editar Produto", parameters, options);
+    }
+
+    private IEnumerable<ProdutoItem> _produtosExibidos =>
+        ProdutoMockData.Produtos
+            .Where(p => _categoriaFiltro == null || p.Categoria == _categoriaFiltro)
+            .Where(p => !_apenasCritico || p.EstoqueStatus != "Ok")
+            .Where(p => _statusFiltro == null || p.Status == _statusFiltro)
+            .Where(p => string.IsNullOrWhiteSpace(_termoBusca)
+                || p.Descricao.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || p.CodigoInterno.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || p.CodigoBarras.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || p.Ncm.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || p.Marca.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .Take(20);
+}

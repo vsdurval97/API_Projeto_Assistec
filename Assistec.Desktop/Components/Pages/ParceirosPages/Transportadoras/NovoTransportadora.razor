@@ -1,0 +1,243 @@
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(TransportadoraExistente is null ? "Nova Transportadora" : "Editar Transportadora")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                @(TransportadoraExistente is null ? "Preencha todos os dados exigidos para emissão de NF-e" : "Atualize os dados da transportadora")
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Identificação da Empresa</MudText>
+
+            <div class="transportadora-row-razao-fantasia mt-2">
+                <MudTextField @bind-Value="_model.RazaoSocial"
+                              Label="Razão Social"
+                              Placeholder="Razão Social completa"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.NomeFantasia"
+                              Label="Nome Fantasia"
+                              Placeholder="Nome comercial"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <div class="transportadora-row-fiscal mt-4">
+                <MudTextField @bind-Value="_model.Cnpj"
+                              Label="CNPJ"
+                              Mask="@(new PatternMask("00.000.000/0000-00"))"
+                              Placeholder="00.000.000/0000-00"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Ie"
+                              Label="Inscrição Estadual"
+                              Placeholder="ISENTO ou número"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Rntrc"
+                              Label="RNTRC"
+                              Placeholder="00000000"
+                              MaxLength="8"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <div class="transportadora-row-modal-alerta mt-4">
+                <MudSelect T="ModalTransporte" @bind-Value="_model.Modal" Label="Modal de Transporte" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined">
+                    <MudSelectItem T="ModalTransporte" Value="ModalTransporte.Rodoviario">Rodoviário</MudSelectItem>
+                    <MudSelectItem T="ModalTransporte" Value="ModalTransporte.Aereo">Aéreo</MudSelectItem>
+                    <MudSelectItem T="ModalTransporte" Value="ModalTransporte.Aquaviario">Aquaviário</MudSelectItem>
+                    <MudSelectItem T="ModalTransporte" Value="ModalTransporte.Ferroviario">Ferroviário</MudSelectItem>
+                </MudSelect>
+                <div class="transportadora-alerta-info">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#C97A3D;" Size="Size.Small" />
+                    <MudText Typo="Typo.caption" Style="color:#9A3412;">
+                        O <b>RNTRC</b> (Registro Nacional de Transportadores Rodoviários de Cargas) é obrigatório para emissão do CT-e e preenchimento do campo de transportadora na NF-e.
+                    </MudText>
+                </div>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Endereço</MudText>
+
+            <div class="transportadora-row-endereco-1 mt-2">
+                <MudTextField @bind-Value="_model.Cep"
+                              Label="CEP"
+                              Mask="@(new PatternMask("00000-000"))"
+                              Placeholder="00000-000"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Logradouro"
+                              Label="Logradouro"
+                              Placeholder="Rua, Av, Rod..."
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Numero"
+                              Label="Número"
+                              Placeholder="S/N"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Complemento"
+                              Label="Complemento"
+                              Placeholder="Sala, Galpão..."
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <div class="transportadora-row-endereco-2 mt-4">
+                <MudTextField @bind-Value="_model.Bairro"
+                              Label="Bairro"
+                              Placeholder="Bairro"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Municipio"
+                              Label="Município"
+                              Placeholder="Cidade"
+                              Required="true"
+                              RequiredError="Campo obrigatório"
+                              Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.Uf" Label="UF" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined">
+                    @foreach (var uf in _ufs)
+                    {
+                        <MudSelectItem T="string" Value="@uf">@uf</MudSelectItem>
+                    }
+                </MudSelect>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Contato Operacional</MudText>
+
+            <div class="transportadora-row-contato mt-2">
+                <MudTextField @bind-Value="_model.NomeContato"
+                              Label="Nome do Responsável"
+                              Placeholder="Nome do contato"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Telefone"
+                              Label="Telefone / WhatsApp"
+                              Mask="@(new PatternMask("(00) 00000-0000"))"
+                              Placeholder="(00) 00000-0000"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Email"
+                              Label="E-mail Operacional"
+                              Placeholder="email@transportadora.com.br"
+                              InputType="InputType.Email"
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Dados Financeiros (opcional)</MudText>
+
+            <div class="transportadora-row-financeiro mt-2">
+                <MudTextField @bind-Value="_model.Banco"
+                              Label="Banco"
+                              Placeholder="Ex: Bradesco, Itaú..."
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Agencia"
+                              Label="Agência"
+                              Placeholder="0000"
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Conta"
+                              Label="Conta"
+                              Placeholder="00000-0"
+                              Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.TipoConta" Label="Tipo de Conta" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("Corrente")">Corrente</MudSelectItem>
+                    <MudSelectItem T="string" Value="@("Poupança")">Poupança</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <MudTextField @bind-Value="_model.Observacoes"
+                          Label="Observações"
+                          Placeholder="Restrições de rota, acordos de prazo, motoristas habituais..."
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Class="mt-4" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Salvar">
+            @(TransportadoraExistente is null ? "Salvar" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public TransportadoraItem? TransportadoraExistente { get; set; }
+
+    private MudForm _form = null!;
+    private TransportadoraFormModel _model = new();
+
+    private class TransportadoraFormModel
+    {
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string? NomeFantasia { get; set; }
+        public string? Cnpj { get; set; }
+        public string? Ie { get; set; }
+        public string? Rntrc { get; set; }
+        public ModalTransporte Modal { get; set; } = ModalTransporte.Rodoviario;
+        public string? Cep { get; set; }
+        public string? Logradouro { get; set; }
+        public string? Numero { get; set; }
+        public string? Complemento { get; set; }
+        public string? Bairro { get; set; }
+        public string? Municipio { get; set; }
+        public string? Uf { get; set; }
+        public string? NomeContato { get; set; }
+        public string? Telefone { get; set; }
+        public string? Email { get; set; }
+        public string? Banco { get; set; }
+        public string? Agencia { get; set; }
+        public string? Conta { get; set; }
+        public string TipoConta { get; set; } = "Corrente";
+        public string? Observacoes { get; set; }
+    }
+
+    private readonly string[] _ufs =
+    {
+        "AC","AL","AP","AM","BA","CE","DF","ES","GO",
+        "MA","MT","MS","MG","PA","PB","PR","PE","PI",
+        "RJ","RN","RS","RO","RR","SC","SP","SE","TO"
+    };
+
+    protected override void OnInitialized()
+    {
+        if (TransportadoraExistente is null) return;
+
+        var t = TransportadoraExistente;
+
+        _model.RazaoSocial = t.RazaoSocial;
+        _model.NomeFantasia = t.NomeFantasia;
+        _model.Cnpj = t.Cnpj;
+        _model.Ie = t.Ie;
+        _model.Rntrc = t.Rntrc;
+        _model.Modal = t.Modal;
+        _model.Cep = t.Cep;
+        _model.Logradouro = t.Logradouro;
+        _model.Numero = t.Numero;
+        _model.Complemento = t.Complemento;
+        _model.Bairro = t.Bairro;
+        _model.Municipio = t.Municipio;
+        _model.Uf = t.Uf;
+        _model.NomeContato = t.NomeContato;
+        _model.Telefone = t.Telefone;
+        _model.Email = t.Email;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

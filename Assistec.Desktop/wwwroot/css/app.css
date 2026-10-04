@@ -1698,6 +1698,1128 @@
     flex-shrink: 0;
 }
 
+/* ==========================================================================
+   MODAL NOVA/EDITAR TRANSPORTADORA
+   ========================================================================== */
+.transportadora-row-razao-fantasia {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.transportadora-row-fiscal {
+    display: grid;
+    grid-template-columns: 1.4fr 1.4fr 1fr;
+    gap: 16px;
+}
+
+.transportadora-row-modal-alerta {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.transportadora-alerta-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #FBE7D8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.transportadora-row-endereco-1 {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr 1fr 1.5fr;
+    gap: 16px;
+}
+
+.transportadora-row-endereco-2 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+}
+
+.transportadora-row-contato {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.transportadora-row-financeiro {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   TELA DETALHES DA TRANSPORTADORA
+   Reaproveita .fornecedor-detalhe-grid / .fornecedor-perfil-avatar /
+   .fornecedor-condicoes-linha / .fornecedor-contato-linha /
+   .fornecedor-pedidos-table / .fornecedor-pedidos-footer / .rntrc-badge.
+   ========================================================================== */
+.transportadora-nome-clicavel {
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   MODAL NOVO/EDITAR VEÍCULO
+   ========================================================================== */
+.veiculo-row-identificacao {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 0.8fr 1.6fr;
+    gap: 16px;
+}
+
+.veiculo-row-rodado-carroceria {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.veiculo-row-capacidade {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.veiculo-row-complementares {
+    display: grid;
+    grid-template-columns: 1.4fr 1.4fr 0.8fr 1fr;
+    gap: 16px;
+}
+
+.veiculo-row-proprietario-1 {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 16px;
+}
+
+.veiculo-row-proprietario-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.7fr 1.2fr;
+    gap: 16px;
+}
+
+.veiculo-row-vinculacao {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+.veiculo-alerta-sucesso {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #E4F2E5;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+/* ==========================================================================
+   MODAL NOVO/EDITAR MOTORISTA
+   ========================================================================== */
+.motorista-row-identificacao {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 16px;
+}
+
+.motorista-row-contato {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.motorista-row-cnh-1 {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr 1fr 0.8fr;
+    gap: 16px;
+}
+
+.motorista-row-cnh-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.motorista-row-mopp {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 16px;
+}
+
+.motorista-alerta-mopp {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #EAF1FA;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.motorista-row-endereco-1 {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 16px;
+}
+
+.motorista-row-endereco-2 {
+    display: grid;
+    grid-template-columns: 2fr 2fr 1fr;
+    gap: 16px;
+}
+
+.motorista-row-vinculacao {
+    display: grid;
+    grid-template-columns: 1.2fr 1.6fr 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+/* ==========================================================================
+   PÁGINA ESTOQUE — HUB DE MÓDULOS
+   ========================================================================== */
+.estoque-cards-row {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+.estoque-card {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 14px;
+    overflow: hidden;
+    flex: 1 0 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.estoque-card-topo {
+    height: 6px;
+    width: 100%;
+}
+
+.estoque-card-corpo {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+}
+
+.estoque-card-cabecalho {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.estoque-card-icone {
+    width: 52px;
+    height: 52px;
+    border-radius: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.estoque-card-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.estoque-stat-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.estoque-card-rodape {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.estoque-rodape-icone {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: #F0F2F4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ==========================================================================
+   PÁGINA ESTOQUE — ALERTA DE ESTOQUE MÍNIMO
+   ========================================================================== */
+.estoque-alerta-minimo {
+    width: 100%;
+    background-color: #FCEFDB;
+    border: 1px solid #F5D38A;
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA PRODUTOS — LINHA DE 4 CARDS INFORMATIVOS
+   ========================================================================== */
+.info-card-row-produtos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA PRODUTOS — BUSCA E FILTROS
+   ========================================================================== */
+.produto-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.produto-busca-input {
+    max-width: 260px;
+}
+
+.produto-select-filtro {
+    max-width: 220px;
+}
+
+/* ==========================================================================
+   PÁGINA PRODUTOS — TABELA DE LISTAGEM
+   ========================================================================== */
+.produtos-table {
+    width: 100%;
+    min-width: 1300px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.produtos-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 20px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.produtos-table td {
+    padding: 12px 20px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.produtos-table tr:last-child td {
+    border-bottom: none;
+}
+
+.produtos-table .col-num {
+    text-align: right;
+}
+
+.produtos-table .col-acoes {
+    text-align: right;
+}
+
+.produto-codigo-badge {
+    background-color: #EAF1FA;
+    color: #2C6FB0;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.produto-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   MODAL NOVO/EDITAR PRODUTO — LAYOUT COM NAVEGAÇÃO LATERAL
+   ========================================================================== */
+.produto-modal-layout {
+    display: flex;
+    gap: 20px;
+    min-height: 420px;
+}
+
+.produto-modal-nav {
+    width: 150px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-right: 1px solid #E0E4E8;
+    padding-right: 12px;
+}
+
+.produto-secao-btn {
+    text-align: left;
+    border: none;
+    background-color: transparent;
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #5A6B7A;
+    cursor: pointer;
+}
+
+.produto-secao-btn.active {
+    background-color: #EAF1FA;
+    color: #2C6FB0;
+    font-weight: 600;
+}
+
+.produto-modal-conteudo {
+    flex: 1;
+    min-width: 0;
+}
+
+.produto-row-identificacao-1 {
+    display: grid;
+    grid-template-columns: 1fr 2.5fr 1fr;
+    gap: 16px;
+}
+
+.produto-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.produto-row-3col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.produto-row-fiscal-1 {
+    display: grid;
+    grid-template-columns: 1.2fr 1.2fr 1fr 0.8fr;
+    gap: 16px;
+}
+
+.produto-row-icms-1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.4fr;
+    gap: 16px;
+}
+
+.produto-row-cbs, .produto-row-ibs {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.produto-row-is {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr 0.8fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.produto-row-precos {
+    display: grid;
+    grid-template-columns: 1fr 1fr 0.8fr;
+    gap: 16px;
+    align-items: end;
+}
+
+.produto-margem-box {
+    background-color: #E4F2E5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    text-align: center;
+}
+
+.produto-alerta-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #EAF1FA;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.produto-alerta-atencao {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #FCEFDB;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.produto-caixa-reforma {
+    background-color: #EAF1FA;
+    border: 1px solid #C7DAF0;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.produto-reforma-refs {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.produto-reforma-ref-item {
+    background-color: #FFFFFF;
+    border: 1px solid #C7DAF0;
+    border-radius: 7px;
+    padding: 6px 12px;
+}
+
+.produto-bloco-tributo {
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.produto-bloco-tributo-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.produto-bloco-tributo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.produto-tag-cbs {
+    background-color: #FCEFDB;
+    color: #92400E;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+.produto-tag-ibs {
+    background-color: #EAF1FA;
+    color: #1E40AF;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+.produto-tag-is {
+    background-color: #FBE4EC;
+    color: #991B1B;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+/* ==========================================================================
+   TELA DETALHES DO PRODUTO — ABA "DADOS FISCAIS"
+   Reaproveita .fornecedor-detalhe-grid / .fornecedor-perfil-avatar /
+   .fornecedor-condicoes-linha / .fornecedor-pedidos-table / tags do modal.
+   ========================================================================== */
+.produto-fiscal-bloco {
+    display: flex;
+    flex-direction: column;
+}
+
+.produto-fiscal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 32px;
+}
+
+/* ==========================================================================
+   PÁGINA PEDIDOS DE COMPRA — LINHA DE 4 CARDS INFORMATIVOS
+   ========================================================================== */
+.info-card-row-pedidos {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA PEDIDOS DE COMPRA — BUSCA E FILTRO
+   ========================================================================== */
+.pedido-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.pedido-busca-input {
+    max-width: 320px;
+}
+
+.pedido-select-filtro {
+    max-width: 220px;
+}
+
+/* ==========================================================================
+   PÁGINA PEDIDOS DE COMPRA — TABELA DE LISTAGEM
+   ========================================================================== */
+.pedidos-compra-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.pedidos-compra-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 20px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.pedidos-compra-table td {
+    padding: 12px 20px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.pedidos-compra-table tr:last-child td {
+    border-bottom: none;
+}
+
+.pedidos-compra-table .col-num {
+    text-align: right;
+}
+
+.pedido-linha-clicavel {
+    cursor: pointer;
+}
+
+.pedido-linha-clicavel:hover {
+    background-color: #F9FAFB;
+}
+
+.pedido-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   MODAL NOVO/EDITAR PEDIDO DE COMPRA
+   ========================================================================== */
+.pedido-row-fornecedor {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.pedido-row-dados-1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.pedido-row-dados-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+}
+
+.pedido-row-entrega {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.pedido-add-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: end;
+    background-color: #F9FAFB;
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.pedido-itens-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.pedido-itens-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 12px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.pedido-itens-table td {
+    padding: 10px 12px 10px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.pedido-itens-table .col-num {
+    text-align: right;
+}
+
+.pedido-itens-table .col-acoes {
+    text-align: right;
+}
+
+.pedido-total-box {
+    background-color: #E4F2E5;
+    border-radius: 8px;
+    padding: 10px 20px;
+    text-align: right;
+}
+
+/* ==========================================================================
+   PÁGINA NOTAS DE ENTRADA — LINHA DE 4 CARDS INFORMATIVOS
+   ========================================================================== */
+.info-card-row-notas {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+/* ==========================================================================
+   PÁGINA NOTAS DE ENTRADA — BUSCA E FILTRO
+   ========================================================================== */
+.nota-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    background-color: #FFFFFF;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+}
+
+.nota-busca-input {
+    max-width: 320px;
+}
+
+.nota-select-filtro {
+    max-width: 220px;
+}
+
+/* ==========================================================================
+   PÁGINA NOTAS DE ENTRADA — TABELA DE LISTAGEM
+   ========================================================================== */
+.notas-entrada-table {
+    width: 100%;
+    min-width: 1050px;
+    border-collapse: collapse;
+    table-layout: auto;
+}
+
+.notas-entrada-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 20px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.notas-entrada-table td {
+    padding: 12px 20px 12px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.notas-entrada-table tr:last-child td {
+    border-bottom: none;
+}
+
+.notas-entrada-table .col-num {
+    text-align: right;
+}
+
+.nota-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 12px;
+}
+
+/* ==========================================================================
+   MODAL NOVA/EDITAR NOTA DE ENTRADA
+   ========================================================================== */
+.nota-bloco-cabecalho {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.nota-bloco-natureza {
+    width: 100%;
+}
+
+.nota-row-identificacao {
+    display: grid;
+    grid-template-columns: 1fr 0.6fr 1fr;
+    gap: 16px;
+}
+
+.nota-row-chave-pedido {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 0.8fr 0.8fr;
+    gap: 16px;
+}
+
+.nota-row-fornecedor {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    gap: 16px;
+}
+
+.nota-itens-table {
+    width: 100%;
+    min-width: 1300px;
+    border-collapse: collapse;
+}
+
+.nota-itens-table th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 10px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.nota-itens-table td {
+    padding: 8px 10px 8px 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: middle;
+}
+
+.nota-itens-table .col-num {
+    text-align: right;
+}
+
+.nota-totais-tributos {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+}
+
+.nota-total-tributo-box {
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.nota-row-financeiro-final {
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.nota-condicoes-box {
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 16px;
+}
+
+.nota-condicoes-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.nota-resumo-box {
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.nota-resumo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid #E0E4E8;
+}
+
+.nota-resumo-grid > div {
+    padding: 10px 12px;
+    border-right: 1px solid #E0E4E8;
+}
+
+.nota-resumo-grid > div:last-child {
+    border-right: none;
+}
+
+.nota-resumo-total {
+    background-color: #FBE7D8;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nota-status-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background-color: #F9FAFB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.nota-row-transporte {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* ==========================================================================
+   WIZARD DE IMPORTAÇÃO DE XML
+   ========================================================================== */
+.xml-wizard-icone {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background-color: #E4F2E5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.xml-wizard-steps {
+    display: flex;
+    align-items: center;
+}
+
+.xml-step {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.xml-step-numero {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6875rem;
+    color: #FFFFFF;
+}
+
+.xml-step-concluido { color: #2E7D32; }
+.xml-step-concluido .xml-step-numero { background-color: #2E7D32; }
+.xml-step-atual { color: #C97A3D; }
+.xml-step-atual .xml-step-numero { background-color: #C97A3D; }
+.xml-step-pendente { color: #9AA5B1; }
+.xml-step-pendente .xml-step-numero { background-color: #E0E4E8; color: #5A6B7A; }
+
+.xml-step-linha {
+    height: 1px;
+    background-color: #E0E4E8;
+    flex: 1;
+    margin: 0 12px;
+}
+
+.xml-step-linha-concluida {
+    background-color: #2E7D32;
+}
+
+.xml-upload-area {
+    border: 2px dashed #E0E4E8;
+    border-radius: 12px;
+    padding: 48px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.xml-upload-input {
+    display: none;
+}
+
+.xml-arquivo-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #F9FAFB;
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 12px 16px;
+}
+
+.xml-ajuda-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background-color: #EAF1FA;
+    border-radius: 10px;
+    padding: 14px;
+}
+
+.xml-mensagem-sucesso {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #E4F2E5;
+    color: #2E7D32;
+    border-radius: 8px;
+    padding: 9px 14px;
+}
+
+.xml-add-produto {
+    display: flex;
+    gap: 12px;
+    align-items: end;
+    background-color: #F9FAFB;
+    border: 1px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 14px;
+    flex-wrap: wrap;
+}
+
+.xml-itens-table {
+    width: 100%;
+    min-width: 1200px;
+    border-collapse: collapse;
+}
+
+.xml-itens-table th {
+    text-align: left;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5A6B7A;
+    font-weight: 600;
+    padding: 0 10px 10px 0;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.xml-itens-table td {
+    padding: 12px 10px 12px 0;
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #F0F2F4;
+    vertical-align: top;
+}
+
+.xml-itens-table .col-num {
+    text-align: right;
+}
+
+.xml-produto-vinculado {
+    background-color: #E4F2E5;
+    border: 1px solid #A7D7AB;
+    border-radius: 7px;
+    padding: 8px 10px;
+}
+
+.xml-produto-nao-encontrado {
+    background-color: #FBE7D8;
+    border: 1px solid #F0C9A0;
+    border-radius: 7px;
+    padding: 8px 10px;
+}
+
+.xml-vinculo-box {
+    background-color: #EAF1FA;
+    border: 1px solid #C7DAF0;
+    border-radius: 7px;
+    padding: 8px;
+}
+
+.xml-entrada-box-ok {
+    background-color: #E4F2E5;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.xml-entrada-box-erro {
+    background-color: #FBE4EC;
+    border-radius: 8px;
+    padding: 8px 10px;
+}
+
+.xml-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-top: 1px solid #E0E4E8;
+    padding-top: 16px;
+}
+
 
 /* ==========================================================================
    SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
