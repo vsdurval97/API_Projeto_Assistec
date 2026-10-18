@@ -1,0 +1,182 @@
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaLista" />
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaLista">Orçamentos</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@Numero</MudText>
+</div>
+
+@if (_orcamento is not null)
+{
+    var corStatus = OrcamentoUi.Cor(_orcamento.Status);
+
+    <div class="orc-detalhe-grid">
+        <div class="orc-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="orc-perfil-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#2C6FB0;" Size="Size.Large" />
+                </div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_orcamento.Numero</MudText>
+                <div style="text-align:center; margin-top:8px;">
+                    <MudChip T="string" Size="Size.Small" Style="@($"background-color:{corStatus.Bg}; color:{corStatus.Texto};")">@OrcamentoUi.Rotulo(_orcamento.Status)</MudChip>
+                </div>
+
+                <MudDivider Class="my-4" />
+
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Emissão</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_orcamento.Emissao.ToString("dd/MM/yyyy")</MudText>
+                </div>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Validade</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(_orcamento.Validade?.ToString("dd/MM/yyyy") ?? "—")</MudText>
+                </div>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Vendedor</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_orcamento.Vendedor</MudText>
+                </div>
+
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar Orçamento
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Class="orc-card-titulo">Cliente</MudText>
+                <div class="orc-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_orcamento.ClienteNome</MudText>
+                </div>
+                <div class="orc-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_orcamento.ClienteDocumento)</MudText>
+                </div>
+                <div class="orc-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_orcamento.ClienteTelefone)</MudText>
+                </div>
+                <div class="orc-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_orcamento.ClienteEmail)</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Class="orc-card-titulo">Resumo Financeiro</MudText>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Subtotal</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@_orcamento.SubtotalFormatado</MudText>
+                </div>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Desconto</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#C0392B;">− @_orcamento.DescontoFormatado</MudText>
+                </div>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Frete</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_orcamento.FreteFormatado</MudText>
+                </div>
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Condição de pagamento</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_orcamento.CondicaoPagamento</MudText>
+                </div>
+
+                <MudDivider Class="my-3" />
+
+                <div class="orc-resumo-linha">
+                    <MudText Typo="Typo.body1" Style="font-weight:700;">Total do Orçamento</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:700; color:#2C6FB0;">@_orcamento.TotalFormatado</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div class="orc-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+                    <MudTabPanel Text="Produtos e Serviços">
+                        <div style="overflow-x:auto;">
+                            <table class="orc-itens-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Item</th>
+                                        <th class="col-num">Qtd.</th>
+                                        <th class="col-num">Valor Unit.</th>
+                                        <th class="col-num">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in _orcamento.Itens)
+                                    {
+                                        var corTipo = OrcamentoUi.Cor(item.Tipo);
+                                        <tr>
+                                            <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{corTipo.Bg}; color:{corTipo.Texto};")">@OrcamentoUi.Rotulo(item.Tipo)</MudChip></td>
+                                            <td>
+                                                <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo</MudText>
+                                            </td>
+                                            <td class="col-num">@item.Quantidade</td>
+                                            <td class="col-num">@item.ValorUnitarioFormatado</td>
+                                            <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@item.SubtotalFormatado</MudText></td>
+                                        </tr>
+                                    }
+
+                                    @if (_orcamento.Itens.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="5" style="text-align:center; padding:32px 0;">
+                                                <MudText Typo="Typo.body2" Style="color:#9AA5B1;">Nenhum item neste orçamento.</MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Observações">
+                        <div class="orc-bloco-texto">
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Observações da proposta</MudText>
+                            <MudText Typo="Typo.body2" Style="margin-top:4px;">@(string.IsNullOrWhiteSpace(_orcamento.Observacao) ? "Nenhuma observação registrada." : _orcamento.Observacao)</MudText>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A;">Orçamento não encontrado.</MudText>
+}
+
+@code {
+    [Parameter] public string Numero { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private OrcamentoItem? _orcamento;
+
+    protected override void OnParametersSet()
+    {
+        _orcamento = OrcamentoMockData.Lista.FirstOrDefault(o => o.Numero == Numero);
+    }
+
+    private static string OuNaoInformado(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? "Não informado" : valor;
+
+    private async Task AbrirEdicao()
+    {
+        var parameters = new DialogParameters<NovoOrcamento> { { x => x.OrcamentoExistente, _orcamento } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoOrcamento>($"Editar {Numero}", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            _orcamento = OrcamentoMockData.Lista.FirstOrDefault(o => o.Numero == Numero);
+        }
+    }
+
+    private Task VoltarParaLista() => OnVoltar.InvokeAsync();
+}
