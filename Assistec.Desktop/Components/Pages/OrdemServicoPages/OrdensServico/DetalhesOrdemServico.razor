@@ -1,0 +1,222 @@
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaLista" />
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaLista">Ordens de Serviço</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@Numero</MudText>
+</div>
+
+@if (_ordem is not null)
+{
+    var corStatus = OrdemServicoUi.Cor(_ordem.Status);
+
+    <div class="os-detalhe-grid">
+        <div class="os-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="os-perfil-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Build" Style="color:#2C6FB0;" Size="Size.Large" />
+                </div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_ordem.Numero</MudText>
+                <div style="text-align:center; margin-top:8px;">
+                    <MudChip T="string" Size="Size.Small" Style="@($"background-color:{corStatus.Bg}; color:{corStatus.Texto};")">@OrdemServicoUi.Rotulo(_ordem.Status)</MudChip>
+                </div>
+
+                <MudDivider Class="my-4" />
+
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Prioridade</MudText>
+                    <MudText Typo="Typo.body2" Style="@($"font-weight:700; color:{OrdemServicoUi.CorPrioridade(_ordem.Prioridade)};")">@OrdemServicoUi.Rotulo(_ordem.Prioridade)</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Abertura</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_ordem.Abertura.ToString("dd/MM/yyyy")</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Previsão</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(_ordem.Previsao?.ToString("dd/MM/yyyy") ?? "—")</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Técnico</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_ordem.Tecnico</MudText>
+                </div>
+
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar Ordem
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Class="os-card-titulo">Cliente</MudText>
+                <div class="os-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_ordem.ClienteNome</MudText>
+                </div>
+                <div class="os-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Badge" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_ordem.ClienteDocumento)</MudText>
+                </div>
+                <div class="os-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_ordem.ClienteTelefone)</MudText>
+                </div>
+                <div class="os-linha-icone">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@OuNaoInformado(_ordem.ClienteEmail)</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Class="os-card-titulo">Resumo Financeiro</MudText>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Serviços</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@_ordem.TotalServicosFormatado</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Produtos</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#2E7D32;">@_ordem.TotalProdutosFormatado</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Desconto</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600; color:#C0392B;">− @_ordem.DescontoFormatado</MudText>
+                </div>
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Condição de pagamento</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_ordem.CondicaoPagamento</MudText>
+                </div>
+
+                <MudDivider Class="my-3" />
+
+                <div class="os-resumo-linha">
+                    <MudText Typo="Typo.body1" Style="font-weight:700;">Total da OS</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:700; color:#2C6FB0;">@_ordem.TotalFormatado</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div class="os-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Class="os-card-titulo">Equipamento e Diagnóstico</MudText>
+
+                <div class="os-info-grid-4">
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Tipo</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">@OrdemServicoUi.Rotulo(_ordem.TipoEquipamento)</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Marca</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">@_ordem.Marca</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Modelo</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">@_ordem.Modelo</MudText>
+                    </div>
+                    <div>
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Nº de Série</MudText>
+                        <MudText Typo="Typo.body1" Style="font-weight:600;">@OuNaoInformado(_ordem.NumeroSerie)</MudText>
+                    </div>
+                </div>
+
+                <MudDivider Class="my-4" />
+
+                <div class="os-info-grid-2">
+                    <div class="os-bloco-texto">
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Defeito Relatado</MudText>
+                        <MudText Typo="Typo.body2" Style="margin-top:4px;">@OuNaoInformado(_ordem.DefeitoRelatado)</MudText>
+                    </div>
+                    <div class="os-bloco-texto">
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Diagnóstico Técnico</MudText>
+                        <MudText Typo="Typo.body2" Style="margin-top:4px;">@OuNaoInformado(_ordem.Diagnostico)</MudText>
+                    </div>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+                    <MudTabPanel Text="Serviços e Produtos">
+                        <div style="overflow-x:auto;">
+                            <table class="os-itens-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tipo</th>
+                                        <th>Descrição</th>
+                                        <th class="col-num">Qtd.</th>
+                                        <th class="col-num">Valor Unit.</th>
+                                        <th class="col-num">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in _ordem.Itens)
+                                    {
+                                        var corTipo = OrdemServicoUi.Cor(item.Tipo);
+                                        <tr>
+                                            <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{corTipo.Bg}; color:{corTipo.Texto};")">@OrdemServicoUi.Rotulo(item.Tipo)</MudChip></td>
+                                            <td>
+                                                <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo</MudText>
+                                            </td>
+                                            <td class="col-num">@item.Quantidade</td>
+                                            <td class="col-num">@item.ValorUnitarioFormatado</td>
+                                            <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@item.SubtotalFormatado</MudText></td>
+                                        </tr>
+                                    }
+
+                                    @if (_ordem.Itens.Count == 0)
+                                    {
+                                        <tr>
+                                            <td colspan="5" style="text-align:center; padding:32px 0;">
+                                                <MudText Typo="Typo.body2" Style="color:#9AA5B1;">Nenhum serviço ou produto lançado nesta ordem.</MudText>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Observações">
+                        <div class="os-bloco-texto">
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Observações e condições do serviço</MudText>
+                            <MudText Typo="Typo.body2" Style="margin-top:4px;">@(string.IsNullOrWhiteSpace(_ordem.Observacao) ? "Nenhuma observação registrada." : _ordem.Observacao)</MudText>
+                        </div>
+                    </MudTabPanel>
+                </MudTabs>
+            </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A;">Ordem de serviço não encontrada.</MudText>
+}
+
+@code {
+    [Parameter] public string Numero { get; set; } = string.Empty;
+
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private OrdemServicoItem? _ordem;
+
+    protected override void OnParametersSet()
+    {
+        _ordem = OrdemServicoMockData.Ordens.FirstOrDefault(o => o.Numero == Numero);
+    }
+
+    private static string OuNaoInformado(string? valor) =>
+        string.IsNullOrWhiteSpace(valor) ? "Não informado" : valor;
+
+    private async Task AbrirEdicao()
+    {
+        var parameters = new DialogParameters<NovoOrdemServico> { { x => x.OrdemExistente, _ordem } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoOrdemServico>($"Editar {Numero}", parameters, options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false })
+        {
+            _ordem = OrdemServicoMockData.Ordens.FirstOrDefault(o => o.Numero == Numero);
+        }
+    }
+
+    private Task VoltarParaLista() => OnVoltar.InvokeAsync();
+}
