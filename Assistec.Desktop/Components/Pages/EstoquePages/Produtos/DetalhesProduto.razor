@@ -1,0 +1,298 @@
+@page "/estoque/produtos/{Codigo}"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaProdutos" />
+    <MudLink Underline="Underline.None" Style="color:#9AA5B1;">Estoque</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaProdutos">Produtos</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@(_produto?.Descricao ?? Codigo)</MudText>
+</div>
+
+@if (_produto is not null)
+{
+    <div class="fornecedor-detalhe-grid mt-4">
+        <div class="fornecedor-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="fornecedor-perfil-avatar" style="background-color:#2C6FB0;">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#FFFFFF;" />
+                </div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_produto.Descricao</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-align:center; display:block;">@_produto.CodigoInterno</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1; text-align:center; display:block;">@_produto.Marca · @_produto.Categoria</MudText>
+                <div style="text-align:center; margin-top:8px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+                    @if (_produto.Status == StatusProduto.Ativo)
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                    }
+                    else if (_produto.Status == StatusProduto.Inativo)
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B;">Descontinuado</MudChip>
+                    }
+                    @if (_produto.EstoqueStatus == "Zero")
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B;">SEM ESTOQUE</MudChip>
+                    }
+                    else if (_produto.EstoqueStatus == "Baixo")
+                    {
+                        <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">ABAIXO DO MÍNIMO</MudChip>
+                    }
+                </div>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Preços</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Custo</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.PrecoCustoFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Venda</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.PrecoVendaFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Margem de Lucro</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#2E7D32;">@_produto.MargemLucro.ToString("0.0")%</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Estoque</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Atual</MudText>
+                    <MudText Typo="Typo.body2" Style="@($"font-weight:700; color:{CorEstoque(_produto.EstoqueStatus)};")">@_produto.EstoqueAtual @_produto.UnidadeComercial</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Mínimo</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.EstoqueMinimo @_produto.UnidadeComercial</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Máximo</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.EstoqueMaximo @_produto.UnidadeComercial</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Localização</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(string.IsNullOrEmpty(_produto.Localizacao) ? "—" : _produto.Localizacao)</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Fornecedor e Datas</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Fornecedor</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.FornecedorPrincipal</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Cód. Fornecedor</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(string.IsNullOrEmpty(_produto.CodigoFornecedor) ? "—" : _produto.CodigoFornecedor)</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Cadastrado em</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.DataCadastro.ToString("dd/MM/yyyy")</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Última atualização</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.UltimaAtualizacao.ToString("dd/MM/yyyy")</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div>
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+                    <MudTabPanel Text="Dados Fiscais">
+                        <div class="produto-fiscal-bloco">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:10px;">Classificação Fiscal — NF-e</MudText>
+                            <div class="produto-fiscal-grid">
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">NCM</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.Ncm</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CEST</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@(string.IsNullOrEmpty(_produto.Cest) ? "—" : _produto.Cest)</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CFOP Padrão</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CfopPadrao</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Origem</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.OrigemLabel</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Ex TIPI</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@(string.IsNullOrEmpty(_produto.ExTipi) ? "—" : _produto.ExTipi)</MudText></div>
+                            </div>
+                        </div>
+
+                        <MudDivider Class="my-4" />
+
+                        <div class="produto-fiscal-bloco">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:10px;">Unidades e Peso</MudText>
+                            <div class="produto-fiscal-grid">
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Unidade Comercial</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.UnidadeComercial</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Unidade Tributável</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.UnidadeTributavel</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Fator de Conversão</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.FatorConversao</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Peso Líquido</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.PesoLiquido.ToString("0.000") kg</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Peso Bruto</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.PesoBruto.ToString("0.000") kg</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Dimensões (L×A×P)</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.Largura×@_produto.Altura×@_produto.Profundidade cm</MudText></div>
+                            </div>
+                        </div>
+
+                        <MudDivider Class="my-4" />
+
+                        <div class="produto-fiscal-bloco">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight:600; margin-bottom:10px;">Tributação — Regime Atual (ICMS / PIS / COFINS / IPI)</MudText>
+                            <div class="produto-fiscal-grid">
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST ICMS</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstIcms</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Modalidade BC</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.ModalidadeBC</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. ICMS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaIcms%</MudText></div>
+                                @if (_produto.MvaSt > 0)
+                                {
+                                    <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">MVA ST</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.MvaSt%</MudText></div>
+                                }
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST PIS</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstPis</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. PIS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaPis%</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST COFINS</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstCofins</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. COFINS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaCofins%</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST IPI</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstIpi</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. IPI</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaIpi%</MudText></div>
+                            </div>
+                        </div>
+
+                        <MudDivider Class="my-4" />
+
+                        <div class="produto-fiscal-bloco">
+                            <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap;">
+                                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Novo Regime — IBS / CBS (EC 132/2023)</MudText>
+                                <span class="produto-tag-cbs">CBS Federal</span>
+                                <span class="produto-tag-ibs">IBS Est. + Mun.</span>
+                                @if (_produto.IncideIs)
+                                {
+                                    <span class="produto-tag-is">IS</span>
+                                }
+                            </div>
+                            <div class="produto-fiscal-grid">
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST CBS</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstCbs</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. CBS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaCbs%</MudText></div>
+                                @if (_produto.ReducaoCbs > 0)
+                                {
+                                    <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Redução BC CBS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.ReducaoCbs%</MudText></div>
+                                }
+                                @if (_produto.CreditoPresumidoCbs > 0)
+                                {
+                                    <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Créd. Presumido CBS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.CreditoPresumidoCbs%</MudText></div>
+                                }
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">CST IBS</MudText><MudText Typo="Typo.body2" Style="font-family:monospace; font-weight:600;">@_produto.CstIbs</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. IBS Estadual</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaIbsEstadual%</MudText></div>
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Alíq. IBS Municipal</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.AliquotaIbsMunicipal%</MudText></div>
+                                @if (_produto.ReducaoIbs > 0)
+                                {
+                                    <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">Redução BC IBS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.ReducaoIbs%</MudText></div>
+                                }
+                                <div class="fornecedor-condicoes-linha"><MudText Typo="Typo.body2" Style="color:#5A6B7A;">DIFAL IBS</MudText><MudText Typo="Typo.body2" Style="font-weight:600;">@_produto.DiferencialIbs</MudText></div>
+                                <div class="fornecedor-condicoes-linha">
+                                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">IS</MudText>
+                                    <MudText Typo="Typo.body2" Style="font-weight:600;">@(_produto.IncideIs ? $"{_produto.AliquotaIs}% — {_produto.CategoriaIs}" : "Não sujeito")</MudText>
+                                </div>
+                            </div>
+                        </div>
+                    </MudTabPanel>
+
+                    <MudTabPanel Text="Movimentações">
+                        <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#EAF1FA; color:#2C6FB0;">@_movimentacoes.Count</MudChip>
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Histórico de entradas, saídas e ajustes deste produto.</MudText>
+                        </div>
+
+                        <div style="overflow-x:auto;">
+                            <table class="fornecedor-pedidos-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Tipo</th>
+                                        <th class="col-num">Quantidade</th>
+                                        <th>Origem / Motivo</th>
+                                        <th>Usuário</th>
+                                        <th class="col-num">Saldo Resultante</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var mov in _movimentacoes)
+                                    {
+                                        <tr>
+                                            <td>@mov.Data.ToString("dd/MM/yyyy")</td>
+                                            <td>
+                                                @if (mov.Tipo == TipoMovimentacao.Entrada)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Entrada</MudChip>
+                                                }
+                                                else if (mov.Tipo == TipoMovimentacao.Saida)
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B;">Saída</MudChip>
+                                                }
+                                                else
+                                                {
+                                                    <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">Ajuste</MudChip>
+                                                }
+                                            </td>
+                                            <td class="col-num">
+                                                <MudText Typo="Typo.body2" Style="@($"font-weight:700; color:{(mov.Tipo == TipoMovimentacao.Entrada ? "#2E7D32" : mov.Tipo == TipoMovimentacao.Saida ? "#C2185B" : "#D9A441")};")">@mov.QuantidadeFormatada</MudText>
+                                            </td>
+                                            <td>@mov.Origem</td>
+                                            <td>@mov.Usuario</td>
+                                            <td class="col-num">@mov.SaldoResultante @_produto.UnidadeComercial</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (_movimentacoes.Count == 0)
+                        {
+                            <MudText Typo="Typo.body2" Style="color:#9AA5B1; text-align:center; margin-top:24px;">Nenhuma movimentação registrada para este produto.</MudText>
+                        }
+                    </MudTabPanel>
+                </MudTabs>
+            </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A; margin-top:16px;">Produto não encontrado.</MudText>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = string.Empty;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private ProdutoItem? _produto;
+    private List<MovimentacaoEstoqueItem> _movimentacoes = new();
+
+    protected override void OnParametersSet()
+    {
+        _produto = ProdutoMockData.Produtos.FirstOrDefault(p => p.Codigo == Codigo);
+        _movimentacoes = MovimentacaoEstoqueMockData.Movimentacoes
+            .Where(m => m.ProdutoCodigo == Codigo)
+            .OrderByDescending(m => m.Data)
+            .ToList();
+    }
+
+    private static string CorEstoque(string status) => status switch
+    {
+        "Zero" => "#C2185B",
+        "Baixo" => "#D9A441",
+        _ => "#10233A"
+    };
+
+    private async Task AbrirEdicao()
+    {
+        var parameters = new DialogParameters<NovoProduto> { { x => x.ProdutoExistente, _produto } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoProduto>("Editar Produto", parameters, options);
+    }
+
+    private void VoltarParaProdutos()
+    {
+        WindowManager.Navigate(WindowId, typeof(ListaProdutos), null, "Produtos");
+    }
+}

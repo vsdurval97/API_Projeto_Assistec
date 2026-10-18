@@ -70,6 +70,10 @@
                               Label="Número"
                               Placeholder="123"
                               Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Complemento"
+              Label="Complemento"
+              Placeholder="Apto, sala, bloco..."
+              Variant="Variant.Outlined" />              
             </div>
 
             <div class="cliente-row-endereco-2 mt-4">
@@ -134,6 +138,7 @@
         public string? Email { get; set; }
         public string? Cep { get; set; }
         public string? Logradouro { get; set; }
+        public string? Complemento { get; set; }
         public string? Numero { get; set; }
         public string? Bairro { get; set; }
         public string? Municipio { get; set; }

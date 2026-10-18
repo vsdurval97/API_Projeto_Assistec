@@ -1,5 +1,10 @@
 @page "/parceiros"
 @using Assistec.Desktop.Components.Pages.ParceirosPages.Clientes
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Fornecedores
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Contador
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Usuarios
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Vendedores
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Transportadoras
 @using Assistec.Desktop.Windowing
 @inject WindowManagerService WindowManager
 
@@ -28,9 +33,11 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Fornecedor</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Gerenciamento de fornecedores e compras</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaFornecedores>("Fornecedores", Icons.Material.Filled.LocalShipping))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 
     <div class="parceiro-card">
@@ -39,9 +46,11 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Contador</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Contato contábil e acesso a documentos fiscais</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<Contador>("Contador", Icons.Material.Filled.Calculate))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 
     <div class="parceiro-card">
@@ -50,9 +59,11 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Usuário</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Permissões, acessos e configurações de login</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaUsuarios>("Usuários", Icons.Material.Filled.ManageAccounts))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 
     <div class="parceiro-card">
@@ -61,9 +72,11 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Vendedor</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Comissões, metas e desempenho da equipe</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+<MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaVendedores>("Vendedores", Icons.Material.Filled.Sell))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 
     <div class="parceiro-card">
@@ -72,8 +85,10 @@
         </div>
         <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Transportadora</MudText>
         <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Controle de frotas e logística de distribuição</MudText>
-        <MudButton Variant="Variant.Outlined" Disabled="true" EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
-            Acessar
-        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<Transportadora>("Transportadoras", Icons.Material.Filled.EmojiTransportation))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
     </div>
 </div>

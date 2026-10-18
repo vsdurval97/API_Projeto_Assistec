@@ -1,0 +1,236 @@
+@page "/parceiros/fornecedores/{Codigo}"
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="breadcrumb-row">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Size="Size.Small" OnClick="VoltarParaFornecedores" />
+    <MudLink Underline="Underline.None" Style="color:#9AA5B1;">Parceiros</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudLink Underline="Underline.Hover" Style="color:#2C6FB0; cursor:pointer;" OnClick="VoltarParaFornecedores">Fornecedores</MudLink>
+    <MudText Style="color:#9AA5B1;">/</MudText>
+    <MudText Style="font-weight:600;">@(_fornecedor?.NomeFantasia ?? Codigo)</MudText>
+</div>
+
+@if (_fornecedor is not null)
+{
+    <div class="fornecedor-detalhe-grid">
+        <div class="fornecedor-detalhe-coluna">
+            <MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <div class="fornecedor-perfil-avatar" style="background-color:@_fornecedor.CorAvatar;">@_fornecedor.Iniciais</div>
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600; text-align:center; margin-top:12px;">@_fornecedor.NomeFantasia</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-align:center; display:block;">@_fornecedor.RazaoSocial</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1; text-align:center; display:block;">@_fornecedor.Codigo</MudText>
+                <div style="text-align:center; margin-top:8px;">
+                    <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">@_fornecedor.Categoria</MudChip>
+                </div>
+                <MudButton Variant="Variant.Outlined" FullWidth="true" StartIcon="@Icons.Material.Filled.EditNote" Class="mt-4" OnClick="AbrirEdicao">
+                    Editar Cadastro
+                </MudButton>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Contato Comercial</MudText>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_fornecedor.NomeContato</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_fornecedor.Telefone</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_fornecedor.Email</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_fornecedor.Municipio / @_fornecedor.Uf</MudText>
+                </div>
+                <div class="fornecedor-contato-linha">
+                    <MudIcon Icon="@Icons.Material.Filled.Description" Size="Size.Small" Style="color:#9AA5B1;" />
+                    <MudText Typo="Typo.body2">@_fornecedor.Cnpj</MudText>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600; margin-bottom:12px; display:block;">Condições Comerciais</MudText>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Prazo de entrega</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_fornecedor.PrazoEntrega</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Cond. pagamento</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_fornecedor.CondicaoPagamento</MudText>
+                </div>
+
+                <MudDivider Class="my-3" />
+
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total de pedidos</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#8E5CE0;">@_fornecedor.Pedidos</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Total comprado</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#2E7D32;">@_fornecedor.TotalCompradoFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Em aberto</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:700; color:#C97A3D;">@_totalEmAbertoFormatado</MudText>
+                </div>
+                <div class="fornecedor-condicoes-linha">
+                    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Última compra</MudText>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@_fornecedor.UltimaCompra.ToString("dd/MM/yyyy")</MudText>
+                </div>
+            </MudPaper>
+        </div>
+
+        <div>
+<MudPaper Class="pa-4" Elevation="0" Style="border:1px solid #E0E4E8;">
+        <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+            <MudTabPanel Text="Pedidos de Compra">
+                <div class="fornecedor-pedidos-header">
+                    <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">@_pedidos.Count</MudChip>
+                    <MudSpacer />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add">
+                        Novo Pedido
+                    </MudButton>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="fornecedor-pedidos-table">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Data</th>
+                                <th>Itens</th>
+                                <th>Prazo Entrega</th>
+                                <th>Forma Pgto</th>
+                                <th>Status</th>
+                                <th class="col-num">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var pedido in _pedidos)
+                            {
+                                <tr>
+                                    <td><MudLink Href="#" Underline="Underline.None">@pedido.Numero</MudLink></td>
+                                    <td>@pedido.Data.ToString("dd/MM/yyyy")</td>
+                                    <td>@pedido.Itens</td>
+                                    <td>@pedido.PrazoEntrega.ToString("dd/MM/yyyy")</td>
+                                    <td>@pedido.FormaPagamento</td>
+                                    <td>
+                                        @if (pedido.Status == StatusPedidoCompra.Recebido)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Recebido</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">Em trânsito</MudChip>
+                                        }
+                                    </td>
+                                    <td class="col-num">@pedido.ValorFormatado</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (_pedidos.Count > 0)
+                {
+                    <div class="fornecedor-pedidos-footer">
+                        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                            Total recebido: <span style="color:#2E7D32; font-weight:600;">@_totalRecebidoFormatado</span>
+                            &nbsp;·&nbsp; Em aberto: <span style="color:#C97A3D; font-weight:600;">@_totalEmAbertoFormatado</span>
+                        </MudText>
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:700;">@_totalGeralFormatado</MudText>
+                    </div>
+                }
+            </MudTabPanel>
+
+            <MudTabPanel Text="Compras">
+                <div class="fornecedor-pedidos-header">
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">
+                        Notas fiscais de entrada importadas via XML em que esta empresa figurou como fornecedor.
+                    </MudText>
+                    <MudSpacer />
+                    <MudChip T="string" Size="Size.Small" Style="background-color:#EAF1FA; color:#2C6FB0;">@_compras.Count</MudChip>
+                </div>
+
+                <div style="overflow-x:auto;">
+                    <table class="fornecedor-pedidos-table">
+                        <thead>
+                            <tr>
+                                <th>Nota Fiscal</th>
+                                <th>Data de Entrada</th>
+                                <th>Itens</th>
+                                <th class="col-num">Valor Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var compra in _compras)
+                            {
+                                <tr>
+                                    <td><MudLink Href="#" Underline="Underline.None">@compra.NumeroNota</MudLink></td>
+                                    <td>@compra.DataEntrada.ToString("dd/MM/yyyy")</td>
+                                    <td>@compra.Itens</td>
+                                    <td class="col-num">@compra.ValorTotalFormatado</td>
+                                    <td>
+                                        <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">@compra.Status</MudChip>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
+        </div>
+    </div>
+}
+else
+{
+    <MudText Typo="Typo.body1" Style="color:#5A6B7A;">Fornecedor não encontrado.</MudText>
+}
+
+@code {
+    [Parameter] public string Codigo { get; set; } = string.Empty;
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+    private FornecedorItem? _fornecedor;
+    private List<PedidoCompraItem> _pedidos = new();
+
+    private List<CompraXmlItem> _compras = new();
+
+protected override void OnParametersSet()
+{
+    _fornecedor = FornecedorMockData.Fornecedores.FirstOrDefault(f => f.Codigo == Codigo);
+    _pedidos = PedidoCompraMockData.Pedidos.Where(p => p.FornecedorCodigo == Codigo).ToList();
+    _compras = CompraXmlMockData.Compras.Where(c => c.FornecedorCodigo == Codigo).ToList();
+}
+
+    private double _totalRecebido => _pedidos.Where(p => p.Status == StatusPedidoCompra.Recebido).Sum(p => p.Valor);
+    private double _totalEmAberto => _pedidos.Where(p => p.Status != StatusPedidoCompra.Recebido).Sum(p => p.Valor);
+    private double _totalGeral => _pedidos.Sum(p => p.Valor);
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private string _totalRecebidoFormatado => FormatarMoeda(_totalRecebido);
+    private string _totalEmAbertoFormatado => FormatarMoeda(_totalEmAberto);
+    private string _totalGeralFormatado => FormatarMoeda(_totalGeral);
+
+    private async Task AbrirEdicao()
+    {
+        var parameters = new DialogParameters<NovoFornecedor> { { x => x.FornecedorExistente, _fornecedor } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoFornecedor>("Editar Fornecedor", parameters, options);
+    }
+
+    private void VoltarParaFornecedores()
+    {
+        WindowManager.Navigate(WindowId, typeof(ListaFornecedores), null, "Fornecedores");
+    }
+}

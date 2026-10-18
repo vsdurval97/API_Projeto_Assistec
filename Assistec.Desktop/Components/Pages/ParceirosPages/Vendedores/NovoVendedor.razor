@@ -1,0 +1,157 @@
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Usuarios
+
+<MudDialog>
+    <TitleContent>
+        <div>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@(VendedorExistente is null ? "Novo Vendedor" : "Editar Vendedor")</MudText>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                @(VendedorExistente is null ? "Vincule um usuário e defina as regras de comissão" : "Atualize os dados comerciais do vendedor")
+            </MudText>
+        </div>
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="_form" Model="_model">
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Vínculo com Usuário do Sistema</MudText>
+
+            <div class="vendedor-alerta-vinculo mt-2">
+                <MudIcon Icon="@Icons.Material.Filled.Info" Style="color:#8E5CE0;" Size="Size.Small" />
+                <MudText Typo="Typo.body2" Style="color:#8E5CE0;">
+                    O vendedor deve ser um usuário já cadastrado no sistema com perfil <b>Vendedor</b>. Ao vincular, ele terá acesso ao módulo de Pedido de Venda conforme as permissões definidas.
+                </MudText>
+            </div>
+
+            <div class="vendedor-row-usuario-status mt-4">
+                <MudSelect T="string" @bind-Value="_model.UsuarioCodigo" Label="Usuário Vinculado" Placeholder="Selecione..." Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined">
+                    @foreach (var usuario in _usuariosDisponiveis)
+                    {
+                        <MudSelectItem T="string" Value="@usuario.Codigo">@usuario.Nome — @usuario.Email</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSelect T="StatusVendedor" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined">
+                    <MudSelectItem T="StatusVendedor" Value="StatusVendedor.Ativo">Ativo</MudSelectItem>
+                    <MudSelectItem T="StatusVendedor" Value="StatusVendedor.Inativo">Inativo</MudSelectItem>
+                    <MudSelectItem T="StatusVendedor" Value="StatusVendedor.Ferias">Férias</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Dados Comerciais</MudText>
+
+            <div class="vendedor-row-cargo-regional mt-2">
+                <MudTextField @bind-Value="_model.Cargo"
+                              Label="Cargo / Função"
+                              Placeholder="Ex: Vendedor Sênior, Representante..."
+                              Variant="Variant.Outlined" />
+                <MudTextField @bind-Value="_model.Regional"
+                              Label="Regional / Território"
+                              Placeholder="Ex: São Paulo - Capital, ABC..."
+                              Variant="Variant.Outlined" />
+            </div>
+
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A; text-transform:uppercase; letter-spacing:0.03em; font-weight:600;">Regras de Comissão</MudText>
+
+            <MudSelect T="string" @bind-Value="_model.TipoComissao" Label="Tipo de Comissão" Required="true" RequiredError="Campo obrigatório" Variant="Variant.Outlined" Class="mt-2">
+                <MudSelectItem T="string" Value="@("Percentual sobre Venda (% do valor faturado)")">Percentual sobre Venda (% do valor faturado)</MudSelectItem>
+            </MudSelect>
+
+            <div class="vendedor-row-percentual-desconto mt-4">
+                <MudNumericField @bind-Value="_model.PercentualBase"
+                                 Label="Percentual Base (%)"
+                                 Placeholder="0,00"
+                                 Adornment="Adornment.End"
+                                 AdornmentText="%"
+                                 Required="true"
+                                 RequiredError="Campo obrigatório"
+                                 Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.ComissaoSobreDesconto" Label="Comissão sobre Desconto" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("Descontar do valor bruto")">Descontar do valor bruto</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <div class="vendedor-row-meta-bonus mt-4">
+                <MudNumericField @bind-Value="_model.MetaMensal"
+                                 Label="Meta Mensal (R$)"
+                                 Placeholder="R$ 0,00"
+                                 Adornment="Adornment.Start"
+                                 AdornmentText="R$"
+                                 Required="true"
+                                 RequiredError="Campo obrigatório"
+                                 Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_model.BonusMeta" Label="Bônus por Atingimento de Meta" Variant="Variant.Outlined">
+                    <MudSelectItem T="string" Value="@("Sem bônus adicional")">Sem bônus adicional</MudSelectItem>
+                </MudSelect>
+            </div>
+
+            <MudCheckBox T="bool" @bind-Value="_model.PagarSomenteAposPagamento" Label="Pagar comissão somente após pagamento do cliente" Color="Color.Primary" Class="mt-3" />
+            <MudCheckBox T="bool" @bind-Value="_model.CancelarEmDevolucao" Label="Cancelar comissão em caso de devolução" Color="Color.Primary" />
+            <MudCheckBox T="bool" @bind-Value="_model.IncluirFrete" Label="Incluir frete no valor base de comissão" Color="Color.Primary" />
+
+            <MudTextField @bind-Value="_model.Observacoes"
+                          Label="Observações"
+                          Placeholder="Informações adicionais sobre comissão ou território..."
+                          Variant="Variant.Outlined"
+                          Lines="3"
+                          Class="mt-4" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="Salvar">
+            @(VendedorExistente is null ? "Salvar" : "Salvar Alterações")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+
+    [Parameter] public VendedorItem? VendedorExistente { get; set; }
+
+    private MudForm _form = null!;
+    private VendedorFormModel _model = new();
+
+    private class VendedorFormModel
+    {
+        public string? UsuarioCodigo { get; set; }
+        public StatusVendedor Status { get; set; } = StatusVendedor.Ativo;
+        public string? Cargo { get; set; }
+        public string? Regional { get; set; }
+        public string TipoComissao { get; set; } = "Percentual sobre Venda (% do valor faturado)";
+        public double PercentualBase { get; set; }
+        public string ComissaoSobreDesconto { get; set; } = "Descontar do valor bruto";
+        public double MetaMensal { get; set; }
+        public string BonusMeta { get; set; } = "Sem bônus adicional";
+        public bool PagarSomenteAposPagamento { get; set; } = true;
+        public bool CancelarEmDevolucao { get; set; } = true;
+        public bool IncluirFrete { get; set; } = false;
+        public string? Observacoes { get; set; }
+    }
+
+    private IEnumerable<UsuarioItem> _usuariosDisponiveis =>
+        UsuarioMockData.Usuarios.Where(u => u.Perfil == "Vendedor"
+            && (VendedorExistente != null && u.Codigo == VendedorExistente.UsuarioCodigo
+                || !VendedorMockData.Vendedores.Any(v => v.UsuarioCodigo == u.Codigo)));
+
+    protected override void OnInitialized()
+    {
+        if (VendedorExistente is null) return;
+
+        var v = VendedorExistente;
+
+        _model.UsuarioCodigo = v.UsuarioCodigo;
+        _model.Status = v.Status;
+        _model.Cargo = v.Cargo;
+        _model.Regional = v.Regional;
+        _model.TipoComissao = v.TipoComissao;
+        _model.PercentualBase = v.PercentualBase;
+        _model.MetaMensal = v.MetaMensal;
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Salvar()
+    {
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+}

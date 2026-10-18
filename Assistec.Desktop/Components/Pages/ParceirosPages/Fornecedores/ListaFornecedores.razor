@@ -1,0 +1,196 @@
+@page "/parceiros/fornecedores"
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Fornecedores
+@using Assistec.Desktop.Windowing
+@inject IDialogService DialogService
+@inject WindowManagerService WindowManager
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Fornecedores</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Gerencie seus fornecedores, pedidos de compra e condições comerciais.
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoFornecedor">
+        Novo Fornecedor
+    </MudButton>
+</div>
+
+<div class="info-card-row-fornecedores">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.Store" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Fornecedores Cadastrados</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">6</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">no sistema</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total em Compras</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">R$ 166.000,00</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">volume acumulado</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Pedidos Realizados</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">135</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">total histórico</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#FBE7D8;">
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Style="color:#C97A3D;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Aberto / Trânsito</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">R$ 14.390,00</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">aguardando recebimento</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="fornecedor-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Buscar por nome, CNPJ, contato..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="fornecedor-busca-input" />
+
+    <div class="fornecedor-categorias-filtro">
+        <button type="button"
+                class="categoria-filtro-btn @(_categoriaFiltro == null ? "active" : "")"
+                @onclick="() => _categoriaFiltro = null">
+            Todas
+        </button>
+        @foreach (var categoria in _categorias)
+        {
+            <button type="button"
+                    class="categoria-filtro-btn @(_categoriaFiltro == categoria ? "active" : "")"
+                    @onclick="() => _categoriaFiltro = categoria">
+                @categoria
+            </button>
+        }
+    </div>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_fornecedoresExibidos.Count() fornecedores</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="fornecedores-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Fornecedor</th>
+                <th>CNPJ</th>
+                <th>Contato</th>
+                <th>Categoria</th>
+                <th>Prazo Entrega</th>
+                <th class="col-num">Pedidos</th>
+                <th class="col-num">Total Comprado</th>
+                <th>Última Compra</th>
+                <th class="col-acoes"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fornecedor in _fornecedoresExibidos)
+            {
+                <tr>
+                    <td><MudLink Href="#" Underline="Underline.None">@fornecedor.Codigo</MudLink></td>
+                    <td>
+    <div class="fornecedor-nome-cell fornecedor-nome-clicavel" @onclick="() => AbrirDetalhes(fornecedor.Codigo)">
+        <div class="fornecedor-avatar" style="background-color:@fornecedor.CorAvatar;">@fornecedor.Iniciais</div>
+        <div>
+            <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@fornecedor.NomeFantasia</MudText>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@fornecedor.RazaoSocial</MudText>
+        </div>
+    </div>
+</td>
+                    <td>@fornecedor.Cnpj</td>
+                    <td>
+                        @fornecedor.NomeContato<br />
+                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@fornecedor.Telefone</MudText>
+                    </td>
+                    <td>
+                        <MudText Typo="Typo.body2" Style="color:#2E7D32; font-weight:600;">@fornecedor.Categoria</MudText>
+                    </td>
+                    <td>@fornecedor.PrazoEntrega</td>
+                    <td class="col-num">@fornecedor.Pedidos</td>
+                    <td class="col-num">@fornecedor.TotalCompradoFormatado</td>
+                    <td>@fornecedor.UltimaCompra.ToString("dd/MM/yyyy")</td>
+                    <td class="col-acoes">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(fornecedor)" />
+                        <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" OnClick="() => AbrirDetalhes(fornecedor.Codigo)" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="fornecedor-tabela-footer">
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma linha para ver os pedidos do fornecedor</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_fornecedoresExibidos.Count() de @FornecedorMockData.Fornecedores.Count fornecedores</MudText>
+    </div>
+</MudPaper>
+
+@code {
+    private string _termoBusca = string.Empty;
+    private string? _categoriaFiltro = null;
+
+    private readonly string[] _categorias =
+    {
+        "Peças e Componentes", "Eletrônicos e Acessórios", "Informática e Periféricos",
+        "Suprimentos e Consumíveis", "Importados e Especiais"
+    };
+
+    private async Task AbrirNovoFornecedor()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoFornecedor>("Novo Fornecedor", options);
+    }
+
+    private async Task AbrirEdicao(FornecedorItem fornecedor)
+    {
+        var parameters = new DialogParameters<NovoFornecedor> { { x => x.FornecedorExistente, fornecedor } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        await DialogService.ShowAsync<NovoFornecedor>("Editar Fornecedor", parameters, options);
+    }
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+private void AbrirDetalhes(string codigo)
+{
+    WindowManager.Navigate(WindowId, typeof(DetalhesFornecedor),
+        new Dictionary<string, object> { { "Codigo", codigo } },
+        $"Fornecedor {codigo}");
+}
+
+    private IEnumerable<FornecedorItem> _fornecedoresExibidos =>
+        FornecedorMockData.Fornecedores
+            .Where(f => _categoriaFiltro == null || f.Categoria == _categoriaFiltro)
+            .Where(f => string.IsNullOrWhiteSpace(_termoBusca)
+                || f.NomeFantasia.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || f.RazaoSocial.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || f.Cnpj.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || f.NomeContato.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(f => f.UltimaCompra)
+            .Take(10);
+}

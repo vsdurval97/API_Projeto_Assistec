@@ -1,0 +1,604 @@
+@page "/parceiros/transportadoras"
+@inject IDialogService DialogService
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+
+<MudTabs Elevation="0" Rounded="false" ApplyEffectsToContainer="true" Class="transportadora-top-tabs">
+    <MudTabPanel Text="Transportadora">
+        <div class="page-header mt-4">
+            <div>
+                <MudText Typo="Typo.h4" Style="font-weight:600;">Transportadoras</MudText>
+                <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                    Gerencie empresas de logística, fretes e todos os dados exigidos pela NF-e.
+                </MudText>
+            </div>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovaTransportadora">
+    Nova Transportadora
+</MudButton>
+        </div>
+
+        <div class="info-card-row-transportadoras">
+            <div class="info-card">
+                <div class="info-card-icon" style="background-color:#FBE7D8;">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="color:#C97A3D;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Transportadoras</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">@TransportadoraMockData.Transportadoras.Count</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">cadastradas</MudText>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon" style="background-color:#E4F2E5;">
+                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2E7D32;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total Faturado</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">@_totalFaturadoFormatado</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">em fretes</MudText>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon" style="background-color:#F1E9FA;">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#8E5CE0;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Fretes Realizados</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">@_fretesRealizados</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">no histórico</MudText>
+                </div>
+            </div>
+
+            <div class="info-card">
+                <div class="info-card-icon" style="background-color:#EAF1FA;">
+                    <MudIcon Icon="@Icons.Material.Filled.Layers" Style="color:#2C6FB0;" />
+                </div>
+                <div>
+                    <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Trânsito Agora</MudText>
+                    <MudText Typo="Typo.h6" Style="font-weight:600;">3</MudText>
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">embarques ativos</MudText>
+                </div>
+            </div>
+        </div>
+
+        <div class="transportadora-filtro-row">
+            <MudTextField T="string"
+                          @bind-Value="_termoBusca"
+                          Placeholder="Buscar por nome, CNPJ, RNTRC..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Class="transportadora-busca-input" />
+
+            <div class="transportadora-modal-filtro">
+                <button type="button" class="modal-filtro-btn @(_modalFiltro == null ? "active" : "")" @onclick="() => _modalFiltro = null">Todos os Modais</button>
+                <button type="button" class="modal-filtro-btn @(_modalFiltro == ModalTransporte.Rodoviario ? "active" : "")" @onclick="() => _modalFiltro = ModalTransporte.Rodoviario">Rodoviário</button>
+                <button type="button" class="modal-filtro-btn @(_modalFiltro == ModalTransporte.Aereo ? "active" : "")" @onclick="() => _modalFiltro = ModalTransporte.Aereo">Aéreo</button>
+                <button type="button" class="modal-filtro-btn @(_modalFiltro == ModalTransporte.Aquaviario ? "active" : "")" @onclick="() => _modalFiltro = ModalTransporte.Aquaviario">Aquaviário</button>
+                <button type="button" class="modal-filtro-btn @(_modalFiltro == ModalTransporte.Ferroviario ? "active" : "")" @onclick="() => _modalFiltro = ModalTransporte.Ferroviario">Ferroviário</button>
+            </div>
+
+            <MudSpacer />
+
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_transportadorasExibidas.Count() transportadoras</MudText>
+        </div>
+
+        <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+            <table class="transportadoras-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Empresa</th>
+                        <th>CNPJ</th>
+                        <th>RNTRC</th>
+                        <th>Modal</th>
+                        <th>Contato</th>
+                        <th class="col-num">Fretes</th>
+                        <th class="col-num">Total Faturado</th>
+                        <th>Último Frete</th>
+                        <th class="col-acoes"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var transportadora in _transportadorasExibidas)
+                    {
+                        var cor = CorModal(transportadora.Modal);
+                        <tr>
+                            <td><MudLink Href="#" Underline="Underline.None">@transportadora.Codigo</MudLink></td>
+                            <td>
+                                <div class="transportadora-nome-cell transportadora-nome-clicavel" @onclick="() => AbrirDetalhes(transportadora.Codigo)">
+        <div class="transportadora-avatar" style="background-color:@transportadora.CorAvatar;">@transportadora.Iniciais</div>
+        <div>
+            <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@transportadora.NomeFantasia</MudText>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@transportadora.RazaoSocial</MudText>
+        </div>
+    </div>
+                            </td>
+                            <td>@transportadora.Cnpj</td>
+                            <td><span class="rntrc-badge">@transportadora.Rntrc</span></td>
+                            <td><MudText Typo="Typo.body2" Style="@($"color:{cor}; font-weight:600;")">@transportadora.ModalLabel</MudText></td>
+                            <td>
+                                @transportadora.NomeContato<br />
+                                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@transportadora.Telefone</MudText>
+                            </td>
+                            <td class="col-num">@transportadora.Fretes</td>
+                            <td class="col-num">@transportadora.TotalFaturadoFormatado</td>
+                            <td>@transportadora.UltimoFrete.ToString("dd/MM/yyyy")</td>
+                            <td class="col-acoes">
+    <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(transportadora)" />
+    <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" OnClick="() => AbrirDetalhes(transportadora.Codigo)" />
+</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="transportadora-tabela-footer">
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma linha para ver o histórico de fretes</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_transportadorasExibidas.Count() de @TransportadoraMockData.Transportadoras.Count transportadoras</MudText>
+            </div>
+        </MudPaper>
+    </MudTabPanel>
+
+    <MudTabPanel Text="Veículo">        
+    <div class="page-header mt-4">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Veículos</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Cadastro de veículos da frota com todos os dados exigidos pelo MDF-e.
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoMotorista">
+    Novo Motorista
+</MudButton>
+    </div>
+
+    <div class="info-card-row-transportadoras">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FBE7D8;">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="color:#C97A3D;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Veículos Ativos</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_veiculosAtivos</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">de @VeiculoMockData.Veiculos.Count cadastrados</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Work" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cap. Total (kg)</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_capTotalKgFormatada</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">frota ativa</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cap. Total (m³)</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_capTotalM3 m³</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">frota ativa</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Groups" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Transportadoras</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_transportadorasComVeiculos</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">com veículos</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="transportadora-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_veiculoTermoBusca"
+                      Placeholder="Placa, RENAVAM, modelo..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="transportadora-busca-input" />
+
+        <MudSelect T="string" @bind-Value="_veiculoTransportadoraFiltro" Placeholder="Todas as transportadoras" Variant="Variant.Outlined" Margin="Margin.Dense" Class="transportadora-select-filtro">
+            <MudSelectItem T="string" Value="@((string?)null)">Todas as transportadoras</MudSelectItem>
+            @foreach (var transportadora in TransportadoraMockData.Transportadoras)
+            {
+                <MudSelectItem T="string" Value="@transportadora.Codigo">@transportadora.NomeFantasia</MudSelectItem>
+            }
+        </MudSelect>
+
+        <div class="cliente-filtro-tipos">
+            <button type="button" class="filtro-tipo-btn @(_veiculoStatusFiltro == null ? "active" : "")" @onclick="() => _veiculoStatusFiltro = null">Todos</button>
+            <button type="button" class="filtro-tipo-btn @(_veiculoStatusFiltro == StatusVeiculo.Ativo ? "active" : "")" @onclick="() => _veiculoStatusFiltro = StatusVeiculo.Ativo">Ativo</button>
+            <button type="button" class="filtro-tipo-btn @(_veiculoStatusFiltro == StatusVeiculo.Inativo ? "active" : "")" @onclick="() => _veiculoStatusFiltro = StatusVeiculo.Inativo">Inativo</button>
+        </div>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_veiculosExibidos.Count() veículos</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="veiculos-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Placa</th>
+                    <th>Veículo</th>
+                    <th>RENAVAM</th>
+                    <th>Chassi</th>
+                    <th>Rodado</th>
+                    <th>Carroceria</th>
+                    <th class="col-num">Tara (kg)</th>
+                    <th class="col-num">Cap. (kg)</th>
+                    <th class="col-num">Cap. (m³)</th>
+                    <th>Transportadora</th>
+                    <th>Último MDF-e</th>
+                    <th class="col-acoes"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var veiculo in _veiculosExibidos)
+                {
+                    var transportadora = TransportadoraMockData.Transportadoras.First(t => t.Codigo == veiculo.TransportadoraCodigo);
+                    var corRodado = CorRodado(veiculo.Rodado);
+                    <tr>
+                        <td><MudLink Href="#" Underline="Underline.None">@veiculo.Codigo</MudLink></td>
+                        <td>
+                            <MudText Typo="Typo.body2" Style="font-weight:600;">@veiculo.Placa</MudText>
+                            @if (veiculo.Status == StatusVeiculo.Ativo)
+                            {
+                                <MudText Typo="Typo.caption" Style="color:#2E7D32;">Ativo</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.caption" Style="color:#C2185B;">Inativo</MudText>
+                            }
+                            <br />
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">UF: @veiculo.Uf</MudText>
+                        </td>
+                        <td>
+                            @veiculo.Marca @veiculo.Modelo<br />
+                            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@veiculo.Ano · @veiculo.Cor</MudText>
+                        </td>
+                        <td>@veiculo.Renavam</td>
+                        <td><MudText Typo="Typo.caption" Style="color:#9AA5B1; font-family:monospace;">@veiculo.Chassi</MudText></td>
+                        <td><MudChip T="string" Size="Size.Small" Style="@ChipEstilo(corRodado)">@veiculo.RodadoLabel</MudChip></td>
+                        <td>@veiculo.CarroceriaLabel</td>
+                        <td class="col-num">@veiculo.TaraKg.ToString("N0")</td>
+                        <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:600;">@veiculo.CapacidadeKg.ToString("N0")</MudText></td>
+                        <td class="col-num">@veiculo.CapacidadeM3.ToString("N0")</td>
+                        <td>
+                            @transportadora.NomeFantasia<br />
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@veiculo.TipoProprietarioLabel</MudText>
+                        </td>
+                        <td>@(veiculo.UltimoMdfe?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="col-acoes">
+    <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicaoVeiculo(veiculo)" />
+</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </MudPaper>
+</MudTabPanel>
+
+<MudTabPanel Text="Motorista">
+    <div class="page-header mt-4">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Motoristas</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Cadastro de condutores habilitados para emissão do MDF-e.
+            </MudText>
+        </div>
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoMotorista">
+    Novo Motorista
+</MudButton>
+    </div>
+
+    <div class="info-card-row-transportadoras">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FBE7D8;">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="color:#C97A3D;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Motoristas Ativos</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_motoristasAtivos</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">de @MotoristaMockData.Motoristas.Count cadastrados</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Habilitados MOPP</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_habilitadosMopp</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">produtos perigosos</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FBE4EC;">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Style="color:#C2185B;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">CNH a Vencer / Vencida</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_cnhAtencao</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">requer atenção</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Transportadoras</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_transportadorasComMotoristas</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">com motoristas</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="transportadora-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_motoristaTermoBusca"
+                      Placeholder="Nome, CPF, CNH..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="transportadora-busca-input" />
+
+        <MudSelect T="string" @bind-Value="_motoristaTransportadoraFiltro" Placeholder="Todas as transportadoras" Variant="Variant.Outlined" Margin="Margin.Dense" Class="transportadora-select-filtro">
+            <MudSelectItem T="string" Value="@((string?)null)">Todas as transportadoras</MudSelectItem>
+            @foreach (var transportadora in TransportadoraMockData.Transportadoras)
+            {
+                <MudSelectItem T="string" Value="@transportadora.Codigo">@transportadora.NomeFantasia</MudSelectItem>
+            }
+        </MudSelect>
+
+        <div class="cliente-filtro-tipos">
+            <button type="button" class="filtro-tipo-btn @(_motoristaStatusFiltro == null ? "active" : "")" @onclick="() => _motoristaStatusFiltro = null">Todos</button>
+            <button type="button" class="filtro-tipo-btn @(_motoristaStatusFiltro == StatusMotorista.Ativo ? "active" : "")" @onclick="() => _motoristaStatusFiltro = StatusMotorista.Ativo">Ativo</button>
+            <button type="button" class="filtro-tipo-btn @(_motoristaStatusFiltro == StatusMotorista.Inativo ? "active" : "")" @onclick="() => _motoristaStatusFiltro = StatusMotorista.Inativo">Inativo</button>
+        </div>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_motoristasExibidos.Count() motoristas</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="motoristas-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Motorista</th>
+                    <th>CPF</th>
+                    <th>CNH</th>
+                    <th>Cat.</th>
+                    <th>Validade CNH</th>
+                    <th>MOPP</th>
+                    <th>Veículo</th>
+                    <th>Transportadora</th>
+                    <th>Último MDF-e</th>
+                    <th class="col-acoes"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var motorista in _motoristasExibidos)
+                {
+                    var transportadora = TransportadoraMockData.Transportadoras.First(t => t.Codigo == motorista.TransportadoraCodigo);
+                    <tr>
+                        <td><MudLink Href="#" Underline="Underline.None">@motorista.Codigo</MudLink></td>
+                        <td>
+                            <div class="motorista-nome-cell">
+                                <div class="motorista-avatar" style="background-color:@motorista.CorAvatar;">@motorista.Iniciais</div>
+                                <div>
+                                    <MudText Typo="Typo.body2" Style="font-weight:600;">@motorista.Nome</MudText>
+                                    <div style="display:flex; align-items:center; gap:6px;">
+                                        @if (motorista.Status == StatusMotorista.Ativo)
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                                        }
+                                        else
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                                        }
+                                        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@motorista.Telefone</MudText>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>@motorista.Cpf</td>
+                        <td>@motorista.Cnh</td>
+                        <td><span class="rntrc-badge">@motorista.CategoriaLabel</span></td>
+                        <td>
+                            @motorista.ValidadeCnh.ToString("dd/MM/yyyy")
+                            @if (motorista.SituacaoCnh == SituacaoCnh.AVencer)
+                            {
+                                <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441; margin-left:6px;">A VENCER</MudChip>
+                            }
+                            else if (motorista.SituacaoCnh == SituacaoCnh.Vencida)
+                            {
+                                <MudChip T="string" Size="Size.Small" Style="background-color:#FBE4EC; color:#C2185B; margin-left:6px;">VENCIDA</MudChip>
+                            }
+                        </td>
+                        <td>
+                            @if (motorista.HabilitadoMopp)
+                            {
+                                <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">MOPP</MudChip>
+                                <br />
+                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Válido: @motorista.ValidadeMopp?.ToString("dd/MM/yyyy")</MudText>
+                            }
+                            else
+                            {
+                                <MudText Typo="Typo.body2" Style="color:#9AA5B1;">—</MudText>
+                            }
+                        </td>
+                        <td><span class="rntrc-badge">@(VeiculoMockData.Veiculos.FirstOrDefault(v => v.Codigo == motorista.VeiculoId)?.Placa ?? "—")</span></td>
+                        <td>@transportadora.NomeFantasia</td>
+                        <td>@(motorista.UltimoMdfe?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="col-acoes">
+                            <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicaoMotorista(motorista)" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </MudPaper>
+</MudTabPanel>
+</MudTabs>
+
+@code {
+    private string _termoBusca = string.Empty;
+    private ModalTransporte? _modalFiltro = null;
+
+    private double _totalFaturado => TransportadoraMockData.Transportadoras.Sum(t => t.TotalFaturado);
+    private int _fretesRealizados => TransportadoraMockData.Transportadoras.Sum(t => t.Fretes);
+
+    private static string FormatarMoeda(double valor) => $"R$ {valor:N2}".Replace(",", "#").Replace(".", ",").Replace("#", ".");
+
+    private string _totalFaturadoFormatado => FormatarMoeda(_totalFaturado);
+
+    private static string CorModal(ModalTransporte modal) => modal switch
+    {
+        ModalTransporte.Rodoviario => "#C97A3D",
+        ModalTransporte.Aereo => "#2C6FB0",
+        ModalTransporte.Aquaviario => "#2E7D32",
+        _ => "#8E5CE0"
+    };
+
+    private IEnumerable<TransportadoraItem> _transportadorasExibidas =>
+        TransportadoraMockData.Transportadoras
+            .Where(t => _modalFiltro == null || t.Modal == _modalFiltro)
+            .Where(t => string.IsNullOrWhiteSpace(_termoBusca)
+                || t.NomeFantasia.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || t.RazaoSocial.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || t.Cnpj.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || t.Rntrc.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(t => t.UltimoFrete)
+            .Take(10);
+
+    // ---- Veículos ----
+private string _veiculoTermoBusca = string.Empty;
+private string? _veiculoTransportadoraFiltro = null;
+private StatusVeiculo? _veiculoStatusFiltro = null;
+
+private int _veiculosAtivos => VeiculoMockData.Veiculos.Count(v => v.Status == StatusVeiculo.Ativo);
+private double _capTotalKg => VeiculoMockData.Veiculos.Where(v => v.Status == StatusVeiculo.Ativo).Sum(v => v.CapacidadeKg);
+private double _capTotalM3 => VeiculoMockData.Veiculos.Where(v => v.Status == StatusVeiculo.Ativo).Sum(v => v.CapacidadeM3);
+private int _transportadorasComVeiculos => VeiculoMockData.Veiculos.Select(v => v.TransportadoraCodigo).Distinct().Count();
+
+private string _capTotalKgFormatada => (_capTotalKg / 1000).ToString("N0") + " t";
+
+[CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+private async Task AbrirNovaTransportadora()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoTransportadora>("Nova Transportadora", options);
+}
+
+private async Task AbrirEdicao(TransportadoraItem transportadora)
+{
+    var parameters = new DialogParameters<NovoTransportadora> { { x => x.TransportadoraExistente, transportadora } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoTransportadora>("Editar Transportadora", parameters, options);
+}
+
+private void AbrirDetalhes(string codigo)
+{
+    WindowManager.Navigate(WindowId, typeof(DetalhesTransportadora),
+        new Dictionary<string, object> { { "Codigo", codigo } },
+        $"Transportadora {codigo}");
+}
+
+private async Task AbrirNovoVeiculo()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVeiculo>("Novo Veículo", options);
+}
+
+private async Task AbrirEdicaoVeiculo(VeiculoItem veiculo)
+{
+    var parameters = new DialogParameters<NovoVeiculo> { { x => x.VeiculoExistente, veiculo } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVeiculo>("Editar Veículo", parameters, options);
+}
+
+private static (string Bg, string Texto) CorRodado(TipoRodado rodado) => rodado switch
+{
+    TipoRodado.Truck => ("#FBE7D8", "#C97A3D"),
+    TipoRodado.Toco => ("#FCEFDB", "#D9A441"),
+    TipoRodado.CavaloMecanico => ("#FBE4EC", "#C2185B"),
+    TipoRodado.Van => ("#EAF1FA", "#2C6FB0"),
+    _ => ("#F0F2F4", "#5A6B7A")
+};
+
+private static string ChipEstilo((string Bg, string Texto) cor) => $"background-color:{cor.Bg}; color:{cor.Texto};";
+
+private IEnumerable<VeiculoItem> _veiculosExibidos =>
+    VeiculoMockData.Veiculos
+        .Where(v => _veiculoTransportadoraFiltro == null || v.TransportadoraCodigo == _veiculoTransportadoraFiltro)
+        .Where(v => _veiculoStatusFiltro == null || v.Status == _veiculoStatusFiltro)
+        .Where(v => string.IsNullOrWhiteSpace(_veiculoTermoBusca)
+            || v.Placa.Contains(_veiculoTermoBusca, StringComparison.OrdinalIgnoreCase)
+            || v.Renavam.Contains(_veiculoTermoBusca, StringComparison.OrdinalIgnoreCase)
+            || v.Modelo.Contains(_veiculoTermoBusca, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(v => v.UltimoMdfe)
+        .Take(10);
+
+// ---- Motoristas ----
+private string _motoristaTermoBusca = string.Empty;
+private string? _motoristaTransportadoraFiltro = null;
+private StatusMotorista? _motoristaStatusFiltro = null;
+
+private int _motoristasAtivos => MotoristaMockData.Motoristas.Count(m => m.Status == StatusMotorista.Ativo);
+private int _habilitadosMopp => MotoristaMockData.Motoristas.Count(m => m.HabilitadoMopp);
+private int _cnhAtencao => MotoristaMockData.Motoristas.Count(m => m.SituacaoCnh != SituacaoCnh.Valida);
+private int _transportadorasComMotoristas => MotoristaMockData.Motoristas.Select(m => m.TransportadoraCodigo).Distinct().Count();
+
+private async Task AbrirNovoMotorista()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoMotorista>("Novo Motorista", options);
+}
+
+private async Task AbrirEdicaoMotorista(MotoristaItem motorista)
+{
+    var parameters = new DialogParameters<NovoMotorista> { { x => x.MotoristaExistente, motorista } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoMotorista>("Editar Motorista", parameters, options);
+}
+
+private IEnumerable<MotoristaItem> _motoristasExibidos =>
+    MotoristaMockData.Motoristas
+        .Where(m => _motoristaTransportadoraFiltro == null || m.TransportadoraCodigo == _motoristaTransportadoraFiltro)
+        .Where(m => _motoristaStatusFiltro == null || m.Status == _motoristaStatusFiltro)
+        .Where(m => string.IsNullOrWhiteSpace(_motoristaTermoBusca)
+            || m.Nome.Contains(_motoristaTermoBusca, StringComparison.OrdinalIgnoreCase)
+            || m.Cpf.Contains(_motoristaTermoBusca, StringComparison.OrdinalIgnoreCase)
+            || m.Cnh.Contains(_motoristaTermoBusca, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(m => m.UltimoMdfe)
+        .Take(10);        
+}

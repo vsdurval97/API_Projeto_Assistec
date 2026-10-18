@@ -1,0 +1,52 @@
+@page "/estoque"
+@using Assistec.Desktop.Components.Pages.EstoquePages.Produtos
+@using Assistec.Desktop.Components.Pages.EstoquePages.PedidoCompra
+@using Assistec.Desktop.Components.Pages.EstoquePages.NotaEntrada
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+
+<MudText Typo="Typo.h4" Style="font-weight:600;">Estoque</MudText>
+<MudText Typo="Typo.body1" Style="color:#5A6B7A; margin-bottom:24px;">
+    Gerencie produtos, solicite compras e registre entradas de mercadoria para manter o estoque sempre atualizado.
+</MudText>
+
+<div class="parceiros-grid">
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#2C6FB0;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Produtos</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cadastro de itens, categorias, preços e controle de saldo em estoque</MudText>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaProdutos>("Produtos", Icons.Material.Filled.Inventory2))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Style="color:#2E7D32;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Pedido de Compra</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Solicite reposição de estoque, gerencie ordens de compra e aprovações</MudText>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaPedidosCompra>("Pedidos de Compra", Icons.Material.Filled.ShoppingCart))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
+    </div>
+
+    <div class="parceiro-card">
+        <div class="parceiro-icon" style="background-color:#FBE7D8;">
+            <MudIcon Icon="@Icons.Material.Filled.ReceiptLong" Style="color:#C97A3D;" Size="Size.Large" />
+        </div>
+        <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Nota de Entrada</MudText>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Receba mercadorias, vincule NF-e do fornecedor e atualize o estoque</MudText>
+        <MudButton Variant="Variant.Outlined"
+   OnClick="@(() => WindowManager.Open<ListaNotasEntrada>("Notas de Entrada", Icons.Material.Filled.ReceiptLong))"
+   EndIcon="@Icons.Material.Filled.ChevronRight" Class="mt-4">
+        Acessar
+</MudButton>
+    </div>
+</div>

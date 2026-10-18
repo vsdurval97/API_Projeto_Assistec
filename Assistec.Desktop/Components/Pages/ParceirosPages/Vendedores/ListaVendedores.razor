@@ -1,0 +1,219 @@
+@page "/parceiros/vendedores"
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Vendedores
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Usuarios
+@using Assistec.Desktop.Windowing
+@inject WindowManagerService WindowManager
+@inject IDialogService DialogService
+
+<div class="page-header">
+    <div>
+        <MudText Typo="Typo.h4" Style="font-weight:600;">Vendedores</MudText>
+        <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+            Gerencie comissões, metas e histórico de vendas por vendedor.
+        </MudText>
+    </div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoVendedor">
+    Cadastrar Vendedor
+</MudButton>
+</div>
+
+<div class="info-card-row-vendedores">
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Vendedores Ativos</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_vendedoresAtivos</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">de @VendedorMockData.Vendedores.Count cadastrados</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#EAF1FA;">
+            <MudIcon Icon="@Icons.Material.Filled.Paid" Style="color:#2C6FB0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total Vendido</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_totalVendidoFormatado</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">histórico geral</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#F1E9FA;">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#8E5CE0;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total Comissões</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_totalComissoesFormatado</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">pago aos vendedores</MudText>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-icon" style="background-color:#E4F2E5;">
+            <MudIcon Icon="@Icons.Material.Filled.TrackChanges" Style="color:#2E7D32;" />
+        </div>
+        <div>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Meta Atingida</MudText>
+            <MudText Typo="Typo.h6" Style="font-weight:600;">@_metaAtingida/@VendedorMockData.Vendedores.Count</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">no mês atual</MudText>
+        </div>
+    </div>
+</div>
+
+<div class="vendedor-filtro-row">
+    <MudTextField T="string"
+                  @bind-Value="_termoBusca"
+                  Placeholder="Nome, e-mail, código, regional..."
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Immediate="true"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Class="vendedor-busca-input" />
+
+    <div class="cliente-filtro-tipos">
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == null ? "active" : "")" @onclick="() => _statusFiltro = null">Todos</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusVendedor.Ativo ? "active" : "")" @onclick="() => _statusFiltro = StatusVendedor.Ativo">Ativo</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusVendedor.Inativo ? "active" : "")" @onclick="() => _statusFiltro = StatusVendedor.Inativo">Inativo</button>
+        <button type="button" class="filtro-tipo-btn @(_statusFiltro == StatusVendedor.Ferias ? "active" : "")" @onclick="() => _statusFiltro = StatusVendedor.Ferias">Férias</button>
+    </div>
+
+    <MudSpacer />
+
+    <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_vendedoresExibidos.Count() vendedores</MudText>
+</div>
+
+<MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+    <table class="vendedores-table">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Vendedor</th>
+                <th>Regional</th>
+                <th>Tipo Comissão</th>
+                <th>Base</th>
+                <th>Meta Mensal</th>
+                <th>Total Vendido</th>
+                <th>Meta Atual</th>
+                <th>Status</th>
+                <th class="col-acoes"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in _vendedoresExibidos)
+            {
+                <tr>
+                    <td><MudLink Href="#" Underline="Underline.None">@item.Vendedor.Codigo</MudLink></td>
+                    <td>
+                        <div class="usuario-nome-cell usuario-nome-clicavel" @onclick="() => AbrirDetalhes(item.Vendedor.Codigo)">
+        <div class="usuario-avatar" style="background-color:@item.Usuario.CorAvatar;">@item.Usuario.Iniciais</div>
+        <div>
+            <MudText Typo="Typo.body2" Style="font-weight:600; color:#2C6FB0;">@item.Usuario.Nome</MudText>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">@item.Vendedor.Cargo</MudText>
+        </div>
+    </div>
+                    </td>
+                    <td>@item.Vendedor.Regional</td>
+                    <td>@item.Vendedor.TipoComissao</td>
+                    <td><MudText Typo="Typo.body2" Style="color:#8E5CE0; font-weight:600;">@item.Vendedor.BaseFormatada</MudText></td>
+                    <td>@item.Vendedor.MetaMensalFormatada</td>
+                    <td><MudText Typo="Typo.body2" Style="font-weight:600;">@item.Vendedor.TotalVendidoFormatado</MudText></td>
+                    <td>
+                        <div class="vendedor-meta-bar-wrap">
+                            <div class="vendedor-meta-bar-track">
+                                <div class="vendedor-meta-bar-fill" style="width:@(item.Vendedor.MetaAtualPercentual)%;"></div>
+                            </div>
+                            <MudText Typo="Typo.caption" Style="color:#8E5CE0; font-weight:600;">@(item.Vendedor.MetaAtualPercentual)%</MudText>
+                        </div>
+                    </td>
+                    <td>
+                        @if (item.Vendedor.Status == StatusVendedor.Ativo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#E4F2E5; color:#2E7D32;">Ativo</MudChip>
+                        }
+                        else if (item.Vendedor.Status == StatusVendedor.Inativo)
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#F0F2F4; color:#5A6B7A;">Inativo</MudChip>
+                        }
+                        else
+                        {
+                            <MudChip T="string" Size="Size.Small" Style="background-color:#FCEFDB; color:#D9A441;">Férias</MudChip>
+                        }
+                    </td>
+                    <td class="col-acoes">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote" Size="Size.Small" OnClick="() => AbrirEdicao(item.Vendedor)" />
+                        <MudIconButton Icon="@Icons.Material.Outlined.AccessTime" Size="Size.Small" OnClick="() => AbrirDetalhes(item.Vendedor.Codigo)" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="vendedor-tabela-footer">
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma linha para ver o histórico de vendas e evolução de metas</MudText>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_vendedoresExibidos.Count() de @VendedorMockData.Vendedores.Count vendedores</MudText>
+    </div>
+</MudPaper>
+
+@code {
+    private record VendedorExibicao(VendedorItem Vendedor, UsuarioItem Usuario);
+
+    private string _termoBusca = string.Empty;
+    private StatusVendedor? _statusFiltro = null;
+
+    private int _vendedoresAtivos => VendedorMockData.Vendedores.Count(v => v.Status == StatusVendedor.Ativo);
+
+    private double _totalVendido => VendedorMockData.Vendedores.Sum(v => v.TotalVendido);
+    private double _totalComissoes => VendedorMockData.Vendedores.Sum(v => v.TotalVendido * (v.PercentualBase / 100));
+    private int _metaAtingida => VendedorMockData.Vendedores.Count(v => v.MetaAtualPercentual >= 100);
+
+    [CascadingParameter(Name = "WindowId")] public Guid WindowId { get; set; }
+
+private void AbrirDetalhes(string codigo)
+{
+    WindowManager.Navigate(WindowId, typeof(DetalhesVendedor),
+        new Dictionary<string, object> { { "Codigo", codigo } },
+        $"Vendedor {codigo}");
+}
+
+private async Task AbrirNovoVendedor()
+{
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVendedor>("Novo Vendedor", options);
+}
+
+private async Task AbrirEdicao(VendedorItem vendedor)
+{
+    var parameters = new DialogParameters<NovoVendedor> { { x => x.VendedorExistente, vendedor } };
+    var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+    await DialogService.ShowAsync<NovoVendedor>("Editar Vendedor", parameters, options);
+}
+    
+    private static string FormatarCompacto(double valor)
+    {
+        if (valor >= 1000)
+            return "R$ " + (valor / 1000).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + "k";
+        return $"R$ {valor:N0}";
+    }
+
+    private string _totalVendidoFormatado => FormatarCompacto(_totalVendido);
+    private string _totalComissoesFormatado => FormatarCompacto(_totalComissoes);
+
+    private IEnumerable<VendedorExibicao> _todosJuntados =>
+        from vendedor in VendedorMockData.Vendedores
+        join usuario in UsuarioMockData.Usuarios on vendedor.UsuarioCodigo equals usuario.Codigo
+        select new VendedorExibicao(vendedor, usuario);
+
+    private IEnumerable<VendedorExibicao> _vendedoresExibidos =>
+        _todosJuntados
+            .Where(v => _statusFiltro == null || v.Vendedor.Status == _statusFiltro)
+            .Where(v => string.IsNullOrWhiteSpace(_termoBusca)
+                || v.Usuario.Nome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || v.Usuario.Email.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || v.Vendedor.Codigo.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || v.Vendedor.Regional.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase))
+            .Take(10);
+}
