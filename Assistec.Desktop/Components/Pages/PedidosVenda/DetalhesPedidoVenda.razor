@@ -1,0 +1,175 @@
+@inject IDialogService DialogService
+
+@if (_pedido is not null)
+{
+    var cor = PedidoVendaUi.Cor(_pedido.Status);
+
+    <div class="breadcrumb-row">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                       Variant="Variant.Outlined"
+                       Size="Size.Small"
+                       OnClick="@(() => OnVoltar.InvokeAsync())" />
+        <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <MudText Typo="Typo.h5" Style="font-weight:600;">@_pedido.Numero</MudText>
+                <MudChip T="string" Size="Size.Small"
+                         Style="@($"background-color:{cor.Fundo}; color:{cor.Texto}; font-weight:600;")">
+                    @PedidoVendaUi.Rotulo(_pedido.Status)
+                </MudChip>
+            </div>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Detalhes completos do pedido de venda</MudText>
+        </div>
+        <MudButton Variant="Variant.Outlined"
+                   StartIcon="@Icons.Material.Filled.Edit"
+                   OnClick="AbrirEdicao">
+            Editar Pedido
+        </MudButton>
+    </div>
+
+    <div class="info-card-row-pv" style="margin-top:0;">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Style="color:#2C6FB0;" />
+            </div>
+            @Info("Emissão", PedidoVendaUi.Data(_pedido.Emissao))
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.Event" Style="color:#D9A441;" />
+            </div>
+            @Info("Previsão de Entrega", PedidoVendaUi.Data(_pedido.Entrega))
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Style="color:#2E7D32;" />
+            </div>
+            @Info("Vendedor", _pedido.Vendedor)
+        </div>
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.CallSplit" Style="color:#8E5CE0;" />
+            </div>
+            @Info("Origem", _pedido.Origem)
+        </div>
+    </div>
+
+    <div class="pv-detalhe-layout">
+        <div class="pv-detalhe-col">
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <div class="pv-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Cliente e Endereço</MudText>
+                </div>
+                <div class="pv-info-grid pv-info-grid-2">
+                    @Info("Nome / Razão Social", _pedido.Cliente)
+                    @Info("CPF / CNPJ", _pedido.Documento)
+                    @Info("Telefone", _pedido.Telefone)
+                    @Info("E-mail", _pedido.Email)
+                </div>
+                <div class="pv-info-grid pv-info-grid-4 pv-separador">
+                    <div style="grid-column: span 3;">@Info("Logradouro", _pedido.Endereco.Linha)</div>
+                    @Info("CEP", _pedido.Endereco.Cep)
+                    @Info("Bairro", _pedido.Endereco.Bairro)
+                    <div style="grid-column: span 2;">@Info("Cidade", _pedido.Endereco.Cidade)</div>
+                    @Info("UF", _pedido.Endereco.Uf)
+                </div>
+            </MudPaper>
+
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+                <div class="pv-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Produtos</MudText>
+                    <MudSpacer />
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_pedido.Itens.Count item(ns)</MudText>
+                </div>
+                <table class="pv-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th style="text-align:center;">Qtd.</th>
+                            <th style="text-align:center;">Desc.</th>
+                            <th class="pv-col-num">Valor</th>
+                            <th class="pv-col-num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _pedido.Itens)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="pv-cliente">@item.Descricao</div>
+                                    <div class="pv-sub">@item.Codigo · @item.Unidade</div>
+                                </td>
+                                <td style="text-align:center;">@item.Quantidade</td>
+                                <td style="text-align:center;">@item.Desconto.ToString("0.##")%</td>
+                                <td class="pv-col-num">@PedidoVendaUi.Moeda(item.ValorUnitario)</td>
+                                <td class="pv-col-num pv-total">@PedidoVendaUi.Moeda(item.Total)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+        </div>
+
+        <div class="pv-detalhe-col">
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">Resumo Financeiro</MudText>
+                <div class="pv-resumo-linha"><span>Produtos</span><strong>@PedidoVendaUi.Moeda(_pedido.Subtotal)</strong></div>
+                <div class="pv-resumo-linha"><span>Desconto geral</span><strong style="color:#C2185B;">− @PedidoVendaUi.Moeda(_pedido.Desconto)</strong></div>
+                <div class="pv-resumo-linha"><span>Frete</span><strong>@PedidoVendaUi.Moeda(_pedido.Frete)</strong></div>
+                <div class="pv-resumo-total">
+                    <span>Total do Pedido</span>
+                    <strong>@PedidoVendaUi.Moeda(_pedido.Total)</strong>
+                </div>
+            </MudPaper>
+
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <div class="pv-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Entrega e Pagamento</MudText>
+                </div>
+                <div class="pv-info-grid">
+                    @Info("Transportadora", _pedido.Transportadora)
+                    @Info("Condição de Pagamento", _pedido.CondicaoPagamento)
+                </div>
+                <div class="pv-separador">
+                    @Info("Observações", _pedido.Observacao)
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Numero { get; set; } = "";
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private PedidoVendaItem? _pedido;
+
+    protected override void OnParametersSet()
+    {
+        _pedido = PedidoVendaMockData.Obter(Numero);
+    }
+
+    private RenderFragment Info(string rotulo, string valor) => @<div class="pv-info">
+        <div class="pv-info-rotulo">@rotulo</div>
+        <div class="pv-info-valor">@(string.IsNullOrWhiteSpace(valor) ? "Não informado" : valor)</div>
+    </div>;
+
+    private async Task AbrirEdicao()
+    {
+        if (_pedido is null) return;
+
+        var parametros = new DialogParameters<NovoPedidoVenda>
+        {
+            { x => x.PedidoExistente, _pedido }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<NovoPedidoVenda>("", parametros, options);
+        await dialog.Result;
+
+        _pedido = PedidoVendaMockData.Obter(Numero);
+        StateHasChanged();
+    }
+}

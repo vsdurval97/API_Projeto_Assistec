@@ -1,0 +1,93 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">Buscar Produto</MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+            Localize por código ou descrição e consulte o estoque disponível.
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTextField T="string"
+                      @bind-Value="_busca"
+                      Placeholder="Digite o código ou a descrição do produto..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense" />
+
+        <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; max-height:50vh; overflow:auto;">
+            <table class="pv-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Un.</th>
+                        <th style="text-align:center;">Estoque</th>
+                        <th class="pv-col-num">Preço</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _resultados)
+                    {
+                        var estoqueOk = item.Estoque > 10;
+                        <tr>
+                            <td>
+                                <div class="pv-cliente">@item.Descricao</div>
+                                <div class="pv-sub">@item.Codigo</div>
+                            </td>
+                            <td>@item.Unidade</td>
+                            <td style="text-align:center;">
+                                <MudChip T="string" Size="Size.Small"
+                                         Style="@(estoqueOk
+                                                 ? "background-color:#E4F2E5; color:#2E7D32; font-weight:600;"
+                                                 : "background-color:#FBE7D8; color:#C97A3D; font-weight:600;")">
+                                    @item.Estoque @item.Unidade
+                                </MudChip>
+                            </td>
+                            <td class="pv-col-num pv-total">@PedidoVendaUi.Moeda(item.ValorUnitario)</td>
+                            <td class="pv-col-num">
+                                <MudButton Size="Size.Small"
+                                           Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Style="background-color:#079cff; color:#FFFFFF;"
+                                           OnClick="@(() => Adicionar(item))">
+                                    Adicionar
+                                </MudButton>
+                            </td>
+                        </tr>
+                    }
+                    @if (!_resultados.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="pv-vazio">Nenhum produto encontrado.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto; padding-left:8px;">
+            @_resultados.Count() produto(s) encontrado(s)
+        </MudText>
+        <MudButton OnClick="Fechar">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private string _busca = "";
+
+    private IEnumerable<ItemPedidoLinha> _resultados =>
+        PedidoVendaMockData.Catalogo.Where(i =>
+            string.IsNullOrWhiteSpace(_busca) ||
+            i.Codigo.Contains(_busca, StringComparison.OrdinalIgnoreCase) ||
+            i.Descricao.Contains(_busca, StringComparison.OrdinalIgnoreCase));
+
+    private void Adicionar(ItemPedidoLinha item) => MudDialog.Close(DialogResult.Ok(item.Clonar()));
+
+    private void Fechar() => MudDialog.Cancel();
+}

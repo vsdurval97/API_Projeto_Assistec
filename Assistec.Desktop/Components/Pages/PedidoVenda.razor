@@ -1,0 +1,186 @@
+@page "/pedido-venda"
+@using Assistec.Desktop.Components.Pages.PedidosVenda
+
+@inject IDialogService DialogService
+
+@if (_aberto is not null)
+{
+    <DetalhesPedidoVenda Numero="@_aberto" OnVoltar="FecharDetalhes" />
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Pedidos de Venda</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Acompanhe aprovação, separação, entrega e faturamento dos pedidos.
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Style="background-color:#079cff; color:#FFFFFF;"
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="AbrirNovo">
+            Novo Pedido de Venda
+        </MudButton>
+    </div>
+
+    <div class="info-card-row-pv">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.ShoppingCart" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Pedidos em Aberto</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_emAberto</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">pedidos ativos</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory2" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Separação</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_emSeparacao</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">no estoque</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Style="color:#D9A441;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Prontos para Faturar</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_prontosFaturar</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">pedidos aprovados</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Vendas no Mês</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@PedidoVendaUi.Moeda(_valorMes)</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">exceto cancelados</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="pv-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_termoBusca"
+                      Placeholder="Buscar por pedido, cliente ou vendedor..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="pv-busca-input" />
+
+        <MudSelect T="StatusPedido?"
+                   @bind-Value="_statusFiltro"
+                   Placeholder="Todos os status"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="pv-select-filtro">
+            <MudSelectItem T="StatusPedido?" Value="@((StatusPedido?)null)">Todos</MudSelectItem>
+            @foreach (var s in Enum.GetValues<StatusPedido>())
+            {
+                <MudSelectItem T="StatusPedido?" Value="@((StatusPedido?)s)">@PedidoVendaUi.Rotulo(s)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_filtrados.Count() de @PedidoVendaMockData.Lista.Count pedidos</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="pv-table">
+            <thead>
+                <tr>
+                    <th>Pedido</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Emissão</th>
+                    <th>Entrega</th>
+                    <th class="pv-col-num">Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pedido in _filtrados)
+                {
+                    var cor = PedidoVendaUi.Cor(pedido.Status);
+                    <tr class="pv-linha-clicavel" @onclick="() => AbrirDetalhes(pedido.Numero)">
+                        <td>
+                            <div class="pv-numero">@pedido.Numero</div>
+                            <div class="pv-sub">@pedido.Origem</div>
+                        </td>
+                        <td>
+                            <div class="pv-cliente">@pedido.Cliente</div>
+                            <div class="pv-sub">@pedido.Documento</div>
+                        </td>
+                        <td>@pedido.Vendedor</td>
+                        <td>@PedidoVendaUi.Data(pedido.Emissao)</td>
+                        <td>@PedidoVendaUi.Data(pedido.Entrega)</td>
+                        <td class="pv-col-num pv-total">@PedidoVendaUi.Moeda(pedido.Total)</td>
+                        <td>
+                            <MudChip T="string" Size="Size.Small"
+                                     Style="@($"background-color:{cor.Fundo}; color:{cor.Texto}; font-weight:600;")">
+                                @PedidoVendaUi.Rotulo(pedido.Status)
+                            </MudChip>
+                        </td>
+                        <td><MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#9AA5B1;" /></td>
+                    </tr>
+                }
+                @if (!_filtrados.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="pv-vazio">Nenhum pedido de venda encontrado.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;" Class="mt-3">
+            Clique em um pedido para abrir os detalhes completos.
+        </MudText>
+    </MudPaper>
+}
+
+@code {
+    private string _termoBusca = "";
+    private StatusPedido? _statusFiltro;
+    private string? _aberto;
+
+    private IEnumerable<PedidoVendaItem> _filtrados =>
+        PedidoVendaMockData.Lista.Where(p =>
+            (_statusFiltro is null || p.Status == _statusFiltro) &&
+            (string.IsNullOrWhiteSpace(_termoBusca) ||
+             p.Numero.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase) ||
+             p.Cliente.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase) ||
+             p.Vendedor.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)));
+
+    private int _emAberto => PedidoVendaMockData.Lista.Count(p => p.Status is not (StatusPedido.Faturado or StatusPedido.Cancelado));
+    private int _emSeparacao => PedidoVendaMockData.Lista.Count(p => p.Status == StatusPedido.EmSeparacao);
+    private int _prontosFaturar => PedidoVendaMockData.Lista.Count(p => p.Status == StatusPedido.Aprovado);
+    private decimal _valorMes => PedidoVendaMockData.Lista.Where(p => p.Status != StatusPedido.Cancelado).Sum(p => p.Total);
+
+    private void AbrirDetalhes(string numero) => _aberto = numero;
+
+    private void FecharDetalhes() => _aberto = null;
+
+    private async Task AbrirNovo()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<NovoPedidoVenda>("", options);
+        await dialog.Result;
+        StateHasChanged();
+    }
+}
