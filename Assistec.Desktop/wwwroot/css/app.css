@@ -2820,6 +2820,360 @@
     padding-top: 16px;
 }
 
+/* ============================================================
+   ORDEM DE SERVIÇO
+   Lista, detalhes, dialog de cadastro e busca de itens.
+   ============================================================ */
+
+.info-card-row-os {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* ---- Lista ---- */
+.os-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.os-busca-input { flex: 1 1 320px; max-width: 420px; }
+.os-select-filtro { flex: 0 0 220px; width: 220px; }
+
+.os-table,
+.os-itens-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.os-table { min-width: 960px; }
+
+.os-table th,
+.os-itens-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5A6B7A;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.os-table td,
+.os-itens-table td {
+    padding: 12px;
+    border-bottom: 1px solid #EEF1F4;
+    vertical-align: middle;
+}
+
+.os-table .col-num,
+.os-itens-table .col-num {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.os-linha-clicavel { cursor: pointer; transition: background-color 0.15s; }
+.os-linha-clicavel:hover { background-color: #F7F9FB; }
+
+.os-celula-truncada {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.os-tecnico-cell { display: flex; align-items: center; gap: 6px; color: #5A6B7A; }
+
+.os-tabela-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 12px 0;
+}
+
+/* ---- Detalhes ---- */
+.os-detalhe-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.os-detalhe-coluna { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.os-perfil-icone {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background-color: #EAF1FA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.os-card-titulo {
+    display: block;
+    margin-bottom: 12px;
+    color: #5A6B7A;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+}
+
+.os-resumo-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.os-linha-icone { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+
+.os-info-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.os-info-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+.os-bloco-texto {
+    background-color: #F7F9FB;
+    border: 1px solid #EEF1F4;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+/* ---- Dialog de cadastro ---- */
+.os-dialog-cabecalho {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+.os-dialog-conteudo { min-height: 400px; }
+
+.os-form-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.os-span-2 { grid-column: span 2; }
+.os-span-3 { grid-column: span 3; }
+.os-span-4 { grid-column: span 4; }
+
+.os-item-aviso {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background-color: #F7F9FB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.os-fechamento-grid {
+    display: grid;
+    grid-template-columns: 1fr 0.8fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.os-fechamento-coluna { display: flex; flex-direction: column; gap: 16px; }
+
+.os-resumo-box {
+    background-color: #F7F9FB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.os-dialog-rodape {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0 8px 8px;
+}
+
+/* ---- Busca de itens ---- */
+.os-tipo-filtros { display: flex; gap: 8px; margin: 12px 0; }
+
+.os-tipo-btn {
+    border: 1px solid #E0E4E8;
+    background-color: #FFFFFF;
+    color: #5A6B7A;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.os-tipo-btn:hover { border-color: #2C6FB0; }
+.os-tipo-btn.active { background-color: #EAF1FA; border-color: #2C6FB0; color: #2C6FB0; }
+
+.os-busca-resultados { max-height: 360px; overflow-y: auto; }
+
+/* ============================================================
+   ORÇAMENTO
+   Lista, detalhes, dialog de cadastro e busca de itens.
+   ============================================================ */
+
+.info-card-row-orc {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* ---- Lista ---- */
+.orc-filtro-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.orc-busca-input { flex: 1 1 320px; max-width: 420px; }
+.orc-select-filtro { flex: 0 0 220px; width: 220px; }
+
+.orc-table,
+.orc-itens-table { width: 100%; border-collapse: collapse; }
+
+.orc-table { min-width: 960px; }
+
+.orc-table th,
+.orc-itens-table th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #5A6B7A;
+    border-bottom: 1px solid #E0E4E8;
+    white-space: nowrap;
+}
+
+.orc-table td,
+.orc-itens-table td {
+    padding: 12px;
+    border-bottom: 1px solid #EEF1F4;
+    vertical-align: middle;
+}
+
+.orc-table .col-num,
+.orc-itens-table .col-num { text-align: right; white-space: nowrap; }
+
+.orc-linha-clicavel { cursor: pointer; transition: background-color 0.15s; }
+.orc-linha-clicavel:hover { background-color: #F7F9FB; }
+
+.orc-celula-truncada {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.orc-tabela-footer { display: flex; justify-content: space-between; padding: 12px 12px 0; }
+
+/* ---- Detalhes ---- */
+.orc-detalhe-grid {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.orc-detalhe-coluna { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+.orc-perfil-icone {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background-color: #EAF1FA;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.orc-card-titulo {
+    display: block;
+    margin-bottom: 12px;
+    color: #5A6B7A;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-weight: 600;
+}
+
+.orc-resumo-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.orc-linha-icone { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+
+.orc-bloco-texto {
+    background-color: #F7F9FB;
+    border: 1px solid #EEF1F4;
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+/* ---- Dialog de cadastro ---- */
+.orc-dialog-cabecalho { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.orc-dialog-conteudo { min-height: 400px; }
+
+.orc-form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.orc-span-2 { grid-column: span 2; }
+.orc-span-4 { grid-column: span 4; }
+
+.orc-item-aviso {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background-color: #F7F9FB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 12px 16px;
+}
+
+.orc-fechamento-grid { display: grid; grid-template-columns: 1fr 0.8fr; gap: 24px; align-items: start; }
+.orc-fechamento-coluna { display: flex; flex-direction: column; gap: 16px; }
+
+.orc-resumo-box {
+    background-color: #F7F9FB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.orc-dialog-rodape { display: flex; align-items: center; gap: 8px; width: 100%; padding: 0 8px 8px; }
+
+/* ---- Busca de itens ---- */
+.orc-tipo-filtros { display: flex; gap: 8px; margin: 12px 0; }
+
+.orc-tipo-btn {
+    border: 1px solid #E0E4E8;
+    background-color: #FFFFFF;
+    color: #5A6B7A;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.orc-tipo-btn:hover { border-color: #2C6FB0; }
+.orc-tipo-btn.active { background-color: #EAF1FA; border-color: #2C6FB0; color: #2C6FB0; }
+
+.orc-busca-resultados { max-height: 360px; overflow-y: auto; }
+
 
 /* ==========================================================================
    SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)

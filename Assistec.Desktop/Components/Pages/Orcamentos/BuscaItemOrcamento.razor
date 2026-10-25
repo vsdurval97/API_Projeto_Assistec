@@ -1,0 +1,96 @@
+<MudDialog>
+    <DialogContent>
+        <MudText Typo="Typo.caption" Style="color:#5A6B7A; display:block; margin-bottom:12px;">
+            Pesquise no catálogo por código ou descrição.
+        </MudText>
+
+        <MudTextField T="string"
+                      @bind-Value="_busca"
+                      Placeholder="Digite o código ou a descrição..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense" />
+
+        <div class="orc-tipo-filtros">
+            <button type="button" class="orc-tipo-btn @(_tipo == null ? "active" : "")" @onclick="() => _tipo = null">Todos os Itens</button>
+            <button type="button" class="orc-tipo-btn @(_tipo == TipoItemOrcamento.Produto ? "active" : "")" @onclick="() => _tipo = TipoItemOrcamento.Produto">Produtos</button>
+            <button type="button" class="orc-tipo-btn @(_tipo == TipoItemOrcamento.Servico ? "active" : "")" @onclick="() => _tipo = TipoItemOrcamento.Servico">Serviços</button>
+        </div>
+
+        <div class="orc-busca-resultados">
+            <table class="orc-itens-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Item</th>
+                        <th class="col-num">Valor</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _resultados)
+                    {
+                        var corTipo = OrcamentoUi.Cor(item.Tipo);
+                        <tr>
+                            <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{corTipo.Bg}; color:{corTipo.Texto};")">@OrcamentoUi.Rotulo(item.Tipo)</MudChip></td>
+                            <td>
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo</MudText>
+                            </td>
+                            <td class="col-num">@item.ValorUnitarioFormatado</td>
+                            <td class="col-num">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Style="background-color:#079cff; color:#FFFFFF;"
+                                           OnClick="() => Adicionar(item)">
+                                    Adicionar
+                                </MudButton>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!_resultados.Any())
+                    {
+                        <tr>
+                            <td colspan="4" style="text-align:center; padding:40px 0;">
+                                <MudText Typo="Typo.body2" Style="font-weight:600; color:#5A6B7A;">Nenhum item encontrado</MudText>
+                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Tente buscar por outro código ou descrição.</MudText>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="orc-dialog-rodape">
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_resultados.Count() item(ns) encontrado(s)</MudText>
+            <MudSpacer />
+            <MudButton OnClick="Fechar">Fechar</MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private string _busca = string.Empty;
+    private TipoItemOrcamento? _tipo = null;
+
+    private IEnumerable<ItemOrcamentoLinha> _resultados =>
+        OrcamentoMockData.CatalogoItens
+            .Where(i => _tipo == null || i.Tipo == _tipo)
+            .Where(i => string.IsNullOrWhiteSpace(_busca)
+                || i.Codigo.Contains(_busca, StringComparison.OrdinalIgnoreCase)
+                || i.Descricao.Contains(_busca, StringComparison.OrdinalIgnoreCase));
+
+    private void Adicionar(ItemOrcamentoLinha item)
+    {
+        var novo = item.Clonar();
+        novo.Quantidade = 1;
+        MudDialog.Close(DialogResult.Ok(novo));
+    }
+
+    private void Fechar() => MudDialog.Cancel();
+}

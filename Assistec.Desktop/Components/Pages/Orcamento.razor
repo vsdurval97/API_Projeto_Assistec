@@ -1,0 +1,182 @@
+@page "/orcamento"
+@using Assistec.Desktop.Components.Pages.Orcamentos
+@inject IDialogService DialogService
+
+@if (_orcamentoAberto is not null)
+{
+    <DetalhesOrcamento Numero="@_orcamentoAberto.Numero" OnVoltar="FecharDetalhes" />
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Orçamentos</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Crie propostas, acompanhe aprovações e gerencie as oportunidades comerciais.
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovoOrcamento">
+            Novo Orçamento
+        </MudButton>
+    </div>
+
+    <div class="info-card-row-orc">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Description" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Total de Orçamentos</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@OrcamentoMockData.Lista.Count</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">orçamentos emitidos</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.Send" Style="color:#D9A441;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Negociação</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_pendentes.Count()</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">rascunhos ou enviados</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Aprovados</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_aprovados</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">aguardando conversão</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Valor em Aberto</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_valorEmAbertoFormatado</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">em propostas</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="orc-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_termoBusca"
+                      Placeholder="Buscar por orçamento, cliente ou vendedor..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="orc-busca-input" />
+
+        <MudSelect T="StatusOrcamento?" @bind-Value="_statusFiltro" Placeholder="Todos os status" Variant="Variant.Outlined" Margin="Margin.Dense" Class="orc-select-filtro">
+            <MudSelectItem T="StatusOrcamento?" Value="@((StatusOrcamento?)null)">Todos</MudSelectItem>
+            @foreach (var status in Enum.GetValues<StatusOrcamento>())
+            {
+                <MudSelectItem T="StatusOrcamento?" Value="@((StatusOrcamento?)status)">@OrcamentoUi.Rotulo(status)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_orcamentosExibidos.Count() orçamentos</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="orc-table">
+            <thead>
+                <tr>
+                    <th>Orçamento</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th>Emissão</th>
+                    <th>Validade</th>
+                    <th class="col-num">Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var orcamento in _orcamentosExibidos)
+                {
+                    var cor = OrcamentoUi.Cor(orcamento.Status);
+                    <tr class="orc-linha-clicavel" @onclick="() => AbrirDetalhes(orcamento)">
+                        <td>
+                            <MudText Typo="Typo.body2" Style="color:#2C6FB0; font-weight:700;">@orcamento.Numero</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@orcamento.Itens.Count item(ns)</MudText>
+                        </td>
+                        <td>
+                            <div class="orc-celula-truncada">
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@orcamento.ClienteNome</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@orcamento.ClienteDocumento</MudText>
+                        </td>
+                        <td>@orcamento.Vendedor</td>
+                        <td>@orcamento.Emissao.ToString("dd/MM/yyyy")</td>
+                        <td>@(orcamento.Validade?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@orcamento.TotalFormatado</MudText></td>
+                        <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{cor.Bg}; color:{cor.Texto};")">@OrcamentoUi.Rotulo(orcamento.Status)</MudChip></td>
+                        <td><MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#9AA5B1;" /></td>
+                    </tr>
+                }
+
+                @if (!_orcamentosExibidos.Any())
+                {
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:40px 0;">
+                            <MudText Typo="Typo.body2" Style="color:#9AA5B1;">Nenhum orçamento encontrado.</MudText>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="orc-tabela-footer">
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em um orçamento para abrir os detalhes completos</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_orcamentosExibidos.Count() de @OrcamentoMockData.Lista.Count orçamentos</MudText>
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private OrcamentoItem? _orcamentoAberto;
+
+    private string _termoBusca = string.Empty;
+    private StatusOrcamento? _statusFiltro = null;
+
+    private IEnumerable<OrcamentoItem> _pendentes =>
+        OrcamentoMockData.Lista.Where(o => o.Status is StatusOrcamento.Rascunho or StatusOrcamento.Enviado);
+
+    private int _aprovados => OrcamentoMockData.Lista.Count(o => o.Status == StatusOrcamento.Aprovado);
+
+    private string _valorEmAbertoFormatado => OrcamentoUi.Moeda(_pendentes.Sum(o => o.Total));
+
+    private IEnumerable<OrcamentoItem> _orcamentosExibidos =>
+        OrcamentoMockData.Lista
+            .Where(o => _statusFiltro == null || o.Status == _statusFiltro)
+            .Where(o => string.IsNullOrWhiteSpace(_termoBusca)
+                || o.Numero.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.ClienteNome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.ClienteDocumento.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.Vendedor.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase));
+
+    private async Task AbrirNovoOrcamento()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoOrcamento>("Novo Orçamento", options);
+        await dialog.Result;
+        StateHasChanged();
+    }
+
+    private void AbrirDetalhes(OrcamentoItem orcamento) => _orcamentoAberto = orcamento;
+
+    private void FecharDetalhes() => _orcamentoAberto = null;
+}

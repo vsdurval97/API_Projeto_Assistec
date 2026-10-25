@@ -1,0 +1,191 @@
+@page "/ordens-servico"
+@inject IDialogService DialogService
+
+@if (_ordemAberta is not null)
+{
+    <DetalhesOrdemServico Numero="@_ordemAberta.Numero" OnVoltar="FecharDetalhes" />
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Ordens de Serviço</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Gerencie atendimentos, execução técnica, peças utilizadas e o faturamento dos serviços.
+            </MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Style="background-color:#079cff; color:#FFFFFF;" StartIcon="@Icons.Material.Filled.Add" OnClick="AbrirNovaOrdem">
+            Nova Ordem de Serviço
+        </MudButton>
+    </div>
+
+    <div class="info-card-row-os">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Ordens em Aberto</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_emAberto</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">atendimentos ativos</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FBE7D8;">
+                <MudIcon Icon="@Icons.Material.Filled.Build" Style="color:#C97A3D;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Em Execução</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_emExecucao</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">na bancada</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Style="color:#D9A441;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Aguardando</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_aguardando</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">aprovação ou peça</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Concluídas</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_concluidas</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">ordens finalizadas</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="os-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_termoBusca"
+                      Placeholder="Buscar por OS, cliente, equipamento ou técnico..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="os-busca-input" />
+
+        <MudSelect T="StatusOS?" @bind-Value="_statusFiltro" Placeholder="Todos os status" Variant="Variant.Outlined" Margin="Margin.Dense" Class="os-select-filtro">
+            <MudSelectItem T="StatusOS?" Value="@((StatusOS?)null)">Todos</MudSelectItem>
+            @foreach (var status in Enum.GetValues<StatusOS>())
+            {
+                <MudSelectItem T="StatusOS?" Value="@((StatusOS?)status)">@OrdemServicoUi.Rotulo(status)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_ordensExibidas.Count() ordens</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="os-table">
+            <thead>
+                <tr>
+                    <th>Ordem</th>
+                    <th>Cliente</th>
+                    <th>Equipamento</th>
+                    <th>Técnico</th>
+                    <th>Previsão</th>
+                    <th class="col-num">Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ordem in _ordensExibidas)
+                {
+                    var cor = OrdemServicoUi.Cor(ordem.Status);
+                    <tr class="os-linha-clicavel" @onclick="() => AbrirDetalhes(ordem)">
+                        <td>
+                            <MudText Typo="Typo.body2" Style="color:#2C6FB0; font-weight:700;">@ordem.Numero</MudText>
+                            <MudText Typo="Typo.caption" Style="@($"color:{OrdemServicoUi.CorPrioridade(ordem.Prioridade)}; font-weight:700; text-transform:uppercase;")">@OrdemServicoUi.Rotulo(ordem.Prioridade)</MudText>
+                        </td>
+                        <td>
+                            <div class="os-celula-truncada">
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@ordem.ClienteNome</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@ordem.ClienteDocumento</MudText>
+                        </td>
+                        <td>
+                            <div class="os-celula-truncada">
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@ordem.Marca @ordem.Modelo</MudText>
+                            </div>
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@OrdemServicoUi.Rotulo(ordem.TipoEquipamento)</MudText>
+                        </td>
+                        <td>
+                            <div class="os-tecnico-cell">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#9AA5B1;" />
+                                <MudText Typo="Typo.body2">@ordem.Tecnico</MudText>
+                            </div>
+                        </td>
+                        <td>@(ordem.Previsao?.ToString("dd/MM/yyyy") ?? "—")</td>
+                        <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@ordem.TotalFormatado</MudText></td>
+                        <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{cor.Bg}; color:{cor.Texto};")">@OrdemServicoUi.Rotulo(ordem.Status)</MudChip></td>
+                        <td><MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#9AA5B1;" /></td>
+                    </tr>
+                }
+
+                @if (!_ordensExibidas.Any())
+                {
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding:40px 0;">
+                            <MudText Typo="Typo.body2" Style="color:#9AA5B1;">Nenhuma ordem de serviço encontrada.</MudText>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="os-tabela-footer">
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Clique em uma ordem para abrir os detalhes completos</MudText>
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_ordensExibidas.Count() de @OrdemServicoMockData.Ordens.Count ordens</MudText>
+        </div>
+    </MudPaper>
+}
+
+@code {
+    private OrdemServicoItem? _ordemAberta;
+
+    private string _termoBusca = string.Empty;
+    private StatusOS? _statusFiltro = null;
+
+    private int _emAberto => OrdemServicoMockData.Ordens.Count(o => o.Status != StatusOS.Concluida && o.Status != StatusOS.Cancelada);
+    private int _emExecucao => OrdemServicoMockData.Ordens.Count(o => o.Status == StatusOS.EmExecucao);
+    private int _aguardando => OrdemServicoMockData.Ordens.Count(o => o.Status is StatusOS.AguardandoAprovacao or StatusOS.AguardandoPeca);
+    private int _concluidas => OrdemServicoMockData.Ordens.Count(o => o.Status == StatusOS.Concluida);
+
+    private IEnumerable<OrdemServicoItem> _ordensExibidas =>
+        OrdemServicoMockData.Ordens
+            .Where(o => _statusFiltro == null || o.Status == _statusFiltro)
+            .Where(o => string.IsNullOrWhiteSpace(_termoBusca)
+                || o.Numero.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.ClienteNome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.ClienteDocumento.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.Marca.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.Modelo.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase)
+                || o.Tecnico.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase));
+
+    private async Task AbrirNovaOrdem()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<NovoOrdemServico>("Nova Ordem de Serviço", options);
+        await dialog.Result;
+        StateHasChanged();
+    }
+
+    private void AbrirDetalhes(OrdemServicoItem ordem) => _ordemAberta = ordem;
+
+    private void FecharDetalhes() => _ordemAberta = null;
+}

@@ -1,0 +1,249 @@
+@inject IDialogService DialogService
+@using Assistec.Desktop.Components.Pages.ParceirosPages.Clientes;
+
+<MudDialog>
+    <DialogContent>
+        <div class="os-dialog-cabecalho">
+            <MudText Typo="Typo.subtitle1" Style="font-weight:600;">@_model.Numero</MudText>
+            <MudChip T="string" Size="Size.Small" Style="@($"background-color:{OrdemServicoUi.Cor(_model.Status).Bg}; color:{OrdemServicoUi.Cor(_model.Status).Texto};")">@OrdemServicoUi.Rotulo(_model.Status)</MudChip>
+            <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Cadastre o atendimento, os serviços executados e as peças utilizadas.</MudText>
+        </div>
+
+        <div class="os-dialog-conteudo">
+            <MudTabs Elevation="0" Rounded="true" PanelClass="pt-4">
+
+                <MudTabPanel Text="Dados Gerais">
+                    <div class="os-form-grid">
+                        <div class="os-span-2">
+                            <MudSelect T="string" @bind-Value="_model.ClienteCodigo" Label="Cliente" Required="true"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense">
+                                @foreach (var cliente in ClienteMockData.Clientes)
+                                {
+                                    <MudSelectItem T="string" Value="@cliente.Codigo">@cliente.Nome</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <MudTextField T="string" Value="_model.ClienteDocumento" Label="CPF / CNPJ" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudTextField T="string" Value="_model.ClienteTelefone" Label="Telefone" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+                        <div class="os-span-2">
+                            <MudTextField T="string" Value="_model.ClienteEmail" Label="E-mail" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+                        <MudTextField T="string" Value="@_model.Abertura.ToString("dd/MM/yyyy")" Label="Abertura" ReadOnly="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudDatePicker @bind-Date="_model.Previsao" Label="Previsão" DateFormat="dd/MM/yyyy" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+                        <div class="os-span-2">
+                            <MudSelect T="string" @bind-Value="_model.Tecnico" Label="Técnico Responsável" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                @foreach (var tecnico in OrdemServicoMockData.Tecnicos)
+                                {
+                                    <MudSelectItem T="string" Value="@tecnico">@tecnico</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </div>
+                        <MudSelect T="PrioridadeOS" @bind-Value="_model.Prioridade" Label="Prioridade" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var prioridade in Enum.GetValues<PrioridadeOS>())
+                            {
+                                <MudSelectItem T="PrioridadeOS" Value="@prioridade">@OrdemServicoUi.Rotulo(prioridade)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="StatusOS" @bind-Value="_model.Status" Label="Status" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var status in Enum.GetValues<StatusOS>())
+                            {
+                                <MudSelectItem T="StatusOS" Value="@status">@OrdemServicoUi.Rotulo(status)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Equipamento e Diagnóstico">
+                    <div class="os-form-grid">
+                        <MudSelect T="TipoEquipamentoOS" @bind-Value="_model.TipoEquipamento" Label="Tipo de Equipamento" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var tipo in Enum.GetValues<TipoEquipamentoOS>())
+                            {
+                                <MudSelectItem T="TipoEquipamentoOS" Value="@tipo">@OrdemServicoUi.Rotulo(tipo)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudTextField T="string" @bind-Value="_model.Marca" Label="Marca" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudTextField T="string" @bind-Value="_model.Modelo" Label="Modelo" Required="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        <MudTextField T="string" @bind-Value="_model.NumeroSerie" Label="Nº de Série" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+                        <div class="os-span-4">
+                            <MudTextField T="string" @bind-Value="_model.DefeitoRelatado" Label="Defeito Relatado" Required="true"
+                                          Lines="3" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+                        <div class="os-span-4">
+                            <MudTextField T="string" @bind-Value="_model.Diagnostico" Label="Diagnóstico Técnico"
+                                          Placeholder="Descreva a causa identificada e a solução recomendada..."
+                                          Lines="4" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="@($"Serviços e Produtos ({_model.Itens.Count})")">
+                    <div class="os-item-aviso">
+                        <div>
+                            <MudText Typo="Typo.body2" Style="font-weight:600;">Adicione serviços ou produtos à ordem</MudText>
+                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Use a busca para localizar rapidamente um item no catálogo.</MudText>
+                        </div>
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Search" OnClick="AbrirBuscaItem">
+                            Buscar Item
+                        </MudButton>
+                    </div>
+
+                    <div style="overflow-x:auto; margin-top:16px;">
+                        <table class="os-itens-table">
+                            <thead>
+                                <tr>
+                                    <th>Tipo</th>
+                                    <th>Descrição</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th class="col-num">Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in _model.Itens)
+                                {
+                                    var corTipo = OrdemServicoUi.Cor(item.Tipo);
+                                    <tr>
+                                        <td><MudChip T="string" Size="Size.Small" Style="@($"background-color:{corTipo.Bg}; color:{corTipo.Texto};")">@OrdemServicoUi.Rotulo(item.Tipo)</MudChip></td>
+                                        <td>
+                                            <MudText Typo="Typo.body2" Style="font-weight:600;">@item.Descricao</MudText>
+                                            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@item.Codigo</MudText>
+                                        </td>
+                                        <td>
+                                            <MudNumericField T="int" @bind-Value="item.Quantidade" Min="1" HideSpinButtons="true"
+                                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:90px;" />
+                                        </td>
+                                        <td>
+                                            <MudNumericField T="double" @bind-Value="item.ValorUnitario" Min="0" HideSpinButtons="true"
+                                                             Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:130px;" />
+                                        </td>
+                                        <td class="col-num"><MudText Typo="Typo.body2" Style="font-weight:700;">@item.SubtotalFormatado</MudText></td>
+                                        <td>
+                                            <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Size="Size.Small" Style="color:#9AA5B1;"
+                                                           OnClick="() => RemoverItem(item)" />
+                                        </td>
+                                    </tr>
+                                }
+
+                                @if (_model.Itens.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="6" style="text-align:center; padding:32px 0;">
+                                            <MudText Typo="Typo.body2" Style="color:#9AA5B1;">Nenhum serviço ou produto adicionado.</MudText>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </MudTabPanel>
+
+                <MudTabPanel Text="Fechamento">
+                    <div class="os-fechamento-grid">
+                        <div class="os-fechamento-coluna">
+                            <MudSelect T="string" @bind-Value="_model.CondicaoPagamento" Label="Condição de Pagamento" Variant="Variant.Outlined" Margin="Margin.Dense">
+                                @foreach (var condicao in OrdemServicoMockData.CondicoesPagamento)
+                                {
+                                    <MudSelectItem T="string" Value="@condicao">@condicao</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudTextField T="string" @bind-Value="_model.Observacao" Label="Observações e Condições do Serviço"
+                                          Lines="7" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                        </div>
+
+                        <div class="os-resumo-box">
+                            <MudText Typo="Typo.caption" Class="os-card-titulo">Resumo Financeiro</MudText>
+                            <div class="os-resumo-linha">
+                                <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Serviços</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@_model.TotalServicosFormatado</MudText>
+                            </div>
+                            <div class="os-resumo-linha">
+                                <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Produtos</MudText>
+                                <MudText Typo="Typo.body2" Style="font-weight:600;">@_model.TotalProdutosFormatado</MudText>
+                            </div>
+                            <div class="os-resumo-linha">
+                                <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Desconto</MudText>
+                                <MudNumericField T="double" @bind-Value="_model.Desconto" Min="0" HideSpinButtons="true"
+                                                 Variant="Variant.Outlined" Margin="Margin.Dense" Style="width:130px;" />
+                            </div>
+
+                            <MudDivider Class="my-3" />
+
+                            <div class="os-resumo-linha">
+                                <MudText Typo="Typo.body1" Style="font-weight:700;">Total da OS</MudText>
+                                <MudText Typo="Typo.h6" Style="font-weight:700; color:#2C6FB0;">@_model.TotalFormatado</MudText>
+                            </div>
+                        </div>
+                    </div>
+                </MudTabPanel>
+
+            </MudTabs>
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <div class="os-dialog-rodape">
+            <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_model.Itens.Count item(ns) · @_model.TotalFormatado</MudText>
+            <MudSpacer />
+            <MudButton OnClick="Cancelar">Cancelar</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Disabled="@(!PodeSalvar)" OnClick="Salvar">
+                @(Edicao ? "Salvar Alterações" : "Salvar")
+            </MudButton>
+        </div>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public OrdemServicoItem? OrdemExistente { get; set; }
+
+    private OrdemServicoItem _model = new();
+
+    private bool Edicao => OrdemExistente is not null;
+
+    // Mesmas obrigatoriedades do backend: cliente, marca, modelo e defeito (mínimo 3 caracteres).
+    private bool PodeSalvar =>
+        !string.IsNullOrWhiteSpace(_model.ClienteCodigo)
+        && !string.IsNullOrWhiteSpace(_model.Marca)
+        && !string.IsNullOrWhiteSpace(_model.Modelo)
+        && _model.DefeitoRelatado.Trim().Length >= 3;
+
+    protected override void OnInitialized()
+    {
+        _model = OrdemExistente?.Clonar() ?? new OrdemServicoItem
+        {
+            Numero = OrdemServicoMockData.ProximoNumero(),
+            Abertura = DateTime.Today,
+            Tecnico = OrdemServicoMockData.Tecnicos[0],
+            CondicaoPagamento = "À vista",
+            Status = StatusOS.Orcamento,
+            Prioridade = PrioridadeOS.Normal
+        };
+    }
+
+    private async Task AbrirBuscaItem()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseButton = true };
+        var dialog = await DialogService.ShowAsync<BuscaItemOrdemServico>("Buscar Serviço ou Produto", options);
+        var result = await dialog.Result;
+
+        if (result is { Canceled: false, Data: ItemOrdemServicoLinha item })
+        {
+            _model.Itens.Add(item);
+        }
+    }
+
+    private void RemoverItem(ItemOrdemServicoLinha item) => _model.Itens.Remove(item);
+
+    private void Salvar()
+    {
+        OrdemServicoMockData.Salvar(_model);
+        MudDialog.Close(DialogResult.Ok(_model));
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+}
