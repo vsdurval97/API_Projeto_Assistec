@@ -1,0 +1,10 @@
+<div class="fat-info">
+    <div class="fat-info-rotulo">@Rotulo</div>
+    <div class="fat-info-valor @(Mono ? "fat-mono" : "")">@(string.IsNullOrWhiteSpace(Valor) ? "Não informado" : Valor)</div>
+</div>
+
+@code {
+    [Parameter] public string Rotulo { get; set; } = "";
+    [Parameter] public string? Valor { get; set; }
+    [Parameter] public bool Mono { get; set; }
+}

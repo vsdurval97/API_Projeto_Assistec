@@ -1,0 +1,88 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">Importar Documento de Origem</MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+            Importe cliente, endereço, produtos e condições comerciais para a NF-e.
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="false" @bind-ActivePanelIndex="_indice">
+            <MudTabPanel Text="Pedido de Venda" />
+            <MudTabPanel Text="Orçamento" />
+            <MudTabPanel Text="Ordem de Serviço" />
+        </MudTabs>
+
+        <MudTextField T="string" @bind-Value="_busca" Class="mt-3"
+                      Placeholder="@($"Buscar {FaturamentoUi.Rotulo(_tipo).ToLower()} por número ou cliente...")"
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+        <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; max-height:45vh; overflow:auto;">
+            <table class="fat-table">
+                <thead>
+                    <tr>
+                        <th>Documento</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Itens</th>
+                        <th class="fat-col-num">Total</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var doc in _documentos)
+                    {
+                        <tr>
+                            <td class="fat-numero">@doc.Numero</td>
+                            <td>
+                                <div class="fat-cliente">@doc.Cliente</div>
+                                <div class="fat-sub">@doc.Destinatario.Documento</div>
+                            </td>
+                            <td>@doc.Data</td>
+                            <td>@doc.Itens.Count</td>
+                            <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(doc.Total)</td>
+                            <td class="fat-col-num">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary"
+                                           Style="background-color:#079cff; color:#FFFFFF;"
+                                           StartIcon="@Icons.Material.Filled.FileDownload"
+                                           OnClick="@(() => Importar(doc))">Importar</MudButton>
+                            </td>
+                        </tr>
+                    }
+                    @if (!_documentos.Any())
+                    {
+                        <tr><td colspan="6" class="fat-vazio">Nenhum documento encontrado.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto; padding-left:8px;">
+            @_documentos.Count() documento(s) disponível(is)
+        </MudText>
+        <MudButton OnClick="Fechar">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private int _indice;
+    private string _busca = "";
+
+    private TipoOrigemNFe _tipo => (TipoOrigemNFe)_indice;
+
+    private IEnumerable<DocumentoOrigemNFe> _documentos =>
+        FaturamentoMockData.DocumentosOrigem.Where(d =>
+            d.Tipo == _tipo &&
+            (string.IsNullOrWhiteSpace(_busca) ||
+             d.Numero.Contains(_busca, StringComparison.OrdinalIgnoreCase) ||
+             d.Cliente.Contains(_busca, StringComparison.OrdinalIgnoreCase)));
+
+    private void Importar(DocumentoOrigemNFe doc) => MudDialog.Close(DialogResult.Ok(doc));
+
+    private void Fechar() => MudDialog.Cancel();
+}

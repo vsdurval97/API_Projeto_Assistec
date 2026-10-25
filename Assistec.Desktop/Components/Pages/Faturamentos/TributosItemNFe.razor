@@ -1,0 +1,134 @@
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">Tributação e Valores do Produto</MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_item.Codigo · @_item.Descricao</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="false" PanelClass="pt-4">
+
+            <MudTabPanel Text="ICMS, ST e FCP">
+                <MudText Typo="Typo.subtitle2" Style="font-weight:600;" Class="mb-2">Classificação Fiscal</MudText>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="3">
+                        <MudButton Variant="Variant.Outlined" FullWidth="true" Style="height:40px; justify-content:space-between;"
+                                   EndIcon="@Icons.Material.Filled.ChevronRight"
+                                   OnClick="AbrirCst">CST / CSOSN: @_item.Cst</MudButton>
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="CFOP" @bind-Value="_item.Cfop" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="NCM" @bind-Value="_item.Ncm" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="CEST" @bind-Value="_item.Cest" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                </MudGrid>
+
+                <div class="fat-separador">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight:600;" Class="mb-2">ICMS e Substituição Tributária</MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="4">@(Campo("Alíquota ICMS", _item.Icms, v => _item.Icms = v, "%"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Base de Cálculo ICMS-ST", _item.BaseIcmsSt, v => _item.BaseIcmsSt = v, "R$"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Valor do ICMS-ST", _item.IcmsSt, v => _item.IcmsSt = v, "R$"))</MudItem>
+                    </MudGrid>
+                </div>
+
+                <div class="fat-separador">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight:600;" Class="mb-2">Fundo de Combate à Pobreza — FCP</MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="4">@(Campo("Base de Cálculo FCP", _item.BaseFcp, v => _item.BaseFcp = v, "R$"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Alíquota FCP", _item.AliquotaFcp, v => _item.AliquotaFcp = v, "%"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Valor do FCP", _item.ValorFcp, v => _item.ValorFcp = v, "R$"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Base de Cálculo FCP-ST", _item.BaseFcpSt, v => _item.BaseFcpSt = v, "R$"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Alíquota FCP-ST", _item.AliquotaFcpSt, v => _item.AliquotaFcpSt = v, "%"))</MudItem>
+                        <MudItem xs="12" sm="4">@(Campo("Valor do FCP-ST", _item.ValorFcpSt, v => _item.ValorFcpSt = v, "R$"))</MudItem>
+                    </MudGrid>
+                </div>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Demais Tributos">
+                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Alíquotas dos Demais Tributos</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;" Class="mb-3">
+                    Informe as alíquotas aplicáveis a este produto.
+                </MudText>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">@(Campo("IPI", _item.Ipi, v => _item.Ipi = v, "%"))</MudItem>
+                    <MudItem xs="12" sm="4">@(Campo("PIS", _item.Pis, v => _item.Pis = v, "%"))</MudItem>
+                    <MudItem xs="12" sm="4">@(Campo("COFINS", _item.Cofins, v => _item.Cofins = v, "%"))</MudItem>
+                    <MudItem xs="12" sm="4">@(Campo("IBS", _item.Ibs, v => _item.Ibs = v, "%"))</MudItem>
+                    <MudItem xs="12" sm="4">@(Campo("CBS", _item.Cbs, v => _item.Cbs = v, "%"))</MudItem>
+                    <MudItem xs="12" sm="4">@(Campo("Imposto Seletivo — IS", _item.Is, v => _item.Is = v, "%"))</MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Valores e Rateio">
+                <MudGrid Spacing="3">
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600;" Class="mb-2">Valores do Produto</MudText>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="6">@(Campo("Quantidade", _item.Quantidade, v => _item.Quantidade = v, _item.Unidade))</MudItem>
+                            <MudItem xs="6">@(Campo("Valor Unitário", _item.ValorUnitario, v => _item.ValorUnitario = v, "R$"))</MudItem>
+                            <MudItem xs="6">@(Campo("Valor Total do Produto", _item.Total, v => _item.DefinirTotal(v), "R$"))</MudItem>
+                            <MudItem xs="6">@(Campo("Desconto do Item", _item.DescontoItem, v => _item.DescontoItem = v, "R$"))</MudItem>
+                        </MudGrid>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600;" Class="mb-2">Rateio de Despesas no Item</MudText>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12">@(Campo("Frete Rateado", _item.FreteItem, v => _item.FreteItem = v, "R$"))</MudItem>
+                            <MudItem xs="12">@(Campo("Seguro Rateado", _item.SeguroItem, v => _item.SeguroItem = v, "R$"))</MudItem>
+                            <MudItem xs="12">@(Campo("Outras Despesas Rateadas", _item.OutrasDespesasItem, v => _item.OutrasDespesasItem = v, "R$"))</MudItem>
+                        </MudGrid>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            O valor total do produto permanece separado de frete, seguro e outras despesas. Os rateios alimentam os campos próprios dos totais da NF-e.
+                        </MudAlert>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+        </MudTabs>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancelar">Cancelar</MudButton>
+        <MudButton Variant="Variant.Filled" Style="background-color:#079cff; color:#FFFFFF;" OnClick="Aplicar">
+            Aplicar ao Produto
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public ItemNFeLinha Item { get; set; } = new();
+
+    private ItemNFeLinha _item = new();
+
+    protected override void OnInitialized() => _item = Item.Clonar();
+
+    private RenderFragment Campo(string rotulo, decimal valor, Action<decimal> aoAlterar, string sufixo) =>
+        @<MudNumericField T="decimal" Label="@rotulo" Value="valor" ValueChanged="aoAlterar" Immediate="true"
+                          HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="@sufixo"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" />;
+
+    private async Task AbrirCst()
+    {
+        var p = new DialogParameters<SituacaoTributariaNFe> { { x => x.Atual, _item.Cst } };
+        var dialog = await DialogService.ShowAsync<SituacaoTributariaNFe>("", p,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true });
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: string codigo })
+            _item.AplicarCst(codigo);
+    }
+
+    private void Cancelar() => MudDialog.Cancel();
+
+    private void Aplicar() => MudDialog.Close(DialogResult.Ok(_item));
+}

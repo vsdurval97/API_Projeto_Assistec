@@ -1,0 +1,239 @@
+@page "/faturamento"
+@using Assistec.Desktop.Components.Pages.Faturamentos
+
+@inject IDialogService DialogService
+
+@if (_aberta is not null)
+{
+    <DetalhesNFe Id="@_aberta" OnVoltar="FecharDetalhes" />
+}
+else
+{
+    <div class="page-header">
+        <div>
+            <MudText Typo="Typo.h4" Style="font-weight:600;">Faturamento e NF-e</MudText>
+            <MudText Typo="Typo.body1" Style="color:#5A6B7A;">
+                Valide, assine, transmita documentos fiscais e gere o DANFE.
+            </MudText>
+        </div>
+        <div style="display:flex; gap:12px;">
+            <MudButton Variant="Variant.Outlined"
+                       StartIcon="@Icons.Material.Filled.AssignmentReturn"
+                       OnClick="AbrirDevolucao">
+                Nova Devolução
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Style="background-color:#079cff; color:#FFFFFF;"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="AbrirNova">
+                Nova NF-e
+            </MudButton>
+        </div>
+    </div>
+
+    <div class="info-card-row-fat">
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#EAF1FA;">
+                <MudIcon Icon="@Icons.Material.Filled.Receipt" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">NF-e no Mês</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@FaturamentoMockData.Notas.Count</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">documentos gerados</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#F1E9FA;">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Aguardando Emissão</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_pendentes</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">rascunhos ou assinadas</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#E4F2E5;">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Style="color:#2E7D32;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Autorizadas</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@_autorizadas</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">pela SEFAZ</MudText>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-icon" style="background-color:#FCEFDB;">
+                <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Style="color:#D9A441;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Valor Autorizado</MudText>
+                <MudText Typo="Typo.h6" Style="font-weight:600;">@FaturamentoUi.Moeda(_valorAutorizado)</MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_rejeitadas rejeitada(s)</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="fat-aviso-row">
+        <div class="fat-aviso">
+            <div class="info-card-icon" style="background-color:#F1E9FA; width:40px; height:40px;">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Style="color:#8E5CE0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Gerar apenas o espelho</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Valida os dados e assina o XML, sem transmitir para a SEFAZ.</MudText>
+            </div>
+        </div>
+        <div class="fat-aviso">
+            <div class="info-card-icon" style="background-color:#EAF1FA; width:40px; height:40px;">
+                <MudIcon Icon="@Icons.Material.Filled.Send" Style="color:#2C6FB0;" />
+            </div>
+            <div>
+                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Emitir a NF-e</MudText>
+                <MudText Typo="Typo.caption" Style="color:#5A6B7A;">Valida, assina, transmite à SEFAZ, recebe autorização e gera o DANFE.</MudText>
+            </div>
+        </div>
+    </div>
+
+    <div class="fat-filtro-row">
+        <MudTextField T="string"
+                      @bind-Value="_termoBusca"
+                      Placeholder="Buscar por NF-e, cliente, documento ou chave..."
+                      Adornment="Adornment.Start"
+                      AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Class="fat-busca-input" />
+
+        <MudSelect T="StatusNFe?"
+                   @bind-Value="_statusFiltro"
+                   Placeholder="Todos os status"
+                   Variant="Variant.Outlined"
+                   Margin="Margin.Dense"
+                   Class="fat-select-filtro">
+            <MudSelectItem T="StatusNFe?" Value="@((StatusNFe?)null)">Todos</MudSelectItem>
+            @foreach (var s in Enum.GetValues<StatusNFe>())
+            {
+                <MudSelectItem T="StatusNFe?" Value="@((StatusNFe?)s)">@FaturamentoUi.Rotulo(s)</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudSpacer />
+
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@_filtradas.Count() de @FaturamentoMockData.Notas.Count documentos</MudText>
+    </div>
+
+    <MudPaper Class="pa-4 mt-4" Elevation="0" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+        <table class="fat-table">
+            <thead>
+                <tr>
+                    <th>NF-e</th>
+                    <th>Destinatário</th>
+                    <th>Emissão</th>
+                    <th>Natureza</th>
+                    <th class="fat-col-num">Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var nota in _filtradas)
+                {
+                    var cor = FaturamentoUi.Cor(nota.Status);
+                    <tr class="fat-linha-clicavel" @onclick="() => AbrirDetalhes(nota.Id)">
+                        <td>
+                            <div class="fat-numero">@nota.Numero</div>
+                            <div class="fat-sub">
+                                Série @nota.Serie · Mod. 55
+                                @if (nota.TotalIcmsSt > 0)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Style="background-color:#FBE7D8; color:#C97A3D; font-weight:600; height:18px; margin-left:6px;">ICMS-ST</MudChip>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fat-cliente">@nota.Destinatario.Nome</div>
+                            <div class="fat-sub">@nota.Destinatario.Documento</div>
+                        </td>
+                        <td>@FaturamentoUi.DataHora(nota.Emissao)</td>
+                        <td class="fat-truncar">@nota.Natureza</td>
+                        <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(nota.Total)</td>
+                        <td>
+                            <MudChip T="string" Size="Size.Small"
+                                     Style="@($"background-color:{cor.Fundo}; color:{cor.Texto}; font-weight:600;")">
+                                @FaturamentoUi.Rotulo(nota.Status)
+                            </MudChip>
+                        </td>
+                        <td><MudIcon Icon="@Icons.Material.Filled.ChevronRight" Style="color:#9AA5B1;" /></td>
+                    </tr>
+                }
+                @if (!_filtradas.Any())
+                {
+                    <tr><td colspan="7" class="fat-vazio">Nenhuma NF-e encontrada.</td></tr>
+                }
+            </tbody>
+        </table>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1;" Class="mt-3">
+            Clique em uma NF-e para consultar dados fiscais e executar ações.
+        </MudText>
+    </MudPaper>
+}
+
+@code {
+    private string _termoBusca = "";
+    private StatusNFe? _statusFiltro;
+    private string? _aberta;
+
+    private IEnumerable<NFeItem> _filtradas =>
+        FaturamentoMockData.Notas.Where(n =>
+            (_statusFiltro is null || n.Status == _statusFiltro) &&
+            (string.IsNullOrWhiteSpace(_termoBusca) ||
+             n.Numero.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase) ||
+             n.Destinatario.Nome.Contains(_termoBusca, StringComparison.OrdinalIgnoreCase) ||
+             n.Destinatario.Documento.Contains(_termoBusca) ||
+             n.Chave.Contains(_termoBusca)));
+
+    private int _pendentes => FaturamentoMockData.Notas.Count(n => n.Status is StatusNFe.Rascunho or StatusNFe.Validada or StatusNFe.Assinada);
+    private int _autorizadas => FaturamentoMockData.Notas.Count(n => n.Status == StatusNFe.Autorizada);
+    private int _rejeitadas => FaturamentoMockData.Notas.Count(n => n.Status == StatusNFe.Rejeitada);
+    private decimal _valorAutorizado => FaturamentoMockData.Notas.Where(n => n.Status == StatusNFe.Autorizada).Sum(n => n.Total);
+
+    private void AbrirDetalhes(string id) => _aberta = id;
+
+    private void FecharDetalhes() => _aberta = null;
+
+    private async Task AbrirNova() => await AbrirEdicao(null);
+
+    private async Task AbrirDevolucao()
+    {
+        var options = new DialogOptions { MaxWidth = MaxWidth.Large, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<DevolucaoNFe>("", options);
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: NFeItem nota })
+            await AbrirEdicao(nota);
+    }
+
+    private async Task AbrirEdicao(NFeItem? nota)
+    {
+        var parametros = new DialogParameters<NovoNFe> { { x => x.NotaExistente, nota } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseOnEscapeKey = true };
+
+        var dialog = await DialogService.ShowAsync<NovoNFe>("", parametros, options);
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: ResultadoNFe r } && r.Acao is not null)
+        {
+            var p = new DialogParameters<ProcessoFiscalNFe> { { x => x.Nota, r.Nota }, { x => x.Acao, r.Acao.Value } };
+            await DialogService.ShowAsync<ProcessoFiscalNFe>("", p,
+                new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        }
+
+        StateHasChanged();
+    }
+}

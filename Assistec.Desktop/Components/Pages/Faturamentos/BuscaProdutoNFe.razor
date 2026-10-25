@@ -1,0 +1,74 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">Buscar Produto para a NF-e</MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">Pesquise por código, descrição ou NCM.</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTextField T="string" @bind-Value="_busca"
+                      Placeholder="Código, descrição ou NCM..."
+                      Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                      Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+        <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; max-height:50vh; overflow:auto;">
+            <table class="fat-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>NCM</th>
+                        <th>CFOP</th>
+                        <th class="fat-col-num">Valor</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in _resultados)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fat-cliente">@item.Descricao</div>
+                                <div class="fat-sub">@item.Codigo · @item.Unidade</div>
+                            </td>
+                            <td class="fat-mono">@item.Ncm</td>
+                            <td>@item.Cfop</td>
+                            <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(item.ValorUnitario)</td>
+                            <td class="fat-col-num">
+                                <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary"
+                                           Style="background-color:#079cff; color:#FFFFFF;"
+                                           OnClick="@(() => Adicionar(item))">Adicionar</MudButton>
+                            </td>
+                        </tr>
+                    }
+                    @if (!_resultados.Any())
+                    {
+                        <tr><td colspan="5" class="fat-vazio">Nenhum produto encontrado.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudText Typo="Typo.caption" Style="color:#9AA5B1; margin-right:auto; padding-left:8px;">
+            @_resultados.Count() produto(s)
+        </MudText>
+        <MudButton OnClick="Fechar">Fechar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private string _busca = "";
+
+    private IEnumerable<ItemNFeLinha> _resultados =>
+        FaturamentoMockData.Catalogo.Where(i =>
+            string.IsNullOrWhiteSpace(_busca) ||
+            i.Codigo.Contains(_busca, StringComparison.OrdinalIgnoreCase) ||
+            i.Descricao.Contains(_busca, StringComparison.OrdinalIgnoreCase) ||
+            i.Ncm.Contains(_busca));
+
+    private void Adicionar(ItemNFeLinha item) => MudDialog.Close(DialogResult.Ok(item.Clonar()));
+
+    private void Fechar() => MudDialog.Cancel();
+}

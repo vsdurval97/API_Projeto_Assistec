@@ -1,0 +1,295 @@
+@inject IDialogService DialogService
+
+@if (_nota is not null)
+{
+    var cor = FaturamentoUi.Cor(_nota.Status);
+
+    <div class="breadcrumb-row">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                       Variant="Variant.Outlined"
+                       Size="Size.Small"
+                       OnClick="@(() => OnVoltar.InvokeAsync())" />
+        <div style="flex:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <MudText Typo="Typo.h5" Style="font-weight:600;">NF-e @_nota.Numero</MudText>
+                <MudChip T="string" Size="Size.Small"
+                         Style="@($"background-color:{cor.Fundo}; color:{cor.Texto}; font-weight:600;")">
+                    @FaturamentoUi.Rotulo(_nota.Status)
+                </MudChip>
+            </div>
+            <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+                Série @_nota.Serie · Emitida em @FaturamentoUi.DataHora(_nota.Emissao)
+            </MudText>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;">
+            @if (_podeAdministrar)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.DeleteOutline"
+                           OnClick="Excluir">Excluir</MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Block"
+                           OnClick="Inutilizar">Inutilizar</MudButton>
+            }
+            <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Edit"
+                       OnClick="AbrirEdicao">Editar</MudButton>
+            @if (_nota.Status is StatusNFe.Assinada or StatusNFe.Autorizada)
+            {
+                <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                           Style="color:#8E5CE0; border-color:#8E5CE0;"
+                           OnClick="@(() => VerDocumento(TipoDocumentoFiscal.Espelho))">Ver Espelho</MudButton>
+            }
+            @if (_nota.Status == StatusNFe.Autorizada)
+            {
+                <MudButton Variant="Variant.Filled" Size="Size.Small"
+                           Style="background-color:#1F2937; color:#FFFFFF;"
+                           StartIcon="@Icons.Material.Filled.Print"
+                           OnClick="@(() => VerDocumento(TipoDocumentoFiscal.Danfe))">Ver DANFE</MudButton>
+            }
+            @if (_podeAdministrar)
+            {
+                <MudButton Variant="Variant.Filled" Size="Size.Small"
+                           Style="background-color:#079cff; color:#FFFFFF;"
+                           StartIcon="@Icons.Material.Filled.Send"
+                           OnClick="Emitir">Emitir</MudButton>
+            }
+        </div>
+    </div>
+
+    @if (_nota.Status == StatusNFe.Rejeitada)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4">
+            <strong>NF-e rejeitada pela SEFAZ.</strong> @_nota.InformacoesComplementares
+        </MudAlert>
+    }
+
+    <div class="fat-detalhe-layout">
+        <div class="fat-detalhe-col">
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <div class="fat-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.Receipt" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Dados Fiscais</MudText>
+                </div>
+                <div class="fat-grid-3">
+                    <div style="grid-column: span 2;"><InfoNFe Rotulo="Natureza da operação" Valor="@_nota.Natureza" /></div>
+                    <InfoNFe Rotulo="Finalidade" Valor="@_nota.Finalidade" />
+                    <InfoNFe Rotulo="Tipo de operação" Valor="@_nota.TipoOperacao" />
+                    <InfoNFe Rotulo="Indicador de presença" Valor="@_nota.Presenca" />
+                    <InfoNFe Rotulo="Consumidor final" Valor="@(_nota.ConsumidorFinal ? "Sim" : "Não")" />
+
+                    @if (_nota.TipoDevolucao is not null)
+                    {
+                        <div class="fat-separador" style="grid-column: span 3;">
+                            <InfoNFe Rotulo="Documento fiscal referenciado" Valor="@_nota.DocumentoReferenciado" Mono="true" />
+                        </div>
+                        <div style="grid-column: span 3;">
+                            <InfoNFe Rotulo="Motivo da devolução" Valor="@_nota.MotivoDevolucao" />
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(_nota.Chave))
+                    {
+                        <div class="fat-separador" style="grid-column: span 3;">
+                            <InfoNFe Rotulo="Chave de acesso" Valor="@_nota.Chave" Mono="true" />
+                        </div>
+                    }
+                </div>
+            </MudPaper>
+
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <div class="fat-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Destinatário</MudText>
+                </div>
+                <div class="fat-grid-3">
+                    <div style="grid-column: span 2;"><InfoNFe Rotulo="Nome / Razão social" Valor="@_nota.Destinatario.Nome" /></div>
+                    <InfoNFe Rotulo="CPF / CNPJ" Valor="@_nota.Destinatario.Documento" />
+                    <InfoNFe Rotulo="Inscrição estadual" Valor="@_nota.Destinatario.Ie" />
+                    <InfoNFe Rotulo="E-mail" Valor="@_nota.Destinatario.Email" />
+                    <InfoNFe Rotulo="Telefone" Valor="@_nota.Destinatario.Telefone" />
+                    <div class="fat-separador" style="grid-column: span 3;">
+                        <InfoNFe Rotulo="Endereço" Valor="@_nota.Destinatario.EnderecoCompleto" />
+                    </div>
+                </div>
+            </MudPaper>
+
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+                <div class="fat-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Produtos e Tributos</MudText>
+                    <MudSpacer />
+                    <MudText Typo="Typo.caption" Style="color:#9AA5B1;">@_nota.Itens.Count item(ns)</MudText>
+                </div>
+                <table class="fat-table" style="min-width:920px;">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>NCM</th>
+                            <th>CFOP / CST</th>
+                            <th>Qtd.</th>
+                            <th>ICMS</th>
+                            <th>ICMS-ST</th>
+                            <th>FCP</th>
+                            <th>IPI</th>
+                            <th>PIS / COFINS</th>
+                            <th>IBS / CBS / IS</th>
+                            <th class="fat-col-num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _nota.Itens)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fat-cliente">@item.Descricao</div>
+                                    <div class="fat-sub">@item.Codigo</div>
+                                </td>
+                                <td class="fat-mono">@item.Ncm</td>
+                                <td>@item.Cfop / @item.Cst</td>
+                                <td>@FaturamentoUi.Num(item.Quantidade) @item.Unidade</td>
+                                <td>@FaturamentoUi.Num(item.Icms)%</td>
+                                <td style="@(item.IcmsSt > 0 ? "color:#C97A3D; font-weight:600;" : "")">@FaturamentoUi.Moeda(item.IcmsStTotal)</td>
+                                <td style="@(item.FcpTotal > 0 ? "color:#C97A3D; font-weight:600;" : "")">@FaturamentoUi.Moeda(item.FcpTotal)</td>
+                                <td>@FaturamentoUi.Num(item.Ipi)%</td>
+                                <td>@FaturamentoUi.Num(item.Pis)% / @FaturamentoUi.Num(item.Cofins)%</td>
+                                <td>@FaturamentoUi.Num(item.Ibs)% / @FaturamentoUi.Num(item.Cbs)% / @FaturamentoUi.Num(item.Is)%</td>
+                                <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(item.Total)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+        </div>
+
+        <div class="fat-detalhe-col">
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">Totais da NF-e</MudText>
+                @foreach (var (rotulo, valor) in _totais)
+                {
+                    <div class="fat-resumo-linha"><span>@rotulo</span><strong>@FaturamentoUi.Moeda(valor)</strong></div>
+                }
+                <div class="fat-resumo-total">
+                    <span>Total da Nota</span>
+                    <strong>@FaturamentoUi.Moeda(_nota.Total)</strong>
+                </div>
+            </MudPaper>
+
+            <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8;">
+                <div class="fat-secao-titulo">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalShipping" Size="Size.Small" Style="color:#5A6B7A;" />
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;">Transporte e Cobrança</MudText>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <InfoNFe Rotulo="Modalidade do frete" Valor="@_nota.ModalidadeFrete" />
+                    <InfoNFe Rotulo="Transportadora" Valor="@_nota.Transportadora" />
+                    <InfoNFe Rotulo="Volumes" Valor="@($"{_nota.Volumes} {_nota.Especie}")" />
+                    <InfoNFe Rotulo="Peso líquido / bruto" Valor="@($"{FaturamentoUi.Num(_nota.PesoLiquido)} kg / {FaturamentoUi.Num(_nota.PesoBruto)} kg")" />
+                    <InfoNFe Rotulo="Pagamento" Valor="@($"{_nota.FormaPagamento} · {_nota.Parcelas} parcela(s)")" />
+                </div>
+            </MudPaper>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = "";
+    [Parameter] public EventCallback OnVoltar { get; set; }
+
+    private NFeItem? _nota;
+
+    private bool _podeAdministrar =>
+        _nota is not null && _nota.Status is not (StatusNFe.Autorizada or StatusNFe.Cancelada or StatusNFe.Inutilizada);
+
+    private IEnumerable<(string Rotulo, decimal Valor)> _totais => new (string, decimal)[]
+    {
+        ("Produtos", _nota!.Subtotal),
+        ("ICMS", _nota.TotalIcms),
+        ("ICMS-ST", _nota.TotalIcmsSt),
+        ("FCP / FCP-ST", _nota.TotalFcp),
+        ("IPI", _nota.TotalIpi),
+        ("PIS", _nota.TotalPis),
+        ("COFINS", _nota.TotalCofins),
+        ("IBS", _nota.TotalIbs),
+        ("CBS", _nota.TotalCbs),
+        ("Frete", _nota.Frete),
+        ("Seguro", _nota.Seguro),
+        ("Outras despesas", _nota.OutrasDespesas),
+        ("Desconto", -_nota.Desconto),
+    };
+
+    protected override void OnParametersSet() => _nota = FaturamentoMockData.Obter(Id);
+
+    private async Task AbrirEdicao()
+    {
+        if (_nota is null) return;
+
+        var parametros = new DialogParameters<NovoNFe> { { x => x.NotaExistente, _nota } };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseOnEscapeKey = true };
+        var dialog = await DialogService.ShowAsync<NovoNFe>("", parametros, options);
+        var resultado = await dialog.Result;
+
+        _nota = FaturamentoMockData.Obter(Id);
+
+        if (resultado is { Canceled: false, Data: ResultadoNFe r } && r.Acao is not null)
+            await AbrirProcesso(r.Nota, r.Acao.Value);
+
+        StateHasChanged();
+    }
+
+    private async Task Emitir()
+    {
+        if (_nota is null) return;
+        var processada = FaturamentoMockData.Processar(_nota, AcaoFiscal.Emitir);
+        _nota = processada;
+        await AbrirProcesso(processada, AcaoFiscal.Emitir);
+    }
+
+    private async Task AbrirProcesso(NFeItem nota, AcaoFiscal acao)
+    {
+        var p = new DialogParameters<ProcessoFiscalNFe> { { x => x.Nota, nota }, { x => x.Acao, acao } };
+        await DialogService.ShowAsync<ProcessoFiscalNFe>("", p, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        _nota = FaturamentoMockData.Obter(Id);
+    }
+
+    private async Task VerDocumento(TipoDocumentoFiscal tipo)
+    {
+        if (_nota is null) return;
+        var p = new DialogParameters<DocumentoFiscalNFe> { { x => x.Nota, _nota }, { x => x.Tipo, tipo } };
+        await DialogService.ShowAsync<DocumentoFiscalNFe>("", p, new DialogOptions { FullScreen = true, CloseButton = false });
+    }
+
+    private async Task Excluir()
+    {
+        if (_nota is null) return;
+        var resultado = await Confirmar(AcaoConfirmacaoNFe.Excluir);
+        if (resultado is { Canceled: false })
+        {
+            FaturamentoMockData.Excluir(_nota.Id);
+            await OnVoltar.InvokeAsync();
+        }
+    }
+
+    private async Task Inutilizar()
+    {
+        if (_nota is null) return;
+        var resultado = await Confirmar(AcaoConfirmacaoNFe.Inutilizar);
+        if (resultado is { Canceled: false, Data: string justificativa })
+        {
+            FaturamentoMockData.Inutilizar(_nota.Id, justificativa);
+            _nota = FaturamentoMockData.Obter(Id);
+        }
+    }
+
+    private async Task<DialogResult?> Confirmar(AcaoConfirmacaoNFe acao)
+    {
+        var p = new DialogParameters<ConfirmacaoNFe>
+        {
+            { x => x.Acao, acao },
+            { x => x.Numero, _nota!.Numero },
+            { x => x.Serie, _nota.Serie }
+        };
+        var dialog = await DialogService.ShowAsync<ConfirmacaoNFe>("", p, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        return await dialog.Result;
+    }
+}

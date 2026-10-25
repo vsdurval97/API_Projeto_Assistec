@@ -1,0 +1,487 @@
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        @{
+            var cor = FaturamentoUi.Cor(_nota.Status);
+        }
+        <div style="display:flex; align-items:center; gap:10px;">
+            <MudText Typo="Typo.h6" Style="font-weight:600;">
+                @(_nota.TipoDevolucao is not null
+                    ? $"NF-e de {_nota.TipoDevolucao.ToLower()}"
+                    : _novo ? "Nova NF-e" : $"Editar NF-e {_nota.Numero}")
+            </MudText>
+            <MudChip T="string" Size="Size.Small"
+                     Style="@($"background-color:{cor.Fundo}; color:{cor.Texto}; font-weight:600;")">
+                @FaturamentoUi.Rotulo(_nota.Status)
+            </MudChip>
+        </div>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+            Modelo 55 · Preencha e confira todas as informações antes da emissão.
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudTabs Elevation="0" Rounded="false" PanelClass="pt-4">
+
+            <MudTabPanel Text="Dados da NF-e">
+                <MudGrid Spacing="2">
+                    @if (_nota.TipoDevolucao is not null)
+                    {
+                        <MudItem xs="12">
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                                <strong>Operação de devolução:</strong> @_nota.TipoDevolucao · NF-e de @_nota.TipoOperacao.ToLower()
+                                <div class="fat-mono" style="margin-top:4px;">@_nota.DocumentoReferenciado</div>
+                            </MudAlert>
+                        </MudItem>
+                    }
+
+                    <MudItem xs="12">
+                        <div class="fat-barra">
+                            <div>
+                                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Importar documento de origem</MudText>
+                                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">Pedido de Venda, Orçamento ou Ordem de Serviço.</MudText>
+                            </div>
+                            <MudButton Variant="Variant.Outlined"
+                                       StartIcon="@Icons.Material.Filled.FileDownload"
+                                       OnClick="AbrirImportacao">
+                                Selecionar Documento
+                            </MudButton>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="3">
+    <MudTextField T="string" Label="Modelo" Text="@("55 - NF-e")" Disabled="true"
+                  Variant="Variant.Outlined" Margin="Margin.Dense" />
+</MudItem>
+
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Série" @bind-Value="_nota.Serie"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Número" @bind-Value="_nota.Numero"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudDatePicker Label="Emissão" @bind-Date="_nota.Emissao" DateFormat="dd/MM/yyyy"
+                                       Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="Natureza da Operação" @bind-Value="_nota.Natureza"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudSelect T="string" Label="Tipo da Operação" @bind-Value="_nota.TipoOperacao"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            <MudSelectItem T="string" Value="@("Saída")">Saída</MudSelectItem>
+                            <MudSelectItem T="string" Value="@("Entrada")">Entrada</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudSelect T="string" Label="Finalidade" @bind-Value="_nota.Finalidade"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var f in FaturamentoMockData.Finalidades)
+                            {
+                                <MudSelectItem T="string" Value="@f">@f</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string" Label="Indicador de Presença" @bind-Value="_nota.Presenca"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var p in FaturamentoMockData.Presencas)
+                            {
+                                <MudSelectItem T="string" Value="@p">@p</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudCheckBox T="bool" @bind-Value="_nota.ConsumidorFinal" Label="Consumidor final" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            <strong>Ambiente de emissão: Produção</strong> · Certificado digital A1 válido até 18/05/2027 · CSC e configurações da SEFAZ ativos.
+                        </MudAlert>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Destinatário">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="Nome / Razão Social" Required="true" @bind-Value="_nota.Destinatario.Nome"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="CPF / CNPJ" Required="true" @bind-Value="_nota.Destinatario.Documento"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Inscrição Estadual" @bind-Value="_nota.Destinatario.Ie"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="E-mail para Envio da NF-e" @bind-Value="_nota.Destinatario.Email"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="Telefone" @bind-Value="_nota.Destinatario.Telefone"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <div class="fat-separador" style="margin-top:0;">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Endereço do Destinatário</MudText>
+                        </div>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="CEP" @bind-Value="_nota.Destinatario.Cep"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="Logradouro" @bind-Value="_nota.Destinatario.Logradouro"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Número" @bind-Value="_nota.Destinatario.Numero"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Complemento" @bind-Value="_nota.Destinatario.Complemento"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Bairro" @bind-Value="_nota.Destinatario.Bairro"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField T="string" Label="Cidade" @bind-Value="_nota.Destinatario.Cidade"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="2">
+                        <MudSelect T="string" Label="UF" @bind-Value="_nota.Destinatario.Uf"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var uf in FaturamentoMockData.Ufs)
+                            {
+                                <MudSelectItem T="string" Value="@uf">@uf</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="@($"Produtos e Tributos ({_nota.Itens.Count})")">
+                <div class="fat-barra">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Style="font-weight:600;">Produtos da NF-e</MudText>
+                        <MudText Typo="Typo.caption" Style="color:#9AA5B1;">
+                            A grade mostra apenas os dados essenciais. Use “Tributação e Despesas” para acessar todos os campos fiscais do item.
+                        </MudText>
+                    </div>
+                    <MudButton Variant="Variant.Outlined"
+                               StartIcon="@Icons.Material.Filled.Search"
+                               OnClick="AbrirBuscaProduto">
+                        Buscar Produto
+                    </MudButton>
+                </div>
+
+                <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+                    <table class="fat-table" style="min-width:1120px;">
+                        <thead>
+                            <tr>
+                                <th>Descrição</th>
+                                <th>CST / CSOSN</th>
+                                <th>NCM</th>
+                                <th>Quantidade</th>
+                                <th>Un.</th>
+                                <th>ICMS</th>
+                                <th>Valor Unit.</th>
+                                <th>Valor Total</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in _nota.Itens)
+                            {
+                                <tr>
+                                    <td style="min-width:200px;">
+                                        <div class="fat-cliente">@item.Descricao</div>
+                                        <div class="fat-sub">@item.Codigo@(item.FcpTotal > 0 ? " · FCP informado" : "")</div>
+                                    </td>
+                                    <td>
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                                                   EndIcon="@Icons.Material.Filled.ChevronRight"
+                                                   OnClick="@(() => AbrirCst(item))">@item.Cst</MudButton>
+                                    </td>
+                                    <td>
+                                        <MudTextField T="string" @bind-Value="item.Ncm" Immediate="true"
+                                                      Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-ncm" />
+                                    </td>
+                                    <td>
+                                        <MudNumericField T="decimal" @bind-Value="item.Quantidade" Min="0" Immediate="true"
+                                                         HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-qtd" />
+                                    </td>
+                                    <td>
+                                        <MudTextField T="string" @bind-Value="item.Unidade" Immediate="true"
+                                                      Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-un" />
+                                    </td>
+                                    <td>
+                                        <MudNumericField T="decimal" @bind-Value="item.Icms" Min="0" Immediate="true"
+                                                         HideSpinButtons="true" Adornment="Adornment.End" AdornmentText="%"
+                                                         Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-qtd" />
+                                    </td>
+                                    <td>
+                                        <MudNumericField T="decimal" @bind-Value="item.ValorUnitario" Min="0" Immediate="true"
+                                                         HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                                    </td>
+                                    <td>
+                                        <MudNumericField T="decimal" Value="item.Total" Min="0" Immediate="true"
+                                                         ValueChanged="@((decimal v) => item.DefinirTotal(v))"
+                                                         HideSpinButtons="true" Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                                    </td>
+                                    <td>
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="white-space:nowrap;"
+                                                   OnClick="@(() => AbrirTributos(item))">
+                                            Tributação e Despesas
+                                        </MudButton>
+                                    </td>
+                                    <td>
+                                        <MudIconButton Icon="@Icons.Material.Filled.DeleteOutline" Size="Size.Small"
+                                                       Style="color:#9AA5B1;"
+                                                       OnClick="@(() => _nota.Itens.Remove(item))" />
+                                    </td>
+                                </tr>
+                            }
+                            @if (_nota.Itens.Count == 0)
+                            {
+                                <tr><td colspan="10" class="fat-vazio">Nenhum produto incluído na NF-e.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </MudPaper>
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mt-3">
+                    Frete, seguro, outras despesas, ICMS-ST e FCP permanecem separados do valor total do produto e podem ser editados no modal fiscal de cada item.
+                </MudAlert>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Transporte">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="string" Label="Modalidade do Frete" @bind-Value="_nota.ModalidadeFrete"
+                                   Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var m in FaturamentoMockData.Modalidades)
+                            {
+                                <MudSelectItem T="string" Value="@m">@m</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="string" Label="Transportadora" @bind-Value="_nota.Transportadora"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="int" Label="Quantidade de Volumes" @bind-Value="_nota.Volumes" Min="0"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudTextField T="string" Label="Espécie" Placeholder="Caixa, pallet..." @bind-Value="_nota.Especie"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="decimal" Label="Peso Líquido (kg)" @bind-Value="_nota.PesoLiquido" Min="0"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="3">
+                        <MudNumericField T="decimal" Label="Peso Bruto (kg)" @bind-Value="_nota.PesoBruto" Min="0"
+                                         Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+
+            <MudTabPanel Text="Cobrança e Totais">
+                <div class="fat-cobranca-layout">
+                    <div class="fat-detalhe-col">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" sm="8">
+                                <MudSelect T="string" Label="Forma de Pagamento" @bind-Value="_nota.FormaPagamento"
+                                           Variant="Variant.Outlined" Margin="Margin.Dense">
+                                    @foreach (var f in FaturamentoMockData.FormasPagamento)
+                                    {
+                                        <MudSelectItem T="string" Value="@f">@f</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <MudNumericField T="int" Label="Parcelas" @bind-Value="_nota.Parcelas" Min="1"
+                                                 Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudItem>
+                        </MudGrid>
+                        <MudTextField T="string" Label="Informações Complementares de Interesse do Contribuinte"
+                                      @bind-Value="_nota.InformacoesComplementares" Lines="6"
+                                      Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    </div>
+
+                    <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8; height:fit-content;">
+                        <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-2">Totais da NF-e</MudText>
+                        <div class="fat-resumo-linha"><span>Produtos</span><strong>@FaturamentoUi.Moeda(_nota.Subtotal)</strong></div>
+                        <div class="fat-resumo-linha"><span>ICMS</span><strong>@FaturamentoUi.Moeda(_nota.TotalIcms)</strong></div>
+                        <div class="fat-resumo-linha"><span>ICMS-ST</span><strong>@FaturamentoUi.Moeda(_nota.TotalIcmsSt)</strong></div>
+                        <div class="fat-resumo-linha"><span>FCP / FCP-ST</span><strong>@FaturamentoUi.Moeda(_nota.TotalFcp)</strong></div>
+                        <div class="fat-resumo-linha"><span>IPI</span><strong>@FaturamentoUi.Moeda(_nota.TotalIpi)</strong></div>
+                        <div class="fat-resumo-linha"><span>PIS</span><strong>@FaturamentoUi.Moeda(_nota.TotalPis)</strong></div>
+                        <div class="fat-resumo-linha"><span>COFINS</span><strong>@FaturamentoUi.Moeda(_nota.TotalCofins)</strong></div>
+                        <div class="fat-resumo-linha"><span>IBS</span><strong>@FaturamentoUi.Moeda(_nota.TotalIbs)</strong></div>
+                        <div class="fat-resumo-linha"><span>CBS</span><strong>@FaturamentoUi.Moeda(_nota.TotalCbs)</strong></div>
+                        <div class="fat-resumo-linha"><span>IS</span><strong>@FaturamentoUi.Moeda(_nota.TotalIs)</strong></div>
+                        <div class="fat-resumo-linha">
+                            <span>Frete</span>
+                            <MudNumericField T="decimal" @bind-Value="_nota.Frete" Min="0" Immediate="true" HideSpinButtons="true"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                        </div>
+                        <div class="fat-resumo-linha">
+                            <span>Seguro</span>
+                            <MudNumericField T="decimal" @bind-Value="_nota.Seguro" Min="0" Immediate="true" HideSpinButtons="true"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                        </div>
+                        <div class="fat-resumo-linha">
+                            <span>Outras despesas</span>
+                            <MudNumericField T="decimal" @bind-Value="_nota.OutrasDespesas" Min="0" Immediate="true" HideSpinButtons="true"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                        </div>
+                        <div class="fat-resumo-linha">
+                            <span>Desconto</span>
+                            <MudNumericField T="decimal" @bind-Value="_nota.Desconto" Min="0" Immediate="true" HideSpinButtons="true"
+                                             Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-valor" />
+                        </div>
+                        <div class="fat-resumo-total">
+                            <span>Valor Total da NF-e</span>
+                            <strong>@FaturamentoUi.Moeda(_nota.Total)</strong>
+                        </div>
+                    </MudPaper>
+                </div>
+            </MudTabPanel>
+
+        </MudTabs>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" Style="margin-right:auto;" OnClick="SalvarRascunho">
+            Salvar Rascunho
+        </MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   Style="color:#8E5CE0; border-color:#8E5CE0;"
+                   StartIcon="@Icons.Material.Filled.VerifiedUser"
+                   Disabled="@(!PodeProcessar)"
+                   OnClick="@(() => Processar(AcaoFiscal.Espelho))">
+            Gerar Apenas Espelho
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Style="background-color:#079cff; color:#FFFFFF;"
+                   StartIcon="@Icons.Material.Filled.Send"
+                   Disabled="@(!PodeProcessar)"
+                   OnClick="@(() => Processar(AcaoFiscal.Emitir))">
+            Emitir NF-e
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public NFeItem? NotaExistente { get; set; }
+
+    private NFeItem _nota = new();
+    private bool _novo;
+
+    private bool PodeProcessar =>
+        !string.IsNullOrWhiteSpace(_nota.Destinatario.Nome) &&
+        !string.IsNullOrWhiteSpace(_nota.Destinatario.Documento) &&
+        _nota.Itens.Count > 0;
+
+    protected override void OnInitialized()
+    {
+        _nota = NotaExistente?.Clonar() ?? FaturamentoMockData.NovaNFe();
+        _novo = FaturamentoMockData.Obter(_nota.Id) is null;
+    }
+
+    private async Task AbrirBuscaProduto()
+    {
+        var dialog = await DialogService.ShowAsync<BuscaProdutoNFe>("",
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: ItemNFeLinha produto })
+            _nota.Itens.Add(produto);
+    }
+
+    private async Task AbrirImportacao()
+    {
+        var dialog = await DialogService.ShowAsync<ImportarDocumentoNFe>("",
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: DocumentoOrigemNFe doc })
+        {
+            _nota.Destinatario = doc.Destinatario.Clonar();
+            _nota.Itens = doc.Itens.Select(i => i.Clonar()).ToList();
+            _nota.Frete = doc.Frete;
+            _nota.FormaPagamento = doc.FormaPagamento;
+            _nota.Parcelas = doc.Parcelas;
+            _nota.InformacoesComplementares = $"Documento de origem: {doc.Numero} ({FaturamentoUi.Rotulo(doc.Tipo)}).";
+        }
+    }
+
+    private async Task AbrirCst(ItemNFeLinha item)
+    {
+        var p = new DialogParameters<SituacaoTributariaNFe> { { x => x.Atual, item.Cst } };
+        var dialog = await DialogService.ShowAsync<SituacaoTributariaNFe>("", p,
+            new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true, CloseOnEscapeKey = true });
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: string codigo })
+            item.AplicarCst(codigo);
+    }
+
+    private async Task AbrirTributos(ItemNFeLinha item)
+    {
+        var p = new DialogParameters<TributosItemNFe> { { x => x.Item, item } };
+        var dialog = await DialogService.ShowAsync<TributosItemNFe>("", p,
+            new DialogOptions { MaxWidth = MaxWidth.Medium, FullWidth = true, CloseOnEscapeKey = true });
+        var resultado = await dialog.Result;
+
+        if (resultado is { Canceled: false, Data: ItemNFeLinha atualizado })
+        {
+            var indice = _nota.Itens.IndexOf(item);
+            if (indice < 0) return;
+            _nota.Itens[indice] = atualizado;
+
+            if (_nota.Itens.Any(i => i.TemRateio))
+            {
+                _nota.Frete = _nota.Itens.Sum(i => i.FreteItem);
+                _nota.Seguro = _nota.Itens.Sum(i => i.SeguroItem);
+                _nota.OutrasDespesas = _nota.Itens.Sum(i => i.OutrasDespesasItem);
+                _nota.Desconto = _nota.Itens.Sum(i => i.DescontoItem);
+            }
+        }
+    }
+
+    private void SalvarRascunho()
+    {
+        var salva = FaturamentoMockData.SalvarRascunho(_nota);
+        MudDialog.Close(DialogResult.Ok(new ResultadoNFe(salva, null)));
+    }
+
+    private void Processar(AcaoFiscal acao)
+    {
+        if (!PodeProcessar) return;
+        var processada = FaturamentoMockData.Processar(_nota, acao);
+        MudDialog.Close(DialogResult.Ok(new ResultadoNFe(processada, acao)));
+    }
+}

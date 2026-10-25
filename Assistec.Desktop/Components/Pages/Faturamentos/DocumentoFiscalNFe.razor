@@ -1,0 +1,205 @@
+@using System.Globalization
+@using System.Text.RegularExpressions
+@inject IJSRuntime JS
+
+<MudDialog>
+    <DialogContent>
+        <div class="fat-doc-topo">
+            <div>
+                <MudText Typo="Typo.subtitle1" Style="color:#FFFFFF; font-weight:600;">
+                    @(_danfe ? "Visualização do DANFE" : "Espelho da NF-e para conferência")
+                </MudText>
+                <MudText Typo="Typo.caption" Style="color:#9AA5B1;">NF-e @Nota.Numero · Série @Nota.Serie</MudText>
+            </div>
+            <div style="display:flex; gap:8px;">
+                <MudButton Variant="Variant.Filled" Size="Size.Small" StartIcon="@Icons.Material.Filled.Print" OnClick="Imprimir">Imprimir</MudButton>
+                <MudButton Variant="Variant.Outlined" Size="Size.Small" Style="color:#FFFFFF; border-color:#FFFFFF;"
+                           StartIcon="@Icons.Material.Filled.Close" OnClick="Fechar">Fechar</MudButton>
+            </div>
+        </div>
+
+        <div class="fat-doc-fundo">
+            <div class="fat-folha">
+
+                @if (!_danfe)
+                {
+                    <div class="fat-d-faixa">
+                        <strong>ESPELHO DA NF-e PARA CONFERÊNCIA</strong>
+                        <div>DOCUMENTO SEM VALOR FISCAL · XML VALIDADO E ASSINADO · NÃO TRANSMITIDO À SEFAZ</div>
+                    </div>
+                }
+
+                <div class="fat-d-grid" style="grid-template-columns:1.2fr .55fr 1.25fr;">
+                    <div class="fat-d-cel" style="text-align:center;">
+                        <strong style="font-size:16px;">ASSISTEC</strong>
+                        <div><strong>EMPRESA EXEMPLO LTDA</strong></div>
+                        <div style="font-size:9px;">Av. das Nações, 1000 · Centro · São Paulo/SP · CEP 01000-000<br />CNPJ 12.345.678/0001-90 · IE 123.456.789.112</div>
+                    </div>
+                    <div class="fat-d-cel" style="text-align:center;">
+                        <strong style="font-size:16px;">@(_danfe ? "DANFE" : "NF-e")</strong>
+                        <div style="font-size:8px;">@(_danfe ? "DOCUMENTO AUXILIAR DA NOTA FISCAL ELETRÔNICA" : "ESPELHO DO DOCUMENTO FISCAL ELETRÔNICO")</div>
+                        <div style="margin-top:6px; font-size:10px;">0 - ENTRADA · 1 - SAÍDA <strong style="border:1px solid #000; padding:0 5px;">@(Nota.TipoOperacao == "Saída" ? "1" : "0")</strong></div>
+                        <strong>Nº @Nota.Numero</strong>
+                        <div style="font-size:10px;">SÉRIE @Nota.Serie · FOLHA 1/1</div>
+                    </div>
+                    <div class="fat-d-cel" style="text-align:center;">
+                        <svg class="fat-barras" viewBox="0 0 255 42" preserveAspectRatio="none">
+                            @for (var i = 0; i < 84; i++)
+                            {
+                                <line x1="@(i * 3)" y1="1" x2="@(i * 3)" y2="41" stroke="black" stroke-width="@Largura(i)" />
+                            }
+                        </svg>
+                        <div class="fat-mono" style="font-size:9px; margin-top:2px;">@_chaveFormatada</div>
+                        <div style="font-size:8px; margin-top:4px;">
+                            @(_danfe ? "Consulta de autenticidade no portal nacional da NF-e ou no site da SEFAZ autorizadora" : "Chave projetada para conferência antes da transmissão")
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fat-d-grid" style="grid-template-columns:1.5fr 1fr;">
+                    @Cel("NATUREZA DA OPERAÇÃO", Nota.Natureza, true)
+                    @Cel(_danfe ? "PROTOCOLO DE AUTORIZAÇÃO DE USO" : "STATUS DO DOCUMENTO",
+                         _danfe ? $"{(string.IsNullOrEmpty(Nota.Protocolo) ? "135260001998472" : Nota.Protocolo)} · {FaturamentoUi.DataHora(Nota.Emissao)}" : "XML validado e assinado digitalmente", true)
+                </div>
+
+                <div class="fat-d-titulo">DESTINATÁRIO / REMETENTE</div>
+                <div class="fat-d-grid" style="grid-template-columns:1.6fr .75fr .6fr;">
+                    @Cel("NOME / RAZÃO SOCIAL", Nota.Destinatario.Nome, true)
+                    @Cel("CNPJ / CPF", Nota.Destinatario.Documento)
+                    @Cel("DATA DA EMISSÃO", FaturamentoUi.Data(Nota.Emissao))
+                </div>
+                <div class="fat-d-grid" style="grid-template-columns:1.45fr .55fr .7fr .45fr;">
+                    @Cel("ENDEREÇO", $"{Nota.Destinatario.Logradouro}, {Nota.Destinatario.Numero} {Nota.Destinatario.Complemento}")
+                    @Cel("BAIRRO", Nota.Destinatario.Bairro)
+                    @Cel("MUNICÍPIO", Nota.Destinatario.Cidade)
+                    @Cel("UF / IE", $"{Nota.Destinatario.Uf} · {Nota.Destinatario.Ie}")
+                </div>
+
+                <div class="fat-d-titulo">CÁLCULO DO IMPOSTO</div>
+                <div class="fat-d-grid" style="grid-template-columns:repeat(6,1fr);">
+                    @Cel("BASE DE CÁLCULO ICMS", FaturamentoUi.Moeda(Nota.Subtotal))
+                    @Cel("VALOR DO ICMS", FaturamentoUi.Moeda(Nota.TotalIcms))
+                    @Cel("VALOR DO ICMS-ST", FaturamentoUi.Moeda(Nota.TotalIcmsSt))
+                    @Cel("VALOR DO IPI", FaturamentoUi.Moeda(Nota.TotalIpi))
+                    @Cel("VALOR DO FRETE", FaturamentoUi.Moeda(Nota.Frete))
+                    @Cel("VALOR TOTAL DA NF-e", FaturamentoUi.Moeda(Nota.Total), true)
+                </div>
+                <div class="fat-d-grid" style="grid-template-columns:repeat(7,1fr);">
+                    @Cel("PIS", FaturamentoUi.Moeda(Nota.TotalPis))
+                    @Cel("COFINS", FaturamentoUi.Moeda(Nota.TotalCofins))
+                    @Cel("IBS", FaturamentoUi.Moeda(Nota.TotalIbs))
+                    @Cel("CBS", FaturamentoUi.Moeda(Nota.TotalCbs))
+                    @Cel("FCP / FCP-ST", FaturamentoUi.Moeda(Nota.TotalFcp))
+                    @Cel("DESCONTO", FaturamentoUi.Moeda(Nota.Desconto))
+                    @Cel("OUTRAS DESPESAS", FaturamentoUi.Moeda(Nota.OutrasDespesas))
+                </div>
+
+                <div class="fat-d-titulo">TRANSPORTADOR / VOLUMES TRANSPORTADOS</div>
+                <div class="fat-d-grid" style="grid-template-columns:1.3fr 1fr .45fr .45fr .45fr;">
+                    @Cel("RAZÃO SOCIAL", string.IsNullOrEmpty(Nota.Transportadora) ? "Sem transportadora" : Nota.Transportadora)
+                    @Cel("MODALIDADE DO FRETE", Nota.ModalidadeFrete)
+                    @Cel("VOLUMES", Nota.Volumes.ToString())
+                    @Cel("PESO LÍQ.", $"{FaturamentoUi.Num(Nota.PesoLiquido)} kg")
+                    @Cel("PESO BRUTO", $"{FaturamentoUi.Num(Nota.PesoBruto)} kg")
+                </div>
+
+                <div class="fat-d-titulo">DADOS DOS PRODUTOS / SERVIÇOS</div>
+                <table class="fat-d-tabela">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">CÓDIGO / DESCRIÇÃO</th><th>NCM</th><th>CST</th><th>CFOP</th><th>UN</th>
+                            <th>QTD.</th><th>V.UNIT.</th><th>V.TOTAL</th><th>ICMS</th><th>ICMS-ST</th><th>IPI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Nota.Itens)
+                        {
+                            <tr>
+                                <td style="text-align:left;"><strong>@item.Codigo</strong> · @item.Descricao</td>
+                                <td>@item.Ncm</td>
+                                <td>@item.Cst</td>
+                                <td>@item.Cfop</td>
+                                <td>@item.Unidade</td>
+                                <td>@FaturamentoUi.Num(item.Quantidade)</td>
+                                <td>@FaturamentoUi.Moeda(item.ValorUnitario)</td>
+                                <td>@FaturamentoUi.Moeda(item.Total)</td>
+                                <td>@FaturamentoUi.Num(item.Icms)%</td>
+                                <td>@FaturamentoUi.Moeda(item.IcmsStTotal)</td>
+                                <td>@FaturamentoUi.Num(item.Ipi)%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                @if (!_danfe)
+                {
+                    <div class="fat-d-titulo">DETALHAMENTO TRIBUTÁRIO PARA CONFERÊNCIA</div>
+                    <table class="fat-d-tabela">
+                        <thead>
+                            <tr><th style="text-align:left;">ITEM</th><th>PIS</th><th>COFINS</th><th>IBS</th><th>CBS</th><th>IS</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Nota.Itens)
+                            {
+                                <tr>
+                                    <td style="text-align:left;">@item.Codigo · @item.Descricao</td>
+                                    <td>@FaturamentoUi.Num(item.Pis)% · @FaturamentoUi.Moeda(item.Total * item.Pis / 100)</td>
+                                    <td>@FaturamentoUi.Num(item.Cofins)% · @FaturamentoUi.Moeda(item.Total * item.Cofins / 100)</td>
+                                    <td>@FaturamentoUi.Num(item.Ibs)% · @FaturamentoUi.Moeda(item.Total * item.Ibs / 100)</td>
+                                    <td>@FaturamentoUi.Num(item.Cbs)% · @FaturamentoUi.Moeda(item.Total * item.Cbs / 100)</td>
+                                    <td>@FaturamentoUi.Num(item.Is)% · @FaturamentoUi.Moeda(item.Total * item.Is / 100)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+
+                <div class="fat-d-titulo">DADOS ADICIONAIS</div>
+                <div class="fat-d-grid" style="grid-template-columns:1.5fr .7fr; min-height:90px;">
+                    @Cel("INFORMAÇÕES COMPLEMENTARES",
+                         string.IsNullOrWhiteSpace(Nota.InformacoesComplementares) ? "Tributos aproximados conforme Lei 12.741/2012." : Nota.InformacoesComplementares)
+                    @Cel("RESERVADO AO FISCO", _danfe ? "" : "Espelho gerado para conferência. Documento ainda não autorizado pela administração tributária.")
+                </div>
+
+                <div class="fat-d-rodape">
+                    <span>Documento gerado em @DateTime.Now.ToString("dd/MM/yyyy 'às' HH:mm")</span>
+                    <span>@(_danfe ? "DANFE — Documento Auxiliar da NF-e" : "Espelho interno — Sem valor fiscal")</span>
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public NFeItem Nota { get; set; } = new();
+    [Parameter] public TipoDocumentoFiscal Tipo { get; set; }
+
+    private bool _danfe => Tipo == TipoDocumentoFiscal.Danfe;
+
+    private string _chaveFormatada
+    {
+        get
+        {
+            var chave = string.IsNullOrEmpty(Nota.Chave)
+                ? "35260912345678000190550010000158931000158930"
+                : Nota.Chave;
+            return Regex.Replace(chave.Replace(" ", ""), "(.{4})", "$1 ").Trim();
+        }
+    }
+
+    private static string Largura(int i) =>
+        (i % 5 == 0 ? 2.1 : i % 3 == 0 ? 1.4 : 0.8).ToString(CultureInfo.InvariantCulture);
+
+    private RenderFragment Cel(string rotulo, string valor, bool forte = false) =>
+        @<div class="fat-d-cel"><span>@rotulo</span><b class="@(forte ? "fat-d-forte" : "")">@valor</b></div>;
+
+    private async Task Imprimir()
+    {
+        try { await JS.InvokeVoidAsync("window.print"); }
+        catch { /* mock: impressão real fica para a fase de integração */ }
+    }
+
+    private void Fechar() => MudDialog.Close();
+}

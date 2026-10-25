@@ -1,0 +1,76 @@
+@inject IDialogService DialogService
+
+<MudDialog>
+    <TitleContent>
+        <div class="info-card-icon" style="background-color:#E4F2E5; margin-bottom:12px;">
+            <MudIcon Icon="@Icons.Material.Filled.Check" Style="color:#2E7D32;" />
+        </div>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">
+            @(Acao == AcaoFiscal.Espelho ? "Espelho gerado com sucesso" : "NF-e autorizada pela SEFAZ")
+        </MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">@Nota.Numero · @Nota.Destinatario.Nome</MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="fat-timeline">
+            @for (var i = 0; i < _etapas.Length; i++)
+            {
+                <div class="fat-timeline-item">
+                    <div class="fat-timeline-marca">
+                        <span class="fat-timeline-ok"><MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" /></span>
+                        @if (i < _etapas.Length - 1)
+                        {
+                            <span class="fat-timeline-linha"></span>
+                        }
+                    </div>
+                    <MudText Typo="Typo.body2" Style="padding-top:2px;">@_etapas[i]</MudText>
+                </div>
+            }
+        </div>
+
+        @if (Acao == AcaoFiscal.Emitir)
+        {
+            <div class="fat-barra mt-3" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <InfoNFe Rotulo="Protocolo de autorização" Valor="@Nota.Protocolo" Mono="true" />
+                <InfoNFe Rotulo="Status SEFAZ" Valor="100 — Autorizado o uso da NF-e" />
+                <div style="grid-column: span 2;">
+                    <InfoNFe Rotulo="Chave de acesso" Valor="@Nota.Chave" Mono="true" />
+                </div>
+            </div>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Concluir">Concluir</MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Style="background-color:#1F2937; color:#FFFFFF;"
+                   StartIcon="@Icons.Material.Filled.Print"
+                   OnClick="Visualizar">
+            @(Acao == AcaoFiscal.Espelho ? "Visualizar Espelho" : "Visualizar DANFE")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter] public NFeItem Nota { get; set; } = new();
+    [Parameter] public AcaoFiscal Acao { get; set; }
+
+    private string[] _etapas => Acao == AcaoFiscal.Espelho
+        ? new[] { "Validar dados fiscais e tributários", "Assinar XML com certificado digital", "Gerar espelho da NF-e" }
+        : new[] { "Validar dados fiscais e tributários", "Assinar XML com certificado digital", "Transmitir lote para a SEFAZ", "Receber protocolo de autorização", "Gerar DANFE" };
+
+    private void Concluir() => MudDialog.Close();
+
+    private async Task Visualizar()
+    {
+        var p = new DialogParameters<DocumentoFiscalNFe>
+        {
+            { x => x.Nota, Nota },
+            { x => x.Tipo, Acao == AcaoFiscal.Espelho ? TipoDocumentoFiscal.Espelho : TipoDocumentoFiscal.Danfe }
+        };
+        await DialogService.ShowAsync<DocumentoFiscalNFe>("", p,
+            new DialogOptions { FullScreen = true, CloseButton = false });
+    }
+}

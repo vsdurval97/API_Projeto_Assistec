@@ -1,0 +1,365 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6" Style="font-weight:600;">Nova Devolução de Mercadoria</MudText>
+        <MudText Typo="Typo.body2" Style="color:#5A6B7A;">
+            Selecione o fluxo e referencie obrigatoriamente o documento fiscal original.
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <div class="fat-etapas">
+            @for (var i = 0; i < _rotulosEtapas.Length; i++)
+            {
+                var indice = i;
+                var concluida = (int)_etapa > indice;
+                var atual = (int)_etapa == indice;
+                <div class="fat-etapa @(atual ? "fat-etapa-atual" : "") @(concluida ? "fat-etapa-ok" : "")">
+                    <span class="fat-etapa-num">
+                        @if (concluida)
+                        {
+                            <MudIcon Icon="@Icons.Material.Filled.Check" Size="Size.Small" />
+                        }
+                        else
+                        {
+                            @(indice + 1)
+                        }
+                    </span>
+                    <span>@_rotulosEtapas[indice]</span>
+                </div>
+            }
+        </div>
+
+        @if (_etapa == EtapaDevolucao.Origem)
+        {
+            <div class="fat-opcoes-grid">
+                <div class="fat-opcao-card @(_paraEstoque ? "fat-opcao-ativa" : "")" @onclick="() => SelecionarFluxo(true)">
+                    <MudIcon Icon="@Icons.Material.Filled.FileDownload" Style="color:#2C6FB0;" />
+                    <div class="fat-cliente" style="margin-top:8px;">Devolver para o estoque</div>
+                    <div class="fat-sub">
+                        Use quando um cliente devolver uma mercadoria vendida. Gera uma NF-e de <strong>entrada</strong> com CFOP 1.202 ou 2.202.
+                    </div>
+                </div>
+                <div class="fat-opcao-card @(!_paraEstoque ? "fat-opcao-ativa" : "")" @onclick="() => SelecionarFluxo(false)">
+                    <MudIcon Icon="@Icons.Material.Filled.Send" Style="color:#C97A3D;" />
+                    <div class="fat-cliente" style="margin-top:8px;">Devolver para o fornecedor</div>
+                    <div class="fat-sub">
+                        Use para devolver ao fornecedor uma mercadoria comprada. Gera uma NF-e de <strong>saída</strong> com CFOP 5.202 ou 6.202.
+                    </div>
+                </div>
+            </div>
+
+            <MudTextField T="string" @bind-Value="_busca" Class="mt-3"
+                          Placeholder="@($"Buscar NF-e de {_tipoDocumento.ToLower()} por número ou participante...")"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+            <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; max-height:32vh; overflow:auto;">
+                <table class="fat-table">
+                    <thead>
+                        <tr>
+                            <th>Documento Fiscal</th>
+                            <th>@(_tipoDocumento == "Saída" ? "Cliente" : "Fornecedor")</th>
+                            <th>Emissão</th>
+                            <th>Itens</th>
+                            <th class="fat-col-num">Valor</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var doc in _documentos)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fat-numero">NF-e @doc.Numero</div>
+                                    <div class="fat-sub">
+                                        Série @doc.Serie
+                                        @if (doc.Itens.Any(p => p.FcpTotal > 0))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#FBE7D8; color:#C97A3D; font-weight:600; height:18px; margin-left:6px;">COM FCP</MudChip>
+                                        }
+                                        @if (doc.Itens.Any(p => p.Cfop == "5405"))
+                                        {
+                                            <MudChip T="string" Size="Size.Small" Style="background-color:#F1E9FA; color:#8E5CE0; font-weight:600; height:18px; margin-left:6px;">CFOP 5405</MudChip>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="fat-cliente">@doc.Contraparte.Nome</div>
+                                    <div class="fat-sub">@doc.Contraparte.Documento</div>
+                                </td>
+                                <td>@doc.Emissao</td>
+                                <td>@doc.Itens.Count</td>
+                                <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(doc.Itens.Sum(p => p.Total))</td>
+                                <td class="fat-col-num">
+                                    <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary"
+                                               Style="background-color:#079cff; color:#FFFFFF;"
+                                               OnClick="@(() => SelecionarDocumento(doc))">Selecionar</MudButton>
+                                </td>
+                            </tr>
+                        }
+                        @if (!_documentos.Any())
+                        {
+                            <tr><td colspan="6" class="fat-vazio">Nenhum documento fiscal encontrado.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+        }
+
+        @if (_etapa == EtapaDevolucao.Itens && _documento is not null)
+        {
+            <div class="fat-barra">
+                <div>
+                    <div class="fat-cliente">NF-e @_documento.Numero · Série @_documento.Serie</div>
+                    <div class="fat-sub">@_documento.Contraparte.Nome</div>
+                </div>
+                <MudButton Size="Size.Small" OnClick="@(() => _etapa = EtapaDevolucao.Origem)">Trocar Documento</MudButton>
+            </div>
+
+            <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+                <table class="fat-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd. Original</th>
+                            <th>Qtd. a Devolver</th>
+                            <th class="fat-col-num">Valor Unit.</th>
+                            <th class="fat-col-num">Total Devolvido</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _documento.Itens)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fat-cliente">@item.Descricao</div>
+                                    <div class="fat-sub">@item.Codigo · NCM @item.Ncm</div>
+                                </td>
+                                <td>@FaturamentoUi.Num(item.Quantidade) @item.Unidade</td>
+                                <td>
+                                    <MudNumericField T="decimal" Value="_quantidades[item.Codigo]" Min="0" Max="item.Quantidade"
+                                                     ValueChanged="@((decimal v) => DefinirQuantidade(item, v))"
+                                                     Immediate="true" HideSpinButtons="true"
+                                                     Variant="Variant.Outlined" Margin="Margin.Dense" Class="fat-input-qtd" />
+                                </td>
+                                <td class="fat-col-num">@FaturamentoUi.Moeda(item.ValorUnitario)</td>
+                                <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(_quantidades[item.Codigo] * item.ValorUnitario)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+
+            <div class="fat-resumo-total" style="margin-top:12px;">
+                <span>@_selecionados.Count item(ns) selecionado(s)</span>
+                <span>Total: <strong>@FaturamentoUi.Moeda(_valorDevolucao)</strong></span>
+            </div>
+        }
+
+        @if (_etapa == EtapaDevolucao.Fiscal && _documento is not null)
+        {
+            <div class="fat-cobranca-layout" style="grid-template-columns: 1fr 1fr;">
+                <MudPaper Elevation="0" Class="pa-4" Style="border:1px solid #E0E4E8; background:#F7F9FB;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight:600;" Class="mb-3">Enquadramento Fiscal Automático</MudText>
+                    <div class="fat-info-grid-2">
+                        <InfoNFe Rotulo="Finalidade" Valor="Devolução de mercadoria" />
+                        <InfoNFe Rotulo="Tipo de operação" Valor="@(_paraEstoque ? "Entrada" : "Saída")" />
+                        <InfoNFe Rotulo="CFOP aplicado" Valor="@_cfop" />
+                        <InfoNFe Rotulo="Operação" Valor="@(_documento.Contraparte.Uf == "SP" ? "Interna" : "Interestadual")" />
+                    </div>
+                    <div class="fat-separador">
+                        <InfoNFe Rotulo="Natureza da operação" Valor="@_natureza" />
+                    </div>
+                </MudPaper>
+
+                <div>
+                    <MudTextField T="string" Label="Motivo da Devolução (opcional)" @bind-Value="_motivo"
+                                  Lines="5" Placeholder="Se necessário, descreva o motivo da devolução..."
+                                  Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mt-3">
+                        As bases, alíquotas, CST/CSOSN e os valores de ICMS-ST serão copiados da nota original. Na revisão seguinte será possível selecionar, por exemplo, o CSOSN 900 quando exigido.
+                    </MudAlert>
+                </div>
+            </div>
+
+            <div class="fat-barra mt-3">
+                <InfoNFe Rotulo="Chave da NF-e referenciada" Valor="@_documento.Chave" Mono="true" />
+            </div>
+        }
+
+        @if (_etapa == EtapaDevolucao.Revisao && _documento is not null)
+        {
+            <div class="fat-info-grid-4">
+                <div class="fat-barra"><InfoNFe Rotulo="Destino da mercadoria" Valor="@_tipoRotulo" /></div>
+                <div class="fat-barra"><InfoNFe Rotulo="NF-e original" Valor="@($"{_documento.Numero} · Série {_documento.Serie}")" /></div>
+                <div class="fat-barra"><InfoNFe Rotulo="Operação / CFOP" Valor="@($"{(_paraEstoque ? "Entrada" : "Saída")} · {_cfop}")" /></div>
+                <div class="fat-barra"><InfoNFe Rotulo="Valor da devolução" Valor="@FaturamentoUi.Moeda(_valorDevolucao)" /></div>
+            </div>
+
+            <MudPaper Elevation="0" Class="mt-3" Style="border:1px solid #E0E4E8; overflow-x:auto;">
+                <table class="fat-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>NCM</th>
+                            <th>CFOP</th>
+                            <th>CST / CSOSN</th>
+                            <th>Quantidade</th>
+                            <th class="fat-col-num">ICMS-ST</th>
+                            <th class="fat-col-num">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in _selecionados)
+                        {
+                            <tr>
+                                <td class="fat-cliente">@item.Descricao</td>
+                                <td class="fat-mono">@item.Ncm</td>
+                                <td>@_cfop</td>
+                                <td>
+                                    <MudChip T="string" Size="Size.Small"
+                                             Style="@(item.Cst == "900"
+                                                     ? "background-color:#FBE7D8; color:#C97A3D; font-weight:600;"
+                                                     : "background-color:#F0F2F4; color:#5A6B7A; font-weight:600;")">@item.Cst</MudChip>
+                                </td>
+                                <td>@FaturamentoUi.Num(item.Quantidade) @item.Unidade</td>
+                                <td class="fat-col-num" style="color:#C97A3D;">@FaturamentoUi.Moeda(item.IcmsStTotal)</td>
+                                <td class="fat-col-num fat-total">@FaturamentoUi.Moeda(item.Total)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </MudPaper>
+
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Class="mt-3">
+                <strong>Devolução pronta para conferência fiscal.</strong>
+                Ao continuar, a NF-e será aberta com todos os dados preenchidos para revisão, validação, assinatura e transmissão.
+            </MudAlert>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Style="margin-right:auto;" OnClick="Voltar">@(_etapa == EtapaDevolucao.Origem ? "Cancelar" : "Voltar")</MudButton>
+
+        @if (_etapa == EtapaDevolucao.Itens)
+        {
+            <MudButton Variant="Variant.Filled" Style="background-color:#079cff; color:#FFFFFF;"
+                       Disabled="@(_selecionados.Count == 0)"
+                       OnClick="@(() => _etapa = EtapaDevolucao.Fiscal)">
+                Continuar para Dados Fiscais
+            </MudButton>
+        }
+        @if (_etapa == EtapaDevolucao.Fiscal)
+        {
+            <MudButton Variant="Variant.Filled" Style="background-color:#079cff; color:#FFFFFF;"
+                       OnClick="@(() => _etapa = EtapaDevolucao.Revisao)">
+                Revisar Devolução
+            </MudButton>
+        }
+        @if (_etapa == EtapaDevolucao.Revisao)
+        {
+            <MudButton Variant="Variant.Filled" Style="background-color:#079cff; color:#FFFFFF;"
+                       StartIcon="@Icons.Material.Filled.Receipt"
+                       OnClick="GerarNota">
+                Preparar NF-e de Devolução
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private enum EtapaDevolucao { Origem, Itens, Fiscal, Revisao }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private static readonly string[] _rotulosEtapas = { "Documento de origem", "Itens da devolução", "Dados fiscais", "Revisão" };
+
+    private EtapaDevolucao _etapa = EtapaDevolucao.Origem;
+    private bool _paraEstoque = true;
+    private DocumentoDevolucaoNFe? _documento;
+    private readonly Dictionary<string, decimal> _quantidades = new();
+    private string _motivo = "";
+    private string _busca = "";
+
+    private string _tipoRotulo => _paraEstoque ? "Devolver para o estoque" : "Devolver para o fornecedor";
+    private string _tipoDocumento => _paraEstoque ? "Saída" : "Entrada";
+
+    private string _natureza => _paraEstoque
+        ? "Devolução de venda de mercadoria adquirida de terceiros"
+        : "Devolução de compra para comercialização";
+
+    private string _cfop => _paraEstoque
+        ? (_documento?.Contraparte.Uf == "SP" ? "1202" : "2202")
+        : (_documento?.Contraparte.Uf == "SP" ? "5202" : "6202");
+
+    private IEnumerable<DocumentoDevolucaoNFe> _documentos =>
+        FaturamentoMockData.DocumentosDevolucao.Where(d =>
+            d.Tipo == _tipoDocumento &&
+            (string.IsNullOrWhiteSpace(_busca) ||
+             d.Numero.Contains(_busca) ||
+             d.Contraparte.Nome.Contains(_busca, StringComparison.OrdinalIgnoreCase)));
+
+    private List<ItemNFeLinha> _selecionados =>
+        _documento is null
+            ? new()
+            : _documento.Itens
+                .Where(i => _quantidades.GetValueOrDefault(i.Codigo) > 0)
+                .Select(i => { var c = i.Clonar(); c.Quantidade = _quantidades[i.Codigo]; return c; })
+                .ToList();
+
+    private decimal _valorDevolucao => _selecionados.Sum(i => i.Total);
+
+    private void SelecionarFluxo(bool paraEstoque)
+    {
+        _paraEstoque = paraEstoque;
+        _documento = null;
+    }
+
+    private void SelecionarDocumento(DocumentoDevolucaoNFe doc)
+    {
+        _documento = doc;
+        _quantidades.Clear();
+        foreach (var item in doc.Itens)
+            _quantidades[item.Codigo] = item.Quantidade;
+        _etapa = EtapaDevolucao.Itens;
+    }
+
+    private void DefinirQuantidade(ItemNFeLinha item, decimal valor) =>
+        _quantidades[item.Codigo] = Math.Min(item.Quantidade, Math.Max(0, valor));
+
+    private void Voltar()
+    {
+        switch (_etapa)
+        {
+            case EtapaDevolucao.Origem: MudDialog.Cancel(); break;
+            case EtapaDevolucao.Itens: _etapa = EtapaDevolucao.Origem; break;
+            case EtapaDevolucao.Fiscal: _etapa = EtapaDevolucao.Itens; break;
+            case EtapaDevolucao.Revisao: _etapa = EtapaDevolucao.Fiscal; break;
+        }
+    }
+
+    private void GerarNota()
+    {
+        if (_documento is null) return;
+
+        var cfop = _cfop;
+        var itens = _selecionados;
+        foreach (var i in itens) i.Cfop = cfop;
+
+        var nota = FaturamentoMockData.NovaNFe();
+        nota.TipoDevolucao = _tipoRotulo;
+        nota.DocumentoReferenciado = _documento.Chave;
+        nota.MotivoDevolucao = _motivo;
+        nota.TipoOperacao = _paraEstoque ? "Entrada" : "Saída";
+        nota.Finalidade = "Devolução de mercadoria";
+                nota.Finalidade = "Devolução de mercadoria";
+        nota.Natureza = _natureza;
+        nota.Destinatario = _documento.Contraparte.Clonar();
+        nota.Itens = itens;
+        nota.InformacoesComplementares =
+            $"{_tipoRotulo}. Documento fiscal referenciado: {_documento.Numero}, série {_documento.Serie}, chave {_documento.Chave}." +
+            (string.IsNullOrWhiteSpace(_motivo) ? "" : $" Motivo informado: {_motivo.Trim()}");
+
+        MudDialog.Close(DialogResult.Ok(nota));
+    }
+}

@@ -3377,6 +3377,245 @@
     width: 130px;
 }
 
+/* ==========================================================================
+   PÁGINA FATURAMENTO / NF-e
+   ========================================================================== */
+.info-card-row-fat {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 24px;
+}
+
+.fat-aviso-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(12px, 0.83vw, 16px);
+    margin-top: 16px;
+}
+
+.fat-aviso {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    padding: 14px 16px;
+}
+
+.fat-filtro-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.fat-busca-input { flex: 1; max-width: 440px; }
+.fat-select-filtro { width: 220px; }
+
+/* Tabelas */
+.fat-table { width: 100%; border-collapse: collapse; }
+
+    .fat-table th {
+        text-align: left;
+        padding: 10px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #5A6B7A;
+        border-bottom: 1px solid #E0E4E8;
+        white-space: nowrap;
+    }
+
+    .fat-table td {
+        padding: 12px;
+        font-size: 14px;
+        color: #374151;
+        border-bottom: 1px solid #F0F2F4;
+        vertical-align: middle;
+    }
+
+    .fat-table tbody tr:last-child td { border-bottom: none; }
+
+.fat-col-num { text-align: right !important; white-space: nowrap; }
+.fat-linha-clicavel { cursor: pointer; }
+.fat-linha-clicavel:hover { background-color: #F7F9FB; }
+.fat-numero { font-weight: 600; color: #2C6FB0; }
+.fat-cliente { font-weight: 600; color: #1F2937; }
+.fat-sub { font-size: 12px; color: #9AA5B1; margin-top: 2px; }
+.fat-total { font-weight: 600; color: #1F2937; }
+.fat-mono { font-family: Consolas, monospace; letter-spacing: 0.03em; word-break: break-all; }
+.fat-truncar { max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fat-vazio { text-align: center !important; padding: 48px 0 !important; color: #9AA5B1 !important; }
+
+.fat-input-qtd { width: 90px; }
+.fat-input-un { width: 70px; }
+.fat-input-ncm { width: 120px; }
+.fat-input-valor { width: 130px; }
+
+/* Barra cinza de destaque */
+.fat-barra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 16px;
+    background-color: #F7F9FB;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+}
+
+/* Detalhes */
+.fat-detalhe-layout {
+    display: grid;
+    grid-template-columns: 1.4fr 0.8fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.fat-detalhe-col { display: flex; flex-direction: column; gap: 16px; }
+.fat-secao-titulo { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+.fat-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.fat-info-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.fat-info-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.fat-separador { border-top: 1px solid #E0E4E8; padding-top: 16px; margin-top: 16px; }
+.fat-info-rotulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #9AA5B1; }
+.fat-info-valor { font-size: 14px; font-weight: 500; color: #374151; margin-top: 4px; word-break: break-word; }
+
+.fat-resumo-linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid #E0E4E8;
+    font-size: 14px;
+    color: #5A6B7A;
+}
+
+.fat-resumo-total {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding-top: 14px;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+    .fat-resumo-total strong { font-size: 22px; color: #2C6FB0; }
+
+.fat-cobranca-layout { display: grid; grid-template-columns: 1fr 0.9fr; gap: 20px; }
+
+/* Seleção de CST */
+.fat-cst-lista { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; max-height: 50vh; overflow-y: auto; }
+
+.fat-cst-opcao {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid #E0E4E8;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .fat-cst-opcao:hover { background-color: #F7F9FB; }
+
+.fat-cst-selecionada { background-color: #EAF1FA; border-color: #079cff; }
+
+.fat-cst-codigo {
+    width: 44px; height: 38px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    background-color: #F0F2F4; color: #5A6B7A;
+    flex-shrink: 0;
+}
+
+.fat-cst-st { background-color: #FBE7D8; color: #C97A3D; }
+.fat-cst-selecionada .fat-cst-codigo { background-color: #079cff; color: #FFFFFF; }
+
+/* Devolução em etapas */
+.fat-etapas { display: flex; gap: 8px; padding: 10px 0 16px; border-bottom: 1px solid #E0E4E8; margin-bottom: 16px; }
+.fat-etapa { display: flex; align-items: center; gap: 8px; flex: 1; font-size: 13px; font-weight: 600; color: #9AA5B1; }
+
+.fat-etapa-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #C9D1D9; background: #FFFFFF; font-size: 12px;
+}
+
+.fat-etapa-atual { color: #2C6FB0; }
+.fat-etapa-atual .fat-etapa-num { background: #079cff; border-color: #079cff; color: #FFFFFF; }
+.fat-etapa-ok { color: #2E7D32; }
+.fat-etapa-ok .fat-etapa-num { background: #E4F2E5; border-color: #E4F2E5; color: #2E7D32; }
+
+.fat-opcoes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.fat-opcao-card {
+    border: 2px solid #E0E4E8;
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    background: #FFFFFF;
+}
+
+.fat-opcao-ativa { border-color: #079cff; background-color: #EAF1FA; }
+
+/* Timeline do processo fiscal */
+.fat-timeline { display: flex; flex-direction: column; }
+.fat-timeline-item { display: flex; gap: 12px; }
+.fat-timeline-marca { display: flex; flex-direction: column; align-items: center; }
+
+.fat-timeline-ok {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: #2E7D32; color: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.fat-timeline-linha { width: 1px; height: 24px; background: #B7DDBA; }
+
+/* Espelho / DANFE */
+.fat-doc-topo {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #1F2937; padding: 12px 22px;
+}
+
+.fat-doc-fundo { background: #4B5563; padding: 24px; min-height: calc(100vh - 64px); overflow: auto; }
+
+.fat-folha {
+    background: #FFFFFF; color: #111827;
+    max-width: 900px; min-height: 1160px;
+    margin: 0 auto; padding: 22px;
+    font-family: Arial, sans-serif; font-size: 11px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, .35);
+}
+
+.fat-d-faixa {
+    border: 2px solid #8E5CE0; background: #F1E9FA; color: #5B3AA0;
+    text-align: center; padding: 10px; margin-bottom: 8px; font-size: 11px;
+}
+
+.fat-d-grid { display: grid; border: 1px solid #000; margin-top: -1px; }
+.fat-d-cel { padding: 5px 6px; border-right: 1px solid #000; font-size: 11px; }
+.fat-d-cel:last-child { border-right: none; }
+.fat-d-cel span { display: block; font-size: 8px; color: #444; }
+.fat-d-cel b { font-weight: 400; }
+.fat-d-cel b.fat-d-forte { font-weight: 700; }
+.fat-d-titulo { font-size: 9px; font-weight: 700; margin: 10px 0 2px; }
+.fat-barras { width: 100%; height: 42px; }
+.fat-d-tabela { width: 100%; border: 1px solid #000; border-collapse: collapse; font-size: 10px; }
+.fat-d-tabela th { background: #F3F4F6; border: 1px solid #000; padding: 4px; }
+.fat-d-tabela td { border-left: 1px solid #000; border-right: 1px solid #000; padding: 5px; text-align: center; }
+.fat-d-rodape { display: flex; justify-content: space-between; margin-top: 10px; font-size: 9px; color: #4B5563; }
+
+@media print {
+    .fat-doc-topo { display: none; }
+    .fat-doc-fundo { background: #FFFFFF; padding: 0; }
+    .fat-folha { box-shadow: none; }
+}
+
 
 /* ==========================================================================
    SISTEMA DE JANELAS FLUTUANTES (WindowManagerService)
